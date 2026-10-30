@@ -72,6 +72,26 @@ EH3D-NODE-BUNGARD-HMI é o ecrã próprio do operador de uma máquina Bungard CC
 
 Como as partes deste repositório se encaixam: quem fala com ele, o que contém e de que depende. O desenho sai de `docs/architecture.json` e é verificado contra o código.
 
+## 🖼️ Capturas de ecrã
+
+<p align="center">
+  <img src="images/screenshots/screen-machine.png" alt="machine screen" width="40%">
+</p>
+
+<p align="center"><em>O ecrã da máquina em inglês: o botão de paragem sempre no topo, depois movimento manual, origem, fuso e início. Um desenho do esquema feito com os textos do firmware, não uma captura de um módulo.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/screen-confirm.png" alt="confirmation of a move" width="40%">
+</p>
+
+<p align="center"><em>Um movimento pede uma confirmação antes de acontecer o que quer que seja (aqui em espanhol).</em></p>
+
+<p align="center">
+  <img src="images/screenshots/screen-stop.png" alt="hardware stop pressed" width="40%">
+</p>
+
+<p align="center"><em>A paragem por hardware está premida: o ecrã di-lo e recusa-se a mover o que quer que seja até a libertação ser reconhecida (aqui em japonês).</em></p>
+
 ## ✨ Funcionalidades
 
 * **Uma paragem que não se esquece:** o botão de paragem está sempre no topo e funciona sempre; a paragem por hardware fica trancada e só um reconhecimento no ecrã, com o botão solto, a levanta.

@@ -72,6 +72,26 @@ EH3D-NODE-BUNGARD-HMI ist der eigene Bildschirm des Bedieners für eine Bungard-
 
 Wie die Teile dieses Repositorys zusammenpassen: wer mit ihm spricht, was es enthält und wovon es abhängt. Das Bild wird aus `docs/architecture.json` gezeichnet und gegen den Code geprüft.
 
+## 🖼️ Screenshots
+
+<p align="center">
+  <img src="images/screenshots/screen-machine.png" alt="machine screen" width="40%">
+</p>
+
+<p align="center"><em>Der Maschinenbildschirm auf Englisch: der Stopp-Knopf immer oben, dann Tippen, Referenz, Spindel und Start. Eine Zeichnung des Layouts aus den Texten der Firmware, keine Aufnahme eines Moduls.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/screen-confirm.png" alt="confirmation of a move" width="40%">
+</p>
+
+<p align="center"><em>Eine Bewegung verlangt eine Bestätigung, bevor etwas geschieht (hier auf Spanisch).</em></p>
+
+<p align="center">
+  <img src="images/screenshots/screen-stop.png" alt="hardware stop pressed" width="40%">
+</p>
+
+<p align="center"><em>Der Hardware-Stopp ist gedrückt: Der Bildschirm sagt es und bewegt nichts, bis das Lösen quittiert ist (hier auf Japanisch).</em></p>
+
 ## ✨ Funktionen
 
 * **Ein Stopp, den man nicht vergessen kann:** Der Stopp-Knopf ist immer oben und funktioniert immer; der Hardware-Stopp rastet ein, und nur eine Quittung auf dem Bildschirm bei losgelassenem Taster löst ihn.

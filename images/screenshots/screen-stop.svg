@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1280" viewBox="0 0 800 1280" font-family="'Segoe UI','Noto Sans','Noto Sans CJK SC','Noto Sans CJK JP','Yu Gothic',sans-serif">
+<rect width="800" height="1280" fill="#15110c"/>
+<rect x="10" y="10" width="780" height="150" rx="14" fill="#211b13" stroke="#3a2f20"/>
+<rect x="24" y="30" width="220" height="110" rx="14" fill="#c62828"/><text x="134.0" y="97.0" font-size="36" fill="#ffffff" text-anchor="middle">停止</text>
+<text x="270" y="78" font-size="26" fill="#e8dcc8">無効</text>
+<text x="270" y="122" font-size="22" fill="#ff5252">ハードウェア停止中</text>
+<rect x="10" y="176" width="780" height="70" fill="#211b13"/>
+<text x="88.0" y="220" font-size="18" fill="#ffb300" text-anchor="middle">マシン</text>
+<rect x="30.0" y="240" width="116.0" height="5" fill="#ffb300"/>
+<text x="244.0" y="220" font-size="18" fill="#a89878" text-anchor="middle">ジョブ</text>
+<text x="400.0" y="220" font-size="18" fill="#a89878" text-anchor="middle">ビューア</text>
+<text x="556.0" y="220" font-size="18" fill="#a89878" text-anchor="middle">マシンとステーション</text>
+<text x="712.0" y="220" font-size="18" fill="#a89878" text-anchor="middle">設定</text>
+<rect x="30" y="280" width="220" height="110" rx="14" fill="#37474f"/><text x="140.0" y="344.3333333333333" font-size="28" fill="#ffffff" text-anchor="middle">X 移動 -</text>
+<rect x="280" y="280" width="220" height="110" rx="14" fill="#37474f"/><text x="390.0" y="344.3333333333333" font-size="28" fill="#ffffff" text-anchor="middle">X 移動 +</text>
+<rect x="530" y="280" width="220" height="110" rx="14" fill="#37474f"/><text x="640.0" y="344.3333333333333" font-size="28" fill="#ffffff" text-anchor="middle">Y 移動 -</text>
+<rect x="30" y="430" width="220" height="110" rx="14" fill="#37474f"/><text x="140.0" y="494.3333333333333" font-size="28" fill="#ffffff" text-anchor="middle">Y 移動 +</text>
+<rect x="280" y="430" width="220" height="110" rx="14" fill="#37474f"/><text x="390.0" y="494.3333333333333" font-size="28" fill="#ffffff" text-anchor="middle">Z 移動 -</text>
+<rect x="530" y="430" width="220" height="110" rx="14" fill="#37474f"/><text x="640.0" y="494.3333333333333" font-size="28" fill="#ffffff" text-anchor="middle">Z 移動 +</text>
+<rect x="30" y="580" width="220" height="110" rx="14" fill="#37474f"/><text x="140.0" y="644.3333333333334" font-size="28" fill="#ffffff" text-anchor="middle">原点</text>
+<rect x="280" y="580" width="220" height="110" rx="14" fill="#37474f"/><text x="390.0" y="644.3333333333334" font-size="28" fill="#ffffff" text-anchor="middle">スピンドル</text>
+<rect x="30" y="730" width="220" height="110" rx="14" fill="#2e7d32"/><text x="140.0" y="795.0" font-size="30" fill="#ffffff" text-anchor="middle">開始</text>
+<rect x="270" y="730" width="330" height="110" rx="14" fill="#f9a825"/><text x="435.0" y="793.0" font-size="24" fill="#1b1b1b" text-anchor="middle">停止解除：確認</text>
+<text x="30" y="1180" font-size="22" fill="#ffb300">ハードウェア停止が押されているか未確認です。</text>
+</svg>

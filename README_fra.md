@@ -72,6 +72,26 @@ EH3D-NODE-BUNGARD-HMI est l'écran propre de l'opérateur d'une machine Bungard 
 
 Comment s'assemblent les parties de ce dépôt : qui lui parle, ce qu'il contient et de quoi il dépend. Le dessin est tiré de `docs/architecture.json` et vérifié par rapport au code.
 
+## 🖼️ Captures d'écran
+
+<p align="center">
+  <img src="images/screenshots/screen-machine.png" alt="machine screen" width="40%">
+</p>
+
+<p align="center"><em>L'écran de la machine en anglais : le bouton d'arrêt toujours en haut, puis jog, origine, broche et démarrage. Un dessin de la mise en page à partir des textes du firmware, pas une capture d'un module.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/screen-confirm.png" alt="confirmation of a move" width="40%">
+</p>
+
+<p align="center"><em>Un déplacement demande une confirmation avant que rien ne se passe (ici en espagnol).</em></p>
+
+<p align="center">
+  <img src="images/screenshots/screen-stop.png" alt="hardware stop pressed" width="40%">
+</p>
+
+<p align="center"><em>L'arrêt matériel est enfoncé : l'écran le dit et refuse de déplacer quoi que ce soit tant que le relâchement n'est pas acquitté (ici en japonais).</em></p>
+
 ## ✨ Fonctionnalités
 
 * **Un arrêt qu'on ne peut pas oublier :** le bouton d'arrêt est toujours en haut et fonctionne toujours ; l'arrêt matériel se verrouille et seul un acquittement à l'écran, bouton relâché, le lève.

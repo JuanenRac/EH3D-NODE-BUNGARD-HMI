@@ -72,6 +72,26 @@ EH3D-NODE-BUNGARD-HMI is the operator's own screen for a Bungard CCD machine: it
 
 How the parts of this repository fit together: who talks to it, what it holds and what it depends on. The picture is drawn from `docs/architecture.json` and checked against the code.
 
+## 🖼️ Screenshots
+
+<p align="center">
+  <img src="images/screenshots/screen-machine.png" alt="machine screen" width="40%">
+</p>
+
+<p align="center"><em>The machine screen in English: the stop button always on top, then jog, home, spindle and start. A drawing of the layout from the texts of the firmware, not a capture of a module.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/screen-confirm.png" alt="confirmation of a move" width="40%">
+</p>
+
+<p align="center"><em>A move asks for a confirmation before anything happens (here in Spanish).</em></p>
+
+<p align="center">
+  <img src="images/screenshots/screen-stop.png" alt="hardware stop pressed" width="40%">
+</p>
+
+<p align="center"><em>The hardware stop is pressed: the screen says so and refuses to move anything until the release has been acknowledged (here in Japanese).</em></p>
+
 ## ✨ Features
 
 * **A stop that cannot be forgotten:** the stop button is always on top and always works; the hardware stop latches, and only an acknowledgement on the screen, with the button up, clears it.

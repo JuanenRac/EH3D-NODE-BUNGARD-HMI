@@ -72,6 +72,26 @@ EH3D-NODE-BUNGARD-HMI è lo schermo dell'operatore di una macchina Bungard CCD: 
 
 Come si incastrano le parti di questo repository: chi parla con esso, cosa contiene e da cosa dipende. Il disegno nasce da `docs/architecture.json` ed è verificato sul codice.
 
+## 🖼️ Schermate
+
+<p align="center">
+  <img src="images/screenshots/screen-machine.png" alt="machine screen" width="40%">
+</p>
+
+<p align="center"><em>La schermata della macchina in inglese: il pulsante di arresto sempre in alto, poi spostamento, origine, mandrino e avvio. Un disegno del layout fatto con i testi del firmware, non una cattura di un modulo.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/screen-confirm.png" alt="confirmation of a move" width="40%">
+</p>
+
+<p align="center"><em>Un movimento chiede una conferma prima che accada qualcosa (qui in spagnolo).</em></p>
+
+<p align="center">
+  <img src="images/screenshots/screen-stop.png" alt="hardware stop pressed" width="40%">
+</p>
+
+<p align="center"><em>L'arresto hardware è premuto: lo schermo lo dice e si rifiuta di muovere qualsiasi cosa finché il rilascio non è confermato (qui in giapponese).</em></p>
+
 ## ✨ Funzionalità
 
 * **Un arresto che non si può dimenticare:** il pulsante di arresto è sempre in alto e funziona sempre; l'arresto hardware si blocca e solo una conferma sullo schermo, a pulsante rilasciato, lo toglie.

@@ -72,6 +72,26 @@ EH3D-NODE-BUNGARD-HMI 是 Bungard CCD 机床操作员自己的屏幕：它取代
 
 本仓库各部分如何配合：谁与它通信、它包含什么、依赖什么。图由 `docs/architecture.json` 生成，并与代码核对。
 
+## 🖼️ 屏幕截图
+
+<p align="center">
+  <img src="images/screenshots/screen-machine.png" alt="machine screen" width="40%">
+</p>
+
+<p align="center"><em>英语的机床界面：停止按钮始终在最上方，其下是点动、回原点、主轴和开始。这是根据固件文本绘制的布局示意图，不是模块上的截图。</em></p>
+
+<p align="center">
+  <img src="images/screenshots/screen-confirm.png" alt="confirmation of a move" width="40%">
+</p>
+
+<p align="center"><em>移动在执行任何动作之前都要求确认（此处为西班牙语）。</em></p>
+
+<p align="center">
+  <img src="images/screenshots/screen-stop.png" alt="hardware stop pressed" width="40%">
+</p>
+
+<p align="center"><em>硬件急停已按下：屏幕会提示，并在松开被确认之前拒绝移动任何东西（此处为日语）。</em></p>
+
 ## ✨ 功能
 
 * **忘不掉的停止：** 停止按钮始终在最上方并且始终有效；硬件急停会被锁存，只有在按钮松开后在屏幕上确认才能解除。

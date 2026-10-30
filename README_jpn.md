@@ -72,6 +72,26 @@ EH3D-NODE-BUNGARD-HMI は Bungard CCD マシンの操作者専用の画面で、
 
 このリポジトリの各部分のつながり：誰が話しかけ、何を持ち、何に依存するか。図は `docs/architecture.json` から描かれ、コードと照合されます。
 
+## 🖼️ スクリーンショット
+
+<p align="center">
+  <img src="images/screenshots/screen-machine.png" alt="machine screen" width="40%">
+</p>
+
+<p align="center"><em>英語のマシン画面：停止ボタンは常に最上部にあり、その下にジョグ、原点、スピンドル、開始が並びます。ファームウェアの文言から描いたレイアウト図で、モジュールのキャプチャではありません。</em></p>
+
+<p align="center">
+  <img src="images/screenshots/screen-confirm.png" alt="confirmation of a move" width="40%">
+</p>
+
+<p align="center"><em>移動は何かが起きる前に確認を求めます（ここではスペイン語）。</em></p>
+
+<p align="center">
+  <img src="images/screenshots/screen-stop.png" alt="hardware stop pressed" width="40%">
+</p>
+
+<p align="center"><em>ハードウェア停止が押されています。画面がそれを知らせ、解除が確認されるまで何も動かしません（ここでは日本語）。</em></p>
+
 ## ✨ 機能
 
 * **忘れられない停止：** 停止ボタンは常に最上部にあり常に有効です。ハードウェア停止はラッチされ、ボタンを離した状態で画面で確認したときだけ解除されます。
