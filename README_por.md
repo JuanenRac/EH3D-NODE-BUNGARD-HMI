@@ -18,7 +18,7 @@
 
 ---
 
-**Verificação de honestidade - o que corre hoje:** as regras do ecrã estão escritas em C++17 e testadas num computador: o ficheiro de definições com os valores seguros por omissão, a comporta que cada movimento e cada ordem do fuso tem de passar (uma confirmação no ecrã, o trinco da paragem por hardware, a ligação armada), as ordens e avisos por voz em oito idiomas e os textos dos ecrãs. O firmware ESP-IDF com os ecrãs LVGL está escrito para o módulo Guition JC8012P4A1C mas **não foi compilado, gravado nem executado num módulo**, ainda não há ligação ao servidor nem à máquina e nada foi ligado a uma máquina.
+**Verificação de honestidade - o que corre hoje:** as regras do ecrã estão escritas em C++17 e testadas num computador: o ficheiro de definições com os valores seguros por omissão, a comporta que cada movimento e cada ordem do fuso tem de passar (uma confirmação no ecrã, o trinco da paragem por hardware, a ligação armada), as ordens e avisos por voz em oito idiomas, os textos dos ecrãs, os esquemas na vertical e na horizontal, os ficheiros do microSD e o cliente do EH3D-SERVER (os pedidos, a leitura da frota e o fluxo de um trabalho desde um ficheiro do cartão até ao fim). O firmware ESP-IDF com os ecrãs LVGL está escrito para o módulo Guition JC8012P4A1C mas **não foi compilado, gravado nem executado num módulo**; nunca falou com um servidor real, e os movimentos da própria máquina (movimento manual, origem) esperam pela ligação ao nó, que ainda não está escrita.
 
 ---
 
@@ -30,7 +30,7 @@
 |---|---|
 | Versão | `0.0.1` |
 | Maturidade | Estrutura inicial |
-| Testes | 1 programa de teste no computador (598 verificações contadas) |
+| Testes | 2 programas de teste no computador (743 verificações contadas) |
 | Tecnologias | C++17, ESP-IDF 5.5, LVGL 9, ESP32-P4 |
 | Em hardware real | Não: o firmware não foi compilado nem gravado e nada foi ligado a uma máquina |
 
@@ -48,9 +48,10 @@ Cada linha é uma parte deste repositório e a luz diz até onde chega hoje. É 
 | Testes | 🟢 | Passa 1 programa de teste no computador (`ctest`): 598 verificações do ficheiro de definições, da comporta, das ordens e avisos por voz e dos textos dos ecrãs em oito idiomas. |
 | Regras de segurança | 🟡 | Todo o movimento e toda a ordem do fuso passam pela comporta: confirmação no ecrã, trinco da paragem por hardware que só um reconhecimento no ecrã levanta com o botão solto, nenhum movimento com a ligação por armar. Coberto por testes; nunca experimentado com um botão de paragem real. |
 | Voz | 🟡 | As ordens e avisos por voz são reconhecidos e formulados em oito idiomas e testados como texto; não se usou nenhum microfone nem altifalante. |
-| Ecrãs | 🟠 | O ecrã da máquina (movimento manual, origem, fuso, início, paragem, confirmação, aviso de paragem por hardware) está escrito; os separadores visor, trabalho, máquinas e estações e definições ainda são páginas vazias. |
+| Ecrãs | 🟠 | Os ecrãs máquina, trabalho (microSD), máquinas e estações e definições estão escritos, na horizontal e na vertical, com o aspeto do programa de secretária; o separador visor ainda é um cartão vazio. Só existe um desenho do esquema, não uma captura de um módulo. |
 | Hardware real | 🔴 | Nenhum módulo executou este firmware, a ligação ao servidor ainda não existe e nada foi ligado a uma máquina. |
 | Documentação | 🟢 | README em oito idiomas, a referência das definições e as notas de hardware. |
+| Servidor e cartão | 🟡 | Os ficheiros do microSD (listagem, nomes seguros, tipos), os pedidos ao EH3D-SERVER, a leitura da frota e o fluxo de um trabalho (enviá-lo pronto, iniciá-lo pela comporta, segui-lo, responder à mudança de ferramenta) são testados num computador com respostas do servidor escritas à mão; os sockets e o controlador do cartão nunca correram num módulo. |
 
 ## 🎯 Visão geral
 
@@ -59,10 +60,12 @@ Cada linha é uma parte deste repositório e a luz diz até onde chega hoje. É 
 * A **voz**: avisos falados (trabalho terminado, mudança de ferramenta, erro, ligação perdida, paragem por hardware) e uma lista curta e fixa de ordens por voz em oito idiomas; as ordens que só param entendem-se dentro de uma frase, as que movem ou rodam têm de ser ditas inteiras e pedem sempre uma confirmação.
 * Os **ecrãs**: a máquina (movimento manual, origem, fuso, início, paragem), o trabalho, o visor, as máquinas e estações do servidor e as definições, pela ordem e com os nomes do programa de secretária; o botão de paragem está sempre no topo.
 * O **módulo**: o Guition JC8012P4A1C (ESP32-P4 com 32 MB de RAM externa, ecrã tátil MIPI-DSI de 10,1 polegadas e 800x1280, um ESP32-C6 para o Wi-Fi, o codec ES8311 com amplificador de altifalante e a entrada de microfone ES7210). O painel da unidade é o novo.
+* **Na vertical ou na horizontal:** a definição `orientation` (`auto`, `landscape`, `portrait`) roda a imagem do painel: na horizontal (1280 x 800) o trabalho, a vista em planta e o pad de movimento ficam em três colunas sobre a barra de posição, na vertical (800 x 1280) empilham-se; o toque cai onde se toca no ecrã em ambos.
+* **O microSD e o servidor, como um só fluxo:** o cartão lista os ficheiros de furação e fresagem; o ecrã envia o ficheiro escolhido ao EH3D-SERVER como um trabalho que espera pronto, o operador inicia-o pela comporta, e o progresso, as paragens para mudança de ferramenta e o fim voltam da frota em tempo real, tal como nos programas de secretária e no nó. A resposta do servidor a cada trabalho fica guardada no cartão.
 
 ## 🧩 Papel no EH3D
 
-EH3D-NODE-BUNGARD-HMI é o ecrã próprio do operador de uma máquina Bungard CCD: ocupa o lugar do PC junto à máquina. Destina-se a comandar a máquina através do EH3D-SERVER ou do EH3D-NODE-BUNGARD (o nó da porta série da máquina), tal como o EH3D-DRILLPRO e o EH3D-ROUTEPRO. Essa ligação ainda não está escrita.
+EH3D-NODE-BUNGARD-HMI é o ecrã próprio do operador de uma máquina Bungard CCD: ocupa o lugar do PC junto à máquina e é mais um cliente do EH3D-SERVER, tal como o EH3D-DRILLPRO, o EH3D-ROUTEPRO e o EH3D-BUNGARD-GUI. Um trabalho que o ecrã envia do microSD é planeado pelo servidor e está no mesmo instante nos programas de secretária; um trabalho iniciado num programa de secretária mostra aqui o seu progresso; o servidor executa-o na máquina através do EH3D-NODE-BUNGARD. Os movimentos diretos do ecrã (movimento manual, origem) vão usar o mesmo nó, e essa ligação ainda não está escrita.
 
 ## 🏛️ Arquitetura
 
@@ -75,22 +78,40 @@ Como as partes deste repositório se encaixam: quem fala com ele, o que contém 
 ## 🖼️ Capturas de ecrã
 
 <p align="center">
-  <img src="images/screenshots/screen-machine.png" alt="machine screen" width="40%">
+  <img src="images/screenshots/screen-machine.png" alt="machine screen lying down" width="100%">
 </p>
 
-<p align="center"><em>O ecrã da máquina em inglês: o botão de paragem sempre no topo, depois movimento manual, origem, fuso e início. Um desenho do esquema feito com os textos do firmware, não uma captura de um módulo.</em></p>
+<p align="center"><em>O ecrã da máquina na horizontal, em inglês: o trabalho, a vista em planta e o pad de movimento em três colunas, a posição e o botão de paragem na barra. Um desenho do esquema feito com os textos do firmware, não uma captura de um módulo.</em></p>
 
 <p align="center">
-  <img src="images/screenshots/screen-confirm.png" alt="confirmation of a move" width="40%">
+  <img src="images/screenshots/screen-portrait.png" alt="machine screen standing up" width="40%">
+</p>
+
+<p align="center"><em>O mesmo ecrã na vertical, em alemão: os cartões empilham-se e a barra de posição fica em baixo.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/screen-card.png" alt="files of the microSD card" width="100%">
+</p>
+
+<p align="center"><em>A página do trabalho (aqui em italiano): os ficheiros de furação e fresagem do microSD, o escolhido e o botão que o envia ao servidor como um trabalho que espera pronto.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/screen-fleet.png" alt="machines and stations" width="100%">
+</p>
+
+<p align="center"><em>Máquinas e estações (aqui em português): todas as máquinas do servidor por estação, com o seu estado e o progresso do trabalho, como os veem os programas de secretária.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/screen-confirm.png" alt="confirmation of a move" width="100%">
 </p>
 
 <p align="center"><em>Um movimento pede uma confirmação antes de acontecer o que quer que seja (aqui em espanhol).</em></p>
 
 <p align="center">
-  <img src="images/screenshots/screen-stop.png" alt="hardware stop pressed" width="40%">
+  <img src="images/screenshots/screen-stop.png" alt="hardware stop pressed" width="100%">
 </p>
 
-<p align="center"><em>A paragem por hardware está premida: o ecrã di-lo e recusa-se a mover o que quer que seja até a libertação ser reconhecida (aqui em japonês).</em></p>
+<p align="center"><em>A paragem por hardware está premida: o ecrã di-lo, esbate os botões que movem e recusa-se a mover o que quer que seja até a libertação ser reconhecida (aqui em japonês).</em></p>
 
 ## ✨ Funcionalidades
 
@@ -120,6 +141,8 @@ Como as partes deste repositório se encaixam: quem fala com ele, o que contém 
 | Entrada de paragem por hardware | um GPIO (`HMI_HW_STOP_GPIO` no menuconfig, ativo em baixo por omissão, com pull-up para que um fio aberto conte como premido) | `main/board_p4.cpp` |
 | Ecrã tátil | MIPI-DSI de 800x1280 através do LVGL 9 | `main/ui.cpp` |
 | Som | codec ES8311 com amplificador de altifalante e a entrada de microfone ES7210 | `main/board_p4.cpp` |
+| microSD | a raiz do cartão em `/sdcard`: listam-se e leem-se ficheiros de furação, fresagem, Gerber, DXF e ZIP e escrevem-se relatórios; só se aceitam nomes de ficheiro simples | `core/sdfiles.hpp`, `main/board_p4.cpp` |
+| EH3D-SERVER | HTTP com o token de acesso: `GET /api/v1/fleet` a cada `poll_s` segundos, `POST /api/v1/machines/:id/jobs`, `POST /api/v1/jobs/:id/start`, `confirm` e `cancel` | `core/server_link.hpp`, `main/server_link.cpp` |
 
 ## ⚙️ Configuração
 
@@ -136,6 +159,8 @@ Tudo o que é afinado é uma linha de `hmi.cfg` (copia `hmi.cfg.example` para a 
 | `voice_orders` | off | on / off | aceita ordens por voz |
 | `voice_confirm` | off | on / off | aceita um sim falado como confirmação de um movimento |
 | `token` | none | 8 - 64 characters | o token de acesso ao servidor; só de escrita, nunca mostrado nem registado |
+| `orientation` | `auto` | `auto landscape portrait` | vertical ou horizontal; `auto` segue a montagem do módulo |
+| `poll_s` | 3 | 1 - 60 | de quanto em quanto tempo o ecrã pede a frota ao servidor |
 
 ## 🚀 Início rápido
 
@@ -150,7 +175,7 @@ O firmware ainda não foi compilado: quando for, `idf.py set-target esp32p4 && i
 
 ## 🧪 Testes
 
-Os testes no computador (`build.bat` ou `./build.sh`, e depois `ctest`) são um programa, `test_hmi`, e passa tudo: 598 verificações do ficheiro de definições (valores por omissão, intervalos, erros, fins de linha), da comporta (a paragem passa sempre, trinco da paragem por hardware, confirmação, tempo limite e volta do relógio, regras de voz, interruptores), das ordens e avisos por voz em oito idiomas e dos textos dos ecrãs.
+Os testes no computador (`build.bat` ou `./build.sh`, e depois `ctest`) são dois programas e passa tudo: `test_hmi` (638 verificações) do ficheiro de definições, da comporta (a paragem passa sempre, trinco da paragem por hardware, confirmação, tempo limite e volta do relógio, regras de voz, interruptores), das ordens e avisos por voz e dos textos de ecrã em oito idiomas; e `test_workflow` (105 verificações) da orientação e do toque, dos ficheiros do cartão (tipos, nomes seguros, ordenação), do leitor de JSON, dos pedidos e respostas do servidor e do fluxo de um trabalho desde o cartão até ao fim.
 
 ## 🏗️ Compilação e publicação
 
@@ -180,11 +205,14 @@ EH3D-NODE-BUNGARD-HMI/
 │   ├── hmi_config.hpp lang.hpp                  o ficheiro de definições e os seus valores seguros
 │   ├── gate.hpp                                 a comporta: confirmação, trinco da paragem
 │   ├── voice.hpp                                ordens e avisos por voz em oito idiomas
+│   ├── orientation.hpp sdfiles.hpp              vertical e horizontal, ficheiros do cartão
+│   ├── server_link.hpp workflow.hpp             cliente do servidor e fluxo de um trabalho
 │   └── ui_text.hpp                              os textos dos ecrãs em oito idiomas
 ├── main/
 │   ├── app_main.cpp                             arranque, definições, o ciclo da comporta
 │   ├── ui.cpp ui.hpp                            os ecrãs LVGL e o botão de paragem
 │   ├── board_p4.cpp board.hpp                   o módulo: ecrã, som, entrada de paragem
+│   ├── server_link.cpp server_link.hpp          os sockets do cliente do servidor
 │   └── idf_component.yml Kconfig.projbuild      lista de componentes e pinos do menuconfig
 ├── tests/                                       testes no computador das definições, da comporta, da voz e dos textos de ecrã
 ├── docs/                                        as notas de hardware e as fontes dos dois desenhos
@@ -210,7 +238,7 @@ EH3D-NODE-BUNGARD-HMI/
 **Limites conhecidos hoje**
 
 * Nada correu num módulo: o firmware não foi compilado, gravado nem experimentado, e o pacote de suporte de placa que pede pode precisar de alterações para este módulo.
-* Ainda não há ligação ao EH3D-SERVER nem ao nó da máquina, por isso os ecrãs não podem mover uma máquina; os separadores visor, trabalho, máquinas e estações e definições são páginas vazias.
+* O ecrã só chega à máquina através de um trabalho do EH3D-SERVER; os seus próprios movimentos (movimento manual, origem, fuso) consultam a comporta e depois esperam pela ligação ao nó, que ainda não está escrita. O cliente do servidor e o cartão nunca correram num módulo.
 * O pino da paragem por hardware e o controlador tátil ainda não estão fixados: têm de ser verificados com o esquema da unidade.
 * O reconhecedor de voz e o altifalante ainda não estão no firmware; as ordens e avisos são testados como texto.
 * A lógica dos programas de secretária (formatos, controlador, frota) não é reutilizada: os ecrãs seguem o programa de secretária, mas as regras são reescritas em C++.

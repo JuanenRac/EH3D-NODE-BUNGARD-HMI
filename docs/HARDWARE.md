@@ -27,6 +27,14 @@ These come from the board support code of the maker's demo and are to be checked
 
 The emergency stop of a machine is a hardware button wired to cut the drive on its own. This screen is not part of that chain: it reads one input to show the state and to refuse moves, and nothing it does can clear a stop. See the README for the rules of the gate.
 
+## Standing up and lying down
+
+The panel is a portrait panel (800 x 1280). Lying down the picture is turned 90 degrees by the display driver (`board::set_rotation`) and the touch is turned with it (`touch_to_screen`, tested). `orientation = auto` follows the way the module is mounted as the application tells it; there is no tilt sensor read yet, so `auto` means lying down until one is.
+
+## The microSD card
+
+The card is mounted at `/sdcard` by the board support code and the screen never leaves it. It lists the drilling, routing, Gerber, DXF and ZIP files, reads the chosen one (at most 512 KB) and the tool table of the same name when there is one, and writes the answer of the server for each job as a report that does not replace an older one.
+
 ## Not done yet
 
-The link to EH3D-SERVER or to the node of the machine, the speech recogniser and the speaker path, and the viewer, job, machines-and-stations and settings tabs.
+The link to the node of the machine for the direct moves of the screen, the speech recogniser and the speaker path, the viewer tab, and a tilt sensor for `orientation = auto`.

@@ -12,6 +12,8 @@ else()
 endif()
 
 add_executable(test_hmi test_hmi.cpp)
+add_executable(test_workflow test_workflow.cpp)
 
 enable_testing()
 add_test(NAME hmi COMMAND test_hmi)
+add_test(NAME workflow COMMAND test_workflow)

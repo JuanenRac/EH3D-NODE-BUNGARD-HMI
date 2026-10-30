@@ -64,6 +64,34 @@
         },
         {
           "desc": {
+            "en": "standing and lying layouts, files of the card",
+            "es": "diseños vertical y horizontal, ficheros de la tarjeta",
+            "it": "layout verticale e orizzontale, file della scheda",
+            "de": "Hoch- und Querformat, Dateien der Karte",
+            "fr": "portrait et paysage, fichiers de la carte",
+            "pt": "vertical e horizontal, ficheiros do cartão",
+            "zh": "竖屏和横屏布局、卡上的文件",
+            "ja": "縦横のレイアウト、カードのファイル"
+          },
+          "name": "orientation.hpp  sdfiles.hpp",
+          "tree_name": "orientation.hpp sdfiles.hpp"
+        },
+        {
+          "desc": {
+            "en": "client of the server and the flow of a job",
+            "es": "cliente del servidor y flujo de un trabajo",
+            "it": "client del server e flusso di un lavoro",
+            "de": "Client des Servers und Ablauf eines Auftrags",
+            "fr": "client du serveur et déroulement d'un travail",
+            "pt": "cliente do servidor e fluxo de um trabalho",
+            "zh": "服务器客户端和作业流程",
+            "ja": "サーバーのクライアントとジョブの流れ"
+          },
+          "name": "server_link.hpp  workflow.hpp",
+          "tree_name": "server_link.hpp workflow.hpp"
+        },
+        {
+          "desc": {
             "en": "the texts of the screens in eight languages",
             "es": "los textos de las pantallas en ocho idiomas",
             "it": "i testi delle schermate in otto lingue",
@@ -135,6 +163,20 @@
         },
         {
           "desc": {
+            "en": "the sockets of the client of the server",
+            "es": "los sockets del cliente del servidor",
+            "it": "i socket del client del server",
+            "de": "die Sockets des Server-Clients",
+            "fr": "les sockets du client du serveur",
+            "pt": "os sockets do cliente do servidor",
+            "zh": "服务器客户端的套接字",
+            "ja": "サーバークライアントのソケット"
+          },
+          "name": "server_link.cpp  server_link.hpp",
+          "tree_name": "server_link.cpp server_link.hpp"
+        },
+        {
+          "desc": {
             "en": "component list and menuconfig pins",
             "es": "lista de componentes y pines de menuconfig",
             "it": "elenco dei componenti e pin di menuconfig",
@@ -175,8 +217,8 @@
             "zh": "设置、闸门、语音和文本",
             "ja": "設定、関門、音声、文言"
           },
-          "name": "test_hmi.cpp  CMakeLists.txt",
-          "tree_name": "test_hmi.cpp CMakeLists.txt"
+          "name": "test_hmi.cpp  test_workflow.cpp",
+          "tree_name": "test_hmi.cpp test_workflow.cpp"
         }
       ],
       "tree": {

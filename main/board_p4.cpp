@@ -3,6 +3,11 @@
 // this file has not been built or run on a module yet. GPL-3.0-or-later.
 #include "board.hpp"
 
+#include <dirent.h>
+#include <sys/stat.h>
+
+#include <cstdio>
+
 #include "bsp/esp-bsp.h"
 #include "driver/gpio.h"
 #include "esp_timer.h"
@@ -47,6 +52,59 @@ void read_hardware_stop(bool& wired, bool& pressed) {
 #else
     pressed = level != 0;
 #endif
+}
+
+void set_rotation(int degrees) {
+    lv_display_t* d = lv_display_get_default();
+    if (d == nullptr) return;
+    lv_display_set_rotation(d, degrees == 90 ? LV_DISPLAY_ROTATION_90 : LV_DISPLAY_ROTATION_0);
+}
+
+bool sd_mount() { return bsp_sdcard_mount() == ESP_OK; }
+
+std::vector<hmi::Entry> sd_list() {
+    std::vector<hmi::Entry> out;
+    DIR* dir = opendir(hmi::kSdMount);
+    if (dir == nullptr) return out;
+    while (dirent* e = readdir(dir)) {
+        hmi::Entry entry;
+        entry.name = e->d_name;
+        std::string path = std::string(hmi::kSdMount) + "/" + entry.name;
+        struct stat st;
+        if (stat(path.c_str(), &st) == 0) {
+            entry.folder = S_ISDIR(st.st_mode);
+            entry.size = static_cast<std::uint64_t>(st.st_size);
+        }
+        out.push_back(entry);
+    }
+    closedir(dir);
+    return hmi::sorted_listing(out);
+}
+
+bool sd_read(const std::string& name, std::string& out, std::size_t max_bytes) {
+    const std::string path = hmi::sd_path(name);
+    if (path.empty()) return false;
+    FILE* f = std::fopen(path.c_str(), "rb");
+    if (f == nullptr) return false;
+    out.clear();
+    char buf[512];
+    std::size_t n;
+    bool ok = true;
+    while ((n = std::fread(buf, 1, sizeof buf, f)) > 0) {
+        if (out.size() + n > max_bytes) { ok = false; break; }
+        out.append(buf, n);
+    }
+    std::fclose(f);
+    return ok;
+}
+
+bool sd_write(const std::string& name, const std::string& text) {
+    const std::string path = hmi::sd_path(name);
+    if (path.empty()) return false;
+    FILE* f = std::fopen(path.c_str(), "wb");
+    if (f == nullptr) return false;
+    const bool ok = std::fwrite(text.data(), 1, text.size(), f) == text.size();
+    return std::fclose(f) == 0 && ok;
 }
 
 std::uint32_t now_ms() { return static_cast<std::uint32_t>(esp_timer_get_time() / 1000); }

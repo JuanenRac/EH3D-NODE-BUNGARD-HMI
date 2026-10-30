@@ -20,6 +20,7 @@ enum class T : unsigned {
     JogX, JogY, JogZ, Spindle,
     AskMove, AskSpindle,
     WhyHardwareStop, WhyNotArmed, WhyVoiceOff, WhyNoStop, WhySpindle,
+    Feed, Progress, Tool, Jog,
     Count
 };
 
@@ -55,6 +56,10 @@ inline const Row& text_row(T t) {
         {"Spoken orders are off in the settings.", "Las órdenes por voz están desactivadas en los ajustes.", "Gli ordini vocali sono disattivati nelle impostazioni.", "Sprachbefehle sind in den Einstellungen aus.", "Les ordres vocaux sont désactivés dans les réglages.", "As ordens por voz estão desligadas nas definições.", "设置中已关闭语音指令。", "設定で音声命令がオフです。"},
         {"The hardware stop input is not wired.", "La entrada de paro por hardware no está cableada.", "L'ingresso di arresto hardware non è collegato.", "Der Hardware-Stopp-Eingang ist nicht verdrahtet.", "L'entrée d'arrêt matériel n'est pas câblée.", "A entrada de paragem por hardware não está ligada.", "硬件急停输入未接线。", "ハードウェア停止入力が配線されていません。"},
         {"The spindle is switched off in the settings.", "El husillo está desactivado en los ajustes.", "Il mandrino è disattivato nelle impostazioni.", "Die Spindel ist in den Einstellungen abgeschaltet.", "La broche est désactivée dans les réglages.", "O fuso está desligado nas definições.", "设置中已禁用主轴。", "設定でスピンドルが無効です。"},
+        {"Feed", "Avance", "Avanzamento", "Vorschub", "Avance", "Avanço", "进给", "送り"},
+        {"Progress", "Progreso", "Avanzamento lavoro", "Fortschritt", "Progression", "Progresso", "进度", "進行"},
+        {"Tool", "Herramienta", "Utensile", "Werkzeug", "Outil", "Ferramenta", "刀具", "工具"},
+        {"Jog", "Movimiento manual", "Spostamento manuale", "Tippbetrieb", "Jog", "Movimento manual", "点动", "ジョグ"},
     }};
     return rows[static_cast<std::size_t>(t)];
 }

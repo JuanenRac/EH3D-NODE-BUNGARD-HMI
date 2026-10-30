@@ -11,4 +11,8 @@ All notable changes to this project are documented here.
 - **Voice:** spoken alerts and a short fixed list of spoken orders in eight languages; the orders that only halt are understood inside a sentence, the ones that move or spin must be said whole.
 - **Eight languages:** English, Spanish, Italian, German, French, European Portuguese, Chinese and Japanese in the screens, the alerts and the orders.
 - **Firmware:** the ESP-IDF project for the ESP32-P4 module with the LVGL machine screen, the stop button, the confirmation window and the hardware-stop input (written; not built or run on a module yet).
-- **Tests:** one host test program with 598 checks.
+- **Standing up or lying down:** the setting `orientation` (`auto`, `landscape`, `portrait`) turns the picture of the panel; lying down the job, the plan view and the jog pad sit in three columns, standing up they stack, and a touch lands where the screen is touched.
+- **microSD card:** the drilling, routing, Gerber, DXF and ZIP files of the card are listed, a file is chosen and read, and reports are written; only plain file names are accepted.
+- **One more client of the server:** the screen reads the fleet every `poll_s` seconds, sends the chosen file as a job that waits ready, starts it through the gate, follows its progress and its stops for a tool change in real time, and keeps the answer of the server on the card.
+- **The look of the desktop program:** the Forge theme, cards with cut corners, chips in the top bar, the bar of the position with the round stop button, and a preview of the screens in the README drawn from the texts of the firmware.
+- **Tests:** two host test programs with 743 checks.

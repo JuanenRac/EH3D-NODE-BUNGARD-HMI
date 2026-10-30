@@ -18,7 +18,7 @@
 
 ---
 
-**Ehrlichkeitscheck - was heute läuft:** Die Regeln des Bildschirms sind in C++17 geschrieben und auf einem Computer getestet: die Einstellungsdatei mit sicheren Standardwerten, das Tor, das jede Bewegung und jeder Spindelbefehl passieren muss (eine Bestätigung auf dem Bildschirm, die Hardware-Stopp-Sperre, die scharfe Verbindung), die gesprochenen Befehle und Hinweise in acht Sprachen und die Texte der Bildschirme. Die ESP-IDF-Firmware mit den LVGL-Bildschirmen ist für das Modul Guition JC8012P4A1C geschrieben, **wurde aber weder gebaut noch geflasht noch auf einem Modul ausgeführt**; es gibt noch keine Verbindung zum Server oder zur Maschine, und nichts wurde an eine Maschine angeschlossen.
+**Ehrlichkeitscheck - was heute läuft:** Die Regeln des Bildschirms sind in C++17 geschrieben und auf einem Computer getestet: die Einstellungsdatei mit sicheren Standardwerten, das Tor, das jede Bewegung und jeder Spindelbefehl passieren muss (eine Bestätigung auf dem Bildschirm, die Hardware-Stopp-Sperre, die scharfe Verbindung), die gesprochenen Befehle und Hinweise in acht Sprachen, die Bildschirmtexte, die Hoch- und Querformat-Layouts, die Dateien der microSD-Karte und der Client von EH3D-SERVER (die Anfragen, das Lesen der Flotte und der Ablauf eines Auftrags von einer Datei der Karte bis zu seinem Ende). Die ESP-IDF-Firmware mit den LVGL-Bildschirmen ist für das Modul Guition JC8012P4A1C geschrieben, **wurde aber weder gebaut noch geflasht noch auf einem Modul ausgeführt**; sie hat nie mit einem echten Server gesprochen, und die Bewegungen der Maschine selbst (Tippen, Referenz) warten auf die Verbindung zum Knoten, die noch nicht geschrieben ist.
 
 ---
 
@@ -30,7 +30,7 @@
 |---|---|
 | Version | `0.0.1` |
 | Reifegrad | Gerüst |
-| Tests | 1 Host-Testprogramm (598 Prüfungen gezählt) |
+| Tests | 2 Host-Testprogramme (743 Prüfungen gezählt) |
 | Technologie-Stack | C++17, ESP-IDF 5.5, LVGL 9, ESP32-P4 |
 | Auf echter Hardware | Nein: die Firmware wurde weder gebaut noch geflasht, und nichts wurde an eine Maschine angeschlossen |
 
@@ -48,9 +48,10 @@ Jede Zeile ist ein Teil dieses Repositorys, und die Ampel sagt, wie weit er heut
 | Tests | 🟢 | 1 Host-Testprogramm besteht (`ctest`): 598 Prüfungen zu Einstellungsdatei, Tor, gesprochenen Befehlen und Hinweisen und den Bildschirmtexten in acht Sprachen. |
 | Sicherheitsregeln | 🟡 | Jede Bewegung und jeder Spindelbefehl läuft durch das Tor: Bestätigung auf dem Bildschirm, Hardware-Stopp-Sperre, die bei losgelassenem Taster nur eine Quittung auf dem Bildschirm löst, keine Bewegung bei nicht scharfer Verbindung. Durch Tests gedeckt; nie mit einem echten Stopp-Taster erprobt. |
 | Sprache | 🟡 | Gesprochene Befehle und Hinweise werden in acht Sprachen erkannt und formuliert und als Text getestet; es wurde kein Mikrofon und kein Lautsprecher benutzt. |
-| Bildschirme | 🟠 | Der Maschinenbildschirm (Tippen, Referenz, Spindel, Start, Stopp, Bestätigung, Hardware-Stopp-Banner) ist geschrieben; die Reiter Ansicht, Auftrag, Maschinen und Stationen und Einstellungen sind noch leere Seiten. |
+| Bildschirme | 🟠 | Die Bildschirme Maschine, Auftrag (microSD), Maschinen und Stationen und Einstellungen sind geschrieben, im Quer- und im Hochformat, im Aussehen des Desktop-Programms; der Reiter Ansicht ist noch eine leere Karte. Es gibt nur eine Zeichnung des Layouts, keine Aufnahme eines Moduls. |
 | Echte Hardware | 🔴 | Kein Modul hat diese Firmware ausgeführt, die Verbindung zum Server gibt es noch nicht, und nichts wurde an eine Maschine angeschlossen. |
 | Dokumentation | 🟢 | README in acht Sprachen, die Einstellungsreferenz und die Hardware-Hinweise. |
+| Server und Karte | 🟡 | Die Dateien der microSD-Karte (Liste, sichere Namen, Arten), die Anfragen an EH3D-SERVER, das Lesen der Flotte und der Ablauf eines Auftrags (bereit senden, über das Tor starten, verfolgen, den Werkzeugwechsel beantworten) sind auf einem Computer mit aufgeschriebenen Serverantworten getestet; die Sockets und der Kartentreiber liefen nie auf einem Modul. |
 
 ## 🎯 Überblick
 
@@ -59,10 +60,12 @@ Jede Zeile ist ein Teil dieses Repositorys, und die Ampel sagt, wie weit er heut
 * Die **Sprache**: gesprochene Hinweise (Auftrag fertig, Werkzeugwechsel, Fehler, Verbindung verloren, Hardware-Stopp) und eine kurze feste Liste gesprochener Befehle in acht Sprachen; Befehle, die nur anhalten, werden auch in einem Satz verstanden, die zum Bewegen oder Drehen müssen vollständig gesagt werden und verlangen immer eine Bestätigung.
 * Die **Bildschirme**: die Maschine (Tippen, Referenz, Spindel, Start, Stopp), der Auftrag, die Ansicht, die Maschinen und Stationen des Servers und die Einstellungen, in der Reihenfolge und mit den Namen des Desktop-Programms; der Stopp-Knopf ist immer oben.
 * Das **Modul**: das Guition JC8012P4A1C (ESP32-P4 mit 32 MB externem RAM, 10,1-Zoll-MIPI-DSI-Touchdisplay mit 800x1280, ein ESP32-C6 für WLAN, der Codec ES8311 mit Lautsprecherverstärker und der Mikrofoneingang ES7210). Das Panel der Einheit ist das neue.
+* **Hoch- oder Querformat:** die Einstellung `orientation` (`auto`, `landscape`, `portrait`) dreht das Bild des Panels: im Querformat (1280 x 800) stehen Auftrag, Draufsicht und Tipp-Pad in drei Spalten über der Positionsleiste, im Hochformat (800 x 1280) sind sie gestapelt; die Berührung trifft in beiden dort, wo der Bildschirm berührt wird.
+* **microSD und Server als ein Ablauf:** die Karte listet die Bohr- und Fräsdateien; der Bildschirm sendet die gewählte Datei als bereit wartenden Auftrag an EH3D-SERVER, der Bediener startet ihn über das Tor, und Fortschritt, Halte für den Werkzeugwechsel und das Ende kommen in Echtzeit aus der Flotte zurück, wie bei den Desktop-Programmen und dem Knoten. Die Antwort des Servers zu jedem Auftrag wird auf der Karte gespeichert.
 
 ## 🧩 Rolle in EH3D
 
-EH3D-NODE-BUNGARD-HMI ist der eigene Bildschirm des Bedieners für eine Bungard-CCD-Maschine: Er ersetzt den PC neben der Maschine. Er soll die Maschine über EH3D-SERVER oder über EH3D-NODE-BUNGARD (den Knoten am seriellen Anschluss der Maschine) steuern, wie es EH3D-DRILLPRO und EH3D-ROUTEPRO tun. Diese Verbindung ist noch nicht geschrieben.
+EH3D-NODE-BUNGARD-HMI ist der eigene Bildschirm des Bedieners für eine Bungard-CCD-Maschine: Er ersetzt den PC neben der Maschine und ist ein weiterer Client von EH3D-SERVER, wie EH3D-DRILLPRO, EH3D-ROUTEPRO und EH3D-BUNGARD-GUI. Ein Auftrag, den der Bildschirm von der microSD-Karte sendet, wird vom Server geplant und ist im selben Moment in den Desktop-Programmen; ein von einem Desktop-Programm gestarteter Auftrag zeigt hier seinen Fortschritt; der Server führt ihn über EH3D-NODE-BUNGARD an der Maschine aus. Die direkten Bewegungen des Bildschirms (Tippen, Referenz) werden denselben Knoten nutzen, und diese Verbindung ist noch nicht geschrieben.
 
 ## 🏛️ Architektur
 
@@ -75,22 +78,40 @@ Wie die Teile dieses Repositorys zusammenpassen: wer mit ihm spricht, was es ent
 ## 🖼️ Screenshots
 
 <p align="center">
-  <img src="images/screenshots/screen-machine.png" alt="machine screen" width="40%">
+  <img src="images/screenshots/screen-machine.png" alt="machine screen lying down" width="100%">
 </p>
 
-<p align="center"><em>Der Maschinenbildschirm auf Englisch: der Stopp-Knopf immer oben, dann Tippen, Referenz, Spindel und Start. Eine Zeichnung des Layouts aus den Texten der Firmware, keine Aufnahme eines Moduls.</em></p>
+<p align="center"><em>Der Maschinenbildschirm im Querformat, auf Englisch: der Auftrag, die Draufsicht und das Tipp-Pad in drei Spalten, die Position und der Stopp-Knopf in der Leiste. Eine Zeichnung des Layouts aus den Texten der Firmware, keine Aufnahme eines Moduls.</em></p>
 
 <p align="center">
-  <img src="images/screenshots/screen-confirm.png" alt="confirmation of a move" width="40%">
+  <img src="images/screenshots/screen-portrait.png" alt="machine screen standing up" width="40%">
+</p>
+
+<p align="center"><em>Derselbe Bildschirm im Hochformat, auf Deutsch: die Karten sind gestapelt und die Positionsleiste bleibt unten.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/screen-card.png" alt="files of the microSD card" width="100%">
+</p>
+
+<p align="center"><em>Die Auftragsseite (hier auf Italienisch): die Bohr- und Fräsdateien der microSD-Karte, die gewählte Datei und der Knopf, der sie als bereit wartenden Auftrag an den Server sendet.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/screen-fleet.png" alt="machines and stations" width="100%">
+</p>
+
+<p align="center"><em>Maschinen und Stationen (hier auf Portugiesisch): alle Maschinen des Servers nach Station, mit Zustand und Fortschritt ihres Auftrags, so wie die Desktop-Programme sie sehen.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/screen-confirm.png" alt="confirmation of a move" width="100%">
 </p>
 
 <p align="center"><em>Eine Bewegung verlangt eine Bestätigung, bevor etwas geschieht (hier auf Spanisch).</em></p>
 
 <p align="center">
-  <img src="images/screenshots/screen-stop.png" alt="hardware stop pressed" width="40%">
+  <img src="images/screenshots/screen-stop.png" alt="hardware stop pressed" width="100%">
 </p>
 
-<p align="center"><em>Der Hardware-Stopp ist gedrückt: Der Bildschirm sagt es und bewegt nichts, bis das Lösen quittiert ist (hier auf Japanisch).</em></p>
+<p align="center"><em>Der Hardware-Stopp ist gedrückt: Der Bildschirm sagt es, dimmt die Knöpfe, die bewegen, und bewegt nichts, bis das Lösen quittiert ist (hier auf Japanisch).</em></p>
 
 ## ✨ Funktionen
 
@@ -120,6 +141,8 @@ Wie die Teile dieses Repositorys zusammenpassen: wer mit ihm spricht, was es ent
 | Hardware-Stopp-Eingang | ein GPIO (`HMI_HW_STOP_GPIO` in menuconfig, standardmäßig aktiv niedrig, mit Pull-up, damit ein offenes Kabel als gedrückt gilt) | `main/board_p4.cpp` |
 | Touchdisplay | 800x1280 MIPI-DSI über LVGL 9 | `main/ui.cpp` |
 | Ton | Codec ES8311 mit Lautsprecherverstärker und Mikrofoneingang ES7210 | `main/board_p4.cpp` |
+| microSD | die Wurzel der Karte unter `/sdcard`: Bohr-, Fräs-, Gerber-, DXF- und ZIP-Dateien werden gelistet und gelesen, Berichte geschrieben; nur einfache Dateinamen werden angenommen | `core/sdfiles.hpp`, `main/board_p4.cpp` |
+| EH3D-SERVER | HTTP mit dem Zugriffstoken: `GET /api/v1/fleet` alle `poll_s` Sekunden, `POST /api/v1/machines/:id/jobs`, `POST /api/v1/jobs/:id/start`, `confirm` und `cancel` | `core/server_link.hpp`, `main/server_link.cpp` |
 
 ## ⚙️ Konfiguration
 
@@ -136,6 +159,8 @@ Alles Abgestimmte ist eine Zeile in `hmi.cfg` (kopiere `hmi.cfg.example` in die 
 | `voice_orders` | off | on / off | nimmt gesprochene Befehle an |
 | `voice_confirm` | off | on / off | nimmt ein gesprochenes Ja als Bestätigung einer Bewegung an |
 | `token` | none | 8 - 64 characters | das Zugriffstoken des Servers; nur schreibbar, nie angezeigt oder protokolliert |
+| `orientation` | `auto` | `auto landscape portrait` | Hoch- oder Querformat; `auto` folgt der Einbaulage des Moduls |
+| `poll_s` | 3 | 1 - 60 | wie oft der Bildschirm die Flotte beim Server abfragt |
 
 ## 🚀 Schnellstart
 
@@ -150,7 +175,7 @@ Die Firmware wurde noch nicht gebaut: wenn es so weit ist, erzeugt `idf.py set-t
 
 ## 🧪 Tests
 
-Die Host-Tests (`build.bat` oder `./build.sh`, dann `ctest`) sind ein Programm, `test_hmi`, und es besteht vollständig: 598 Prüfungen zur Einstellungsdatei (Standardwerte, Bereiche, Fehler, Zeilenenden), zum Tor (Stopp geht immer, Hardware-Stopp-Sperre, Bestätigung, Zeitlimit und Uhrenüberlauf, Sprachregeln, Schalter), zu den gesprochenen Befehlen und Hinweisen in acht Sprachen und zu den Bildschirmtexten.
+Die Host-Tests (`build.bat` oder `./build.sh`, dann `ctest`) sind zwei Programme und alles besteht: `test_hmi` (638 Prüfungen) zu Einstellungsdatei, Tor (Stopp geht immer, Hardware-Stopp-Sperre, Bestätigung, Zeitlimit und Uhrenüberlauf, Sprachregeln, Schalter), gesprochenen Befehlen und Hinweisen und Bildschirmtexten in acht Sprachen; und `test_workflow` (105 Prüfungen) zu Ausrichtung und Berührung, Dateien der Karte (Arten, sichere Namen, Sortierung), JSON-Leser, Anfragen und Antworten des Servers und dem Ablauf eines Auftrags von der Karte bis zum Ende.
 
 ## 🏗️ Build und Veröffentlichung
 
@@ -180,11 +205,14 @@ EH3D-NODE-BUNGARD-HMI/
 │   ├── hmi_config.hpp lang.hpp                  die Einstellungsdatei und ihre sicheren Standardwerte
 │   ├── gate.hpp                                 das Tor: Bestätigung, Stopp-Sperre
 │   ├── voice.hpp                                gesprochene Befehle und Hinweise in acht Sprachen
+│   ├── orientation.hpp sdfiles.hpp              Hoch- und Querformat, Dateien der Karte
+│   ├── server_link.hpp workflow.hpp             Client des Servers und Ablauf eines Auftrags
 │   └── ui_text.hpp                              die Bildschirmtexte in acht Sprachen
 ├── main/
 │   ├── app_main.cpp                             Start, Einstellungen, die Schleife des Tors
 │   ├── ui.cpp ui.hpp                            die LVGL-Bildschirme und der Stopp-Knopf
 │   ├── board_p4.cpp board.hpp                   das Modul: Display, Ton, Stopp-Eingang
+│   ├── server_link.cpp server_link.hpp          die Sockets des Server-Clients
 │   └── idf_component.yml Kconfig.projbuild      Komponentenliste und menuconfig-Pins
 ├── tests/                                       Host-Tests von Einstellungen, Tor, Sprache und Bildschirmtexten
 ├── docs/                                        die Hardware-Hinweise und die Quellen der beiden Bilder
@@ -210,7 +238,7 @@ EH3D-NODE-BUNGARD-HMI/
 **Bekannte Grenzen heute**
 
 * Nichts hat auf einem Modul gelaufen: Die Firmware wurde weder gebaut noch geflasht noch erprobt, und das verlangte Board-Support-Paket braucht für dieses Modul vielleicht Änderungen.
-* Es gibt noch keine Verbindung zu EH3D-SERVER oder zum Knoten der Maschine, daher können die Bildschirme keine Maschine bewegen; die Reiter Ansicht, Auftrag, Maschinen und Stationen und Einstellungen sind leere Seiten.
+* Der Bildschirm erreicht die Maschine nur über einen Auftrag von EH3D-SERVER; seine eigenen Bewegungen (Tippen, Referenz, Spindel) fragen das Tor und warten dann auf die Verbindung zum Knoten, die noch nicht geschrieben ist. Der Client des Servers und die Karte liefen nie auf einem Modul.
 * Der Pin des Hardware-Stopps und der Touch-Controller sind noch nicht festgelegt: Sie müssen am Schaltplan der Einheit geprüft werden.
 * Spracherkenner und Lautsprecher sind noch nicht in der Firmware; Befehle und Hinweise werden als Text getestet.
 * Die Logik der Desktop-Programme (Formate, Controller, Flotte) wird nicht wiederverwendet: Die Bildschirme folgen dem Desktop-Programm, die Regeln sind aber in C++ neu geschrieben.

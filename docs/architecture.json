@@ -89,7 +89,7 @@
       "level": "untested",
       "title": "Guition ESP32-P4 module",
       "lines": [
-        "10.1-inch MIPI-DSI touch, codec,",
+        "10.1-inch touch, microSD, codec,",
         "microphone; never flashed"
       ],
       "code": [
@@ -102,8 +102,8 @@
       "level": "untested",
       "title": "EH3D-SERVER or node",
       "lines": [
-        "moves the machine; the link",
-        "is not written yet"
+        "plans and runs the jobs; the",
+        "client is written, never run"
       ],
       "code": [
         "docs/HARDWARE.md"

@@ -18,7 +18,7 @@
 
 ---
 
-**Verifica di onestà - cosa gira oggi:** le regole dello schermo sono scritte in C++17 e provate su un computer: il file delle impostazioni con i valori sicuri di default, il varco che ogni movimento e ogni ordine al mandrino deve superare (una conferma sullo schermo, il blocco dell'arresto hardware, il collegamento armato), gli ordini e gli avvisi vocali in otto lingue e i testi delle schermate. Il firmware ESP-IDF con le schermate LVGL è scritto per il modulo Guition JC8012P4A1C ma **non è stato compilato, scritto né eseguito su un modulo**, non c'è ancora il collegamento con il server o la macchina e nulla è stato collegato a una macchina.
+**Verifica di onestà - cosa gira oggi:** le regole dello schermo sono scritte in C++17 e provate su un computer: il file delle impostazioni con i valori sicuri di default, il varco che ogni movimento e ogni ordine al mandrino deve superare (una conferma sullo schermo, il blocco dell'arresto hardware, il collegamento armato), gli ordini e gli avvisi vocali in otto lingue, i testi delle schermate, i layout in verticale e in orizzontale, i file della microSD e il client di EH3D-SERVER (le richieste, la lettura della flotta e il flusso di un lavoro da un file della scheda fino alla fine). Il firmware ESP-IDF con le schermate LVGL è scritto per il modulo Guition JC8012P4A1C ma **non è stato compilato, scritto né eseguito su un modulo**; non ha mai parlato con un server reale, e i movimenti della macchina stessa (spostamento, origine) aspettano il collegamento con il nodo, non ancora scritto.
 
 ---
 
@@ -30,7 +30,7 @@
 |---|---|
 | Versione | `0.0.1` |
 | Maturità | Impalcatura |
-| Test | 1 programma di test sul computer (598 controlli contati) |
+| Test | 2 programmi di test sul computer (743 controlli contati) |
 | Stack tecnologico | C++17, ESP-IDF 5.5, LVGL 9, ESP32-P4 |
 | Su hardware reale | No: il firmware non è stato compilato né scritto e nulla è stato collegato a una macchina |
 
@@ -48,9 +48,10 @@ Ogni riga è una parte di questo repository e il semaforo dice a che punto è og
 | Test | 🟢 | 1 programma di test sul computer passa (`ctest`): 598 controlli sul file delle impostazioni, il varco, gli ordini e gli avvisi vocali e i testi delle schermate in otto lingue. |
 | Regole di sicurezza | 🟡 | Ogni movimento e ogni ordine al mandrino passa dal varco: conferma sullo schermo, blocco dell'arresto hardware che solo una conferma sullo schermo toglie a pulsante rilasciato, nessun movimento con il collegamento non armato. Coperto da test; mai provato con un vero pulsante di arresto. |
 | Voce | 🟡 | Ordini e avvisi vocali sono riconosciuti e formulati in otto lingue e provati come testo; nessun microfono o altoparlante è stato usato. |
-| Schermate | 🟠 | La schermata della macchina (spostamento, origine, mandrino, avvio, arresto, conferma, avviso di arresto hardware) è scritta; le schede vista, lavoro, macchine e stazioni e impostazioni sono ancora pagine vuote. |
+| Schermate | 🟠 | Le schermate macchina, lavoro (microSD), macchine e stazioni e impostazioni sono scritte, in orizzontale e in verticale, con l'aspetto del programma desktop; la scheda della vista è ancora una scheda vuota. Esiste solo un disegno del layout, non una cattura di un modulo. |
 | Hardware reale | 🔴 | Nessun modulo ha eseguito questo firmware, il collegamento con il server non esiste ancora e nulla è stato collegato a una macchina. |
 | Documentazione | 🟢 | README in otto lingue, il riferimento delle impostazioni e le note hardware. |
+| Server e scheda | 🟡 | I file della microSD (elenco, nomi sicuri, tipi), le richieste a EH3D-SERVER, la lettura della flotta e il flusso di un lavoro (inviarlo pronto, avviarlo dal varco, seguirlo, rispondere al cambio utensile) sono provati su un computer con risposte del server scritte a mano; i socket e il driver della scheda non hanno mai girato su un modulo. |
 
 ## 🎯 Panoramica
 
@@ -59,10 +60,12 @@ Ogni riga è una parte di questo repository e il semaforo dice a che punto è og
 * La **voce**: avvisi parlati (lavoro finito, cambio utensile, errore, collegamento perso, arresto hardware) e un breve elenco fisso di ordini vocali in otto lingue; gli ordini che fermano soltanto si capiscono dentro una frase, quelli che muovono o girano vanno detti per intero e chiedono sempre una conferma.
 * Le **schermate**: la macchina (spostamento, origine, mandrino, avvio, arresto), il lavoro, la vista, le macchine e stazioni del server e le impostazioni, nell'ordine e con i nomi del programma desktop; il pulsante di arresto è sempre in alto.
 * Il **modulo**: il Guition JC8012P4A1C (ESP32-P4 con 32 MB di RAM esterna, display touch MIPI-DSI da 10,1 pollici 800x1280, un ESP32-C6 per il Wi-Fi, il codec ES8311 con amplificatore per altoparlante e l'ingresso microfono ES7210). Il pannello dell'unità è quello nuovo.
+* **In piedi o sdraiato:** l'impostazione `orientation` (`auto`, `landscape`, `portrait`) ruota l'immagine del pannello: in orizzontale (1280 x 800) il lavoro, la vista in pianta e il pad di spostamento stanno in tre colonne sopra la barra di posizione, in verticale (800 x 1280) si impilano; il tocco cade dove si tocca lo schermo in entrambi.
+* **La microSD e il server, come un solo flusso:** la scheda elenca i file di foratura e fresatura; lo schermo invia il file scelto a EH3D-SERVER come lavoro che aspetta pronto, l'operatore lo avvia dal varco, e l'avanzamento, le soste per il cambio utensile e la fine tornano dalla flotta in tempo reale, come nei programmi desktop e nel nodo. La risposta del server per ogni lavoro viene salvata sulla scheda.
 
 ## 🧩 Ruolo in EH3D
 
-EH3D-NODE-BUNGARD-HMI è lo schermo dell'operatore di una macchina Bungard CCD: prende il posto del PC accanto alla macchina. È pensato per comandare la macchina tramite EH3D-SERVER o EH3D-NODE-BUNGARD (il nodo sulla porta seriale della macchina), come fanno EH3D-DRILLPRO ed EH3D-ROUTEPRO. Quel collegamento non è ancora scritto.
+EH3D-NODE-BUNGARD-HMI è lo schermo dell'operatore di una macchina Bungard CCD: prende il posto del PC accanto alla macchina ed è un client in più di EH3D-SERVER, come EH3D-DRILLPRO, EH3D-ROUTEPRO ed EH3D-BUNGARD-GUI. Un lavoro che lo schermo invia dalla microSD è pianificato dal server ed è nello stesso istante nei programmi desktop; un lavoro avviato da un programma desktop mostra qui il suo avanzamento; il server lo esegue sulla macchina tramite EH3D-NODE-BUNGARD. I movimenti diretti dello schermo (spostamento, origine) useranno lo stesso nodo, e quel collegamento non è ancora scritto.
 
 ## 🏛️ Architettura
 
@@ -75,22 +78,40 @@ Come si incastrano le parti di questo repository: chi parla con esso, cosa conti
 ## 🖼️ Schermate
 
 <p align="center">
-  <img src="images/screenshots/screen-machine.png" alt="machine screen" width="40%">
+  <img src="images/screenshots/screen-machine.png" alt="machine screen lying down" width="100%">
 </p>
 
-<p align="center"><em>La schermata della macchina in inglese: il pulsante di arresto sempre in alto, poi spostamento, origine, mandrino e avvio. Un disegno del layout fatto con i testi del firmware, non una cattura di un modulo.</em></p>
+<p align="center"><em>La schermata della macchina in orizzontale, in inglese: il lavoro, la vista in pianta e il pad di spostamento in tre colonne, la posizione e il pulsante di arresto sulla barra. Un disegno del layout fatto con i testi del firmware, non una cattura di un modulo.</em></p>
 
 <p align="center">
-  <img src="images/screenshots/screen-confirm.png" alt="confirmation of a move" width="40%">
+  <img src="images/screenshots/screen-portrait.png" alt="machine screen standing up" width="40%">
+</p>
+
+<p align="center"><em>La stessa schermata in verticale, in tedesco: le schede si impilano e la barra di posizione resta in basso.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/screen-card.png" alt="files of the microSD card" width="100%">
+</p>
+
+<p align="center"><em>La pagina del lavoro (qui in italiano): i file di foratura e fresatura della microSD, quello scelto e il pulsante che lo invia al server come lavoro che aspetta pronto.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/screen-fleet.png" alt="machines and stations" width="100%">
+</p>
+
+<p align="center"><em>Macchine e stazioni (qui in portoghese): tutte le macchine del server per stazione, con il loro stato e l'avanzamento del lavoro, come le vedono i programmi desktop.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/screen-confirm.png" alt="confirmation of a move" width="100%">
 </p>
 
 <p align="center"><em>Un movimento chiede una conferma prima che accada qualcosa (qui in spagnolo).</em></p>
 
 <p align="center">
-  <img src="images/screenshots/screen-stop.png" alt="hardware stop pressed" width="40%">
+  <img src="images/screenshots/screen-stop.png" alt="hardware stop pressed" width="100%">
 </p>
 
-<p align="center"><em>L'arresto hardware è premuto: lo schermo lo dice e si rifiuta di muovere qualsiasi cosa finché il rilascio non è confermato (qui in giapponese).</em></p>
+<p align="center"><em>L'arresto hardware è premuto: lo schermo lo dice, attenua i pulsanti che muovono e si rifiuta di muovere qualsiasi cosa finché il rilascio non è confermato (qui in giapponese).</em></p>
 
 ## ✨ Funzionalità
 
@@ -120,6 +141,8 @@ Come si incastrano le parti di questo repository: chi parla con esso, cosa conti
 | Ingresso arresto hardware | un GPIO (`HMI_HW_STOP_GPIO` in menuconfig, attivo basso di default, con pull-up così un filo aperto vale come premuto) | `main/board_p4.cpp` |
 | Display touch | MIPI-DSI 800x1280 tramite LVGL 9 | `main/ui.cpp` |
 | Suono | codec ES8311 con amplificatore per altoparlante e ingresso microfono ES7210 | `main/board_p4.cpp` |
+| microSD | la radice della scheda in `/sdcard`: si elencano e leggono file di foratura, fresatura, Gerber, DXF e ZIP e si scrivono rapporti; si accettano solo nomi di file semplici | `core/sdfiles.hpp`, `main/board_p4.cpp` |
+| EH3D-SERVER | HTTP con il token di accesso: `GET /api/v1/fleet` ogni `poll_s` secondi, `POST /api/v1/machines/:id/jobs`, `POST /api/v1/jobs/:id/start`, `confirm` e `cancel` | `core/server_link.hpp`, `main/server_link.cpp` |
 
 ## ⚙️ Configurazione
 
@@ -136,6 +159,8 @@ Tutto ciò che si regola è una riga di `hmi.cfg` (copia `hmi.cfg.example` nella
 | `voice_orders` | off | on / off | accetta ordini vocali |
 | `voice_confirm` | off | on / off | accetta un sì parlato come conferma di un movimento |
 | `token` | none | 8 - 64 characters | il token di accesso al server; solo scrittura, mai mostrato né registrato |
+| `orientation` | `auto` | `auto landscape portrait` | in verticale o in orizzontale; `auto` segue come è montato il modulo |
+| `poll_s` | 3 | 1 - 60 | ogni quanto lo schermo chiede la flotta al server |
 
 ## 🚀 Avvio rapido
 
@@ -150,7 +175,7 @@ Il firmware non è ancora stato compilato: quando lo sarà, `idf.py set-target e
 
 ## 🧪 Test
 
-I test sul computer (`build.bat` o `./build.sh`, poi `ctest`) sono un programma, `test_hmi`, e passa tutto: 598 controlli sul file delle impostazioni (default, intervalli, errori, fine riga), il varco (l'arresto passa sempre, blocco dell'arresto hardware, conferma, tempo limite e giro dell'orologio, regole vocali, interruttori), gli ordini e gli avvisi vocali in otto lingue e i testi delle schermate.
+I test sul computer (`build.bat` o `./build.sh`, poi `ctest`) sono due programmi e passa tutto: `test_hmi` (638 controlli) su file delle impostazioni, varco (l'arresto passa sempre, blocco dell'arresto hardware, conferma, tempo limite e giro dell'orologio, regole vocali, interruttori), ordini e avvisi vocali e testi delle schermate in otto lingue; e `test_workflow` (105 controlli) su orientamento e tocco, file della scheda (tipi, nomi sicuri, ordinamento), lettore JSON, richieste e risposte del server e flusso di un lavoro dalla scheda alla fine.
 
 ## 🏗️ Compilazione e rilascio
 
@@ -180,11 +205,14 @@ EH3D-NODE-BUNGARD-HMI/
 │   ├── hmi_config.hpp lang.hpp                  il file delle impostazioni e i suoi valori sicuri
 │   ├── gate.hpp                                 il varco: conferma, blocco dell'arresto
 │   ├── voice.hpp                                ordini e avvisi vocali in otto lingue
+│   ├── orientation.hpp sdfiles.hpp              layout verticale e orizzontale, file della scheda
+│   ├── server_link.hpp workflow.hpp             client del server e flusso di un lavoro
 │   └── ui_text.hpp                              i testi delle schermate in otto lingue
 ├── main/
 │   ├── app_main.cpp                             avvio, impostazioni, il ciclo del varco
 │   ├── ui.cpp ui.hpp                            le schermate LVGL e il pulsante di arresto
 │   ├── board_p4.cpp board.hpp                   il modulo: display, suono, ingresso di arresto
+│   ├── server_link.cpp server_link.hpp          i socket del client del server
 │   └── idf_component.yml Kconfig.projbuild      elenco dei componenti e pin di menuconfig
 ├── tests/                                       test su computer di impostazioni, varco, voce e testi delle schermate
 ├── docs/                                        le note hardware e le fonti dei due disegni
@@ -210,7 +238,7 @@ EH3D-NODE-BUNGARD-HMI/
 **Limiti noti oggi**
 
 * Nulla ha girato su un modulo: il firmware non è stato compilato, scritto né provato, e il pacchetto di supporto scheda richiesto potrebbe richiedere modifiche per questo modulo.
-* Non c'è ancora il collegamento con EH3D-SERVER né con il nodo della macchina, quindi le schermate non possono muovere una macchina; le schede vista, lavoro, macchine e stazioni e impostazioni sono pagine vuote.
+* Lo schermo raggiunge la macchina solo tramite un lavoro di EH3D-SERVER; i suoi movimenti diretti (spostamento, origine, mandrino) passano dal varco e poi aspettano il collegamento con il nodo, non ancora scritto. Il client del server e la scheda non hanno mai girato su un modulo.
 * Il pin dell'arresto hardware e il controller touch non sono ancora fissati: vanno verificati sullo schema dell'unità.
 * Il riconoscitore vocale e l'altoparlante non sono ancora nel firmware; ordini e avvisi sono provati come testo.
 * La logica dei programmi desktop (formati, controller, flotta) non è riutilizzata: le schermate seguono il programma desktop, ma le regole sono riscritte in C++.

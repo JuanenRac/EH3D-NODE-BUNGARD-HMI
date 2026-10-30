@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "lang.hpp"
+#include "orientation.hpp"
 
 namespace hmi {
 
@@ -16,6 +17,7 @@ struct Settings {
     // the screen
     Lang language = Lang::En;
     std::string theme = "forge";
+    Orientation orientation = Orientation::Auto;  // auto, landscape or portrait
     std::uint16_t brightness_percent = 80;  // 10..100
     std::uint32_t idle_dim_s = 120;         // 0 (never) .. 3600
 
@@ -24,6 +26,7 @@ struct Settings {
     std::uint16_t server_port = 8080;       // 1..65535
     std::string server_machine;             // the machine of the server this screen controls
     std::string token;                      // write-only: never shown, never logged
+    std::uint32_t poll_s = 3;               // how often the screen asks the server for the fleet, 1..60
 
     // the safety switches; every default is the conservative one
     bool confirm_moves = true;              // a move or a spindle order asks for a confirmation on the screen
@@ -113,6 +116,11 @@ inline Settings parse_settings(const std::string& text, std::vector<Problem>& pr
             if (lang_from_code(val, l)) s.language = l; else bad("not one of en, es, it, de, fr, pt, zh, ja");
         } else if (key == "theme") {
             s.theme = val;
+        } else if (key == "orientation") {
+            Orientation o;
+            if (orientation_from_text(val, o)) s.orientation = o; else bad("not auto, landscape or portrait");
+        } else if (key == "poll_s") {
+            if (num(1, 60)) s.poll_s = n;
         } else if (key == "brightness_percent") {
             if (num(10, 100)) s.brightness_percent = static_cast<std::uint16_t>(n);
         } else if (key == "idle_dim_s") {

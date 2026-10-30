@@ -3,6 +3,10 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
+#include <vector>
+
+#include "../core/sdfiles.hpp"
 
 namespace board {
 
@@ -17,6 +21,16 @@ void set_brightness(unsigned percent);
 bool audio_start();
 /// Reads the hardware stop input: `wired` is false when no pin is set.
 void read_hardware_stop(bool& wired, bool& pressed);
+/// Turns the picture to the layout: 0 (standing up) or 90 degrees (lying down).
+void set_rotation(int degrees);
+/// Mounts the microSD card; false when there is no card or it cannot be read.
+bool sd_mount();
+/// The files of the card (the root folder), as the list shows them.
+std::vector<hmi::Entry> sd_list();
+/// Reads a file of the card whole (at most `max_bytes`); the name must be a safe one.
+bool sd_read(const std::string& name, std::string& out, std::size_t max_bytes);
+/// Writes a file on the card (replacing it); the name must be a safe one.
+bool sd_write(const std::string& name, const std::string& text);
 /// Milliseconds since start (it wraps around after 49 days; the gate compares differences).
 std::uint32_t now_ms();
 

@@ -18,7 +18,7 @@
 
 ---
 
-**Vérification d'honnêteté - ce qui tourne aujourd'hui :** les règles de l'écran sont écrites en C++17 et testées sur un ordinateur : le fichier de réglages avec ses valeurs sûres par défaut, la porte que tout déplacement et tout ordre de broche doit franchir (une confirmation à l'écran, le verrou de l'arrêt matériel, la liaison armée), les ordres et alertes vocaux en huit langues et les textes des écrans. Le firmware ESP-IDF avec les écrans LVGL est écrit pour le module Guition JC8012P4A1C mais **n'a pas été compilé, flashé ni exécuté sur un module**, il n'y a pas encore de liaison avec le serveur ou la machine et rien n'a été branché sur une machine.
+**Vérification d'honnêteté - ce qui tourne aujourd'hui :** les règles de l'écran sont écrites en C++17 et testées sur un ordinateur : le fichier de réglages avec ses valeurs sûres par défaut, la porte que tout déplacement et tout ordre de broche doit franchir (une confirmation à l'écran, le verrou de l'arrêt matériel, la liaison armée), les ordres et alertes vocaux en huit langues, les textes des écrans, les dispositions en portrait et en paysage, les fichiers de la microSD et le client d'EH3D-SERVER (les requêtes, la lecture de la flotte et le déroulement d'un travail depuis un fichier de la carte jusqu'à sa fin). Le firmware ESP-IDF avec les écrans LVGL est écrit pour le module Guition JC8012P4A1C mais **n'a pas été compilé, flashé ni exécuté sur un module** ; il n'a jamais parlé à un vrai serveur, et les déplacements de la machine elle-même (jog, origine) attendent la liaison avec le nœud, pas encore écrite.
 
 ---
 
@@ -30,7 +30,7 @@
 |---|---|
 | Version | `0.0.1` |
 | Maturité | Échafaudage |
-| Tests | 1 programme de test sur ordinateur (598 vérifications comptées) |
+| Tests | 2 programmes de test sur ordinateur (743 vérifications comptées) |
 | Pile technique | C++17, ESP-IDF 5.5, LVGL 9, ESP32-P4 |
 | Sur du matériel réel | Non : le firmware n'a été ni compilé ni flashé et rien n'a été branché sur une machine |
 
@@ -48,9 +48,10 @@ Chaque ligne est une partie de ce dépôt et le feu dit où elle en est aujourd'
 | Tests | 🟢 | 1 programme de test sur ordinateur réussit (`ctest`) : 598 vérifications du fichier de réglages, de la porte, des ordres et alertes vocaux et des textes des écrans en huit langues. |
 | Règles de sécurité | 🟡 | Tout déplacement et tout ordre de broche passent par la porte : confirmation à l'écran, verrou de l'arrêt matériel que seul un acquittement à l'écran lève une fois le bouton relâché, aucun déplacement si la liaison n'est pas armée. Couvert par des tests ; jamais essayé avec un vrai bouton d'arrêt. |
 | Voix | 🟡 | Les ordres et alertes vocaux sont reconnus et formulés en huit langues et testés comme du texte ; aucun micro ni haut-parleur n'a été utilisé. |
-| Écrans | 🟠 | L'écran de la machine (jog, origine, broche, démarrage, arrêt, confirmation, bandeau d'arrêt matériel) est écrit ; les onglets vue, travail, machines et stations et réglages sont encore des pages vides. |
+| Écrans | 🟠 | Les écrans machine, travail (microSD), machines et stations et réglages sont écrits, en paysage et en portrait, avec l'aspect du programme de bureau ; l'onglet vue est encore une carte vide. Il n'existe qu'un dessin de la mise en page, pas une capture d'un module. |
 | Matériel réel | 🔴 | Aucun module n'a exécuté ce firmware, la liaison avec le serveur n'existe pas encore et rien n'a été branché sur une machine. |
 | Documentation | 🟢 | README en huit langues, la référence des réglages et les notes matérielles. |
+| Serveur et carte | 🟡 | Les fichiers de la microSD (liste, noms sûrs, types), les requêtes à EH3D-SERVER, la lecture de la flotte et le déroulement d'un travail (l'envoyer prêt, le lancer par la porte, le suivre, répondre au changement d'outil) sont testés sur ordinateur avec des réponses du serveur écrites à la main ; les sockets et le pilote de la carte n'ont jamais tourné sur un module. |
 
 ## 🎯 Présentation
 
@@ -59,10 +60,12 @@ Chaque ligne est une partie de ce dépôt et le feu dit où elle en est aujourd'
 * La **voix** : alertes parlées (travail terminé, changement d'outil, erreur, liaison perdue, arrêt matériel) et une courte liste fixe d'ordres vocaux en huit langues ; les ordres qui ne font qu'arrêter se comprennent dans une phrase, ceux qui déplacent ou font tourner doivent être dits en entier et demandent toujours une confirmation.
 * Les **écrans** : la machine (jog, origine, broche, démarrage, arrêt), le travail, la vue, les machines et stations du serveur et les réglages, dans l'ordre et avec les noms du programme de bureau ; le bouton d'arrêt est toujours en haut.
 * Le **module** : le Guition JC8012P4A1C (ESP32-P4 avec 32 Mo de RAM externe, écran tactile MIPI-DSI de 10,1 pouces en 800x1280, un ESP32-C6 pour le Wi-Fi, le codec ES8311 avec amplificateur de haut-parleur et l'entrée micro ES7210). La dalle de l'unité est la nouvelle.
+* **Debout ou couché :** le réglage `orientation` (`auto`, `landscape`, `portrait`) tourne l'image de la dalle : en paysage (1280 x 800) le travail, la vue en plan et le pavé de jog sont en trois colonnes au-dessus de la barre de position, en portrait (800 x 1280) ils s'empilent ; le toucher tombe où l'on touche l'écran dans les deux cas.
+* **La microSD et le serveur, comme un seul flux :** la carte liste les fichiers de perçage et de défonçage ; l'écran envoie le fichier choisi à EH3D-SERVER comme un travail qui attend prêt, l'opérateur le lance par la porte, et la progression, les arrêts pour changement d'outil et la fin reviennent de la flotte en temps réel, comme dans les programmes de bureau et le nœud. La réponse du serveur pour chaque travail est enregistrée sur la carte.
 
 ## 🧩 Rôle dans EH3D
 
-EH3D-NODE-BUNGARD-HMI est l'écran propre de l'opérateur d'une machine Bungard CCD : il remplace le PC à côté de la machine. Il est prévu pour piloter la machine via EH3D-SERVER ou EH3D-NODE-BUNGARD (le nœud sur le port série de la machine), comme le font EH3D-DRILLPRO et EH3D-ROUTEPRO. Cette liaison n'est pas encore écrite.
+EH3D-NODE-BUNGARD-HMI est l'écran propre de l'opérateur d'une machine Bungard CCD : il remplace le PC à côté de la machine et c'est un client de plus d'EH3D-SERVER, comme EH3D-DRILLPRO, EH3D-ROUTEPRO et EH3D-BUNGARD-GUI. Un travail que l'écran envoie depuis la microSD est planifié par le serveur et se trouve au même instant dans les programmes de bureau ; un travail lancé depuis un programme de bureau montre ici sa progression ; le serveur l'exécute sur la machine via EH3D-NODE-BUNGARD. Les déplacements directs de l'écran (jog, origine) utiliseront le même nœud, et cette liaison n'est pas encore écrite.
 
 ## 🏛️ Architecture
 
@@ -75,22 +78,40 @@ Comment s'assemblent les parties de ce dépôt : qui lui parle, ce qu'il contien
 ## 🖼️ Captures d'écran
 
 <p align="center">
-  <img src="images/screenshots/screen-machine.png" alt="machine screen" width="40%">
+  <img src="images/screenshots/screen-machine.png" alt="machine screen lying down" width="100%">
 </p>
 
-<p align="center"><em>L'écran de la machine en anglais : le bouton d'arrêt toujours en haut, puis jog, origine, broche et démarrage. Un dessin de la mise en page à partir des textes du firmware, pas une capture d'un module.</em></p>
+<p align="center"><em>L'écran de la machine en paysage, en anglais : le travail, la vue en plan et le pavé de jog en trois colonnes, la position et le bouton d'arrêt sur la barre. Un dessin de la mise en page à partir des textes du firmware, pas une capture d'un module.</em></p>
 
 <p align="center">
-  <img src="images/screenshots/screen-confirm.png" alt="confirmation of a move" width="40%">
+  <img src="images/screenshots/screen-portrait.png" alt="machine screen standing up" width="40%">
+</p>
+
+<p align="center"><em>Le même écran en portrait, en allemand : les cartes s'empilent et la barre de position reste en bas.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/screen-card.png" alt="files of the microSD card" width="100%">
+</p>
+
+<p align="center"><em>La page du travail (ici en italien) : les fichiers de perçage et de défonçage de la microSD, celui choisi et le bouton qui l'envoie au serveur comme un travail qui attend prêt.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/screen-fleet.png" alt="machines and stations" width="100%">
+</p>
+
+<p align="center"><em>Machines et stations (ici en portugais) : toutes les machines du serveur par station, avec leur état et la progression de leur travail, comme les voient les programmes de bureau.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/screen-confirm.png" alt="confirmation of a move" width="100%">
 </p>
 
 <p align="center"><em>Un déplacement demande une confirmation avant que rien ne se passe (ici en espagnol).</em></p>
 
 <p align="center">
-  <img src="images/screenshots/screen-stop.png" alt="hardware stop pressed" width="40%">
+  <img src="images/screenshots/screen-stop.png" alt="hardware stop pressed" width="100%">
 </p>
 
-<p align="center"><em>L'arrêt matériel est enfoncé : l'écran le dit et refuse de déplacer quoi que ce soit tant que le relâchement n'est pas acquitté (ici en japonais).</em></p>
+<p align="center"><em>L'arrêt matériel est enfoncé : l'écran le dit, grise les boutons qui déplacent et refuse de déplacer quoi que ce soit tant que le relâchement n'est pas acquitté (ici en japonais).</em></p>
 
 ## ✨ Fonctionnalités
 
@@ -120,6 +141,8 @@ Comment s'assemblent les parties de ce dépôt : qui lui parle, ce qu'il contien
 | Entrée d'arrêt matériel | un GPIO (`HMI_HW_STOP_GPIO` dans menuconfig, actif bas par défaut, avec pull-up pour qu'un fil ouvert compte comme enfoncé) | `main/board_p4.cpp` |
 | Écran tactile | MIPI-DSI 800x1280 via LVGL 9 | `main/ui.cpp` |
 | Son | codec ES8311 avec amplificateur de haut-parleur et entrée micro ES7210 | `main/board_p4.cpp` |
+| microSD | la racine de la carte à `/sdcard` : les fichiers de perçage, de défonçage, Gerber, DXF et ZIP sont listés et lus, des rapports sont écrits ; seuls des noms de fichier simples sont acceptés | `core/sdfiles.hpp`, `main/board_p4.cpp` |
+| EH3D-SERVER | HTTP avec le jeton d'accès : `GET /api/v1/fleet` toutes les `poll_s` secondes, `POST /api/v1/machines/:id/jobs`, `POST /api/v1/jobs/:id/start`, `confirm` et `cancel` | `core/server_link.hpp`, `main/server_link.cpp` |
 
 ## ⚙️ Configuration
 
@@ -136,6 +159,8 @@ Tout ce qui est ajusté est une ligne de `hmi.cfg` (copiez `hmi.cfg.example` dan
 | `voice_orders` | off | on / off | accepte les ordres vocaux |
 | `voice_confirm` | off | on / off | accepte un oui parlé comme confirmation d'un déplacement |
 | `token` | none | 8 - 64 characters | le jeton d'accès au serveur ; en écriture seule, jamais affiché ni journalisé |
+| `orientation` | `auto` | `auto landscape portrait` | portrait ou paysage ; `auto` suit le montage du module |
+| `poll_s` | 3 | 1 - 60 | à quelle fréquence l'écran demande la flotte au serveur |
 
 ## 🚀 Démarrage rapide
 
@@ -150,7 +175,7 @@ Le firmware n'a pas encore été compilé : le moment venu, `idf.py set-target e
 
 ## 🧪 Tests
 
-Les tests sur ordinateur (`build.bat` ou `./build.sh`, puis `ctest`) sont un programme, `test_hmi`, et tout passe : 598 vérifications du fichier de réglages (défauts, plages, fautes, fins de ligne), de la porte (l'arrêt passe toujours, verrou de l'arrêt matériel, confirmation, délai et débordement de l'horloge, règles vocales, interrupteurs), des ordres et alertes vocaux en huit langues et des textes des écrans.
+Les tests sur ordinateur (`build.bat` ou `./build.sh`, puis `ctest`) sont deux programmes et tout passe : `test_hmi` (638 vérifications) sur le fichier de réglages, la porte (l'arrêt passe toujours, verrou de l'arrêt matériel, confirmation, délai et débordement de l'horloge, règles vocales, interrupteurs), les ordres et alertes vocaux et les textes d'écran en huit langues ; et `test_workflow` (105 vérifications) sur l'orientation et le toucher, les fichiers de la carte (types, noms sûrs, tri), le lecteur JSON, les requêtes et réponses du serveur et le déroulement d'un travail de la carte à sa fin.
 
 ## 🏗️ Compilation et publication
 
@@ -180,11 +205,14 @@ EH3D-NODE-BUNGARD-HMI/
 │   ├── hmi_config.hpp lang.hpp                  le fichier de réglages et ses valeurs sûres
 │   ├── gate.hpp                                 la porte : confirmation, verrou d'arrêt
 │   ├── voice.hpp                                ordres et alertes vocaux en huit langues
+│   ├── orientation.hpp sdfiles.hpp              portrait et paysage, fichiers de la carte
+│   ├── server_link.hpp workflow.hpp             client du serveur et déroulement d'un travail
 │   └── ui_text.hpp                              les textes des écrans en huit langues
 ├── main/
 │   ├── app_main.cpp                             démarrage, réglages, la boucle de la porte
 │   ├── ui.cpp ui.hpp                            les écrans LVGL et le bouton d'arrêt
 │   ├── board_p4.cpp board.hpp                   le module : écran, son, entrée d'arrêt
+│   ├── server_link.cpp server_link.hpp          les sockets du client du serveur
 │   └── idf_component.yml Kconfig.projbuild      liste des composants et broches de menuconfig
 ├── tests/                                       tests sur ordinateur des réglages, de la porte, de la voix et des textes d'écran
 ├── docs/                                        les notes matérielles et les sources des deux images
@@ -210,7 +238,7 @@ EH3D-NODE-BUNGARD-HMI/
 **Limites connues aujourd'hui**
 
 * Rien n'a tourné sur un module : le firmware n'a été ni compilé, ni flashé, ni essayé, et le paquet de support de carte demandé peut nécessiter des changements pour ce module.
-* Il n'y a pas encore de liaison avec EH3D-SERVER ni avec le nœud de la machine, donc les écrans ne peuvent pas déplacer une machine ; les onglets vue, travail, machines et stations et réglages sont des pages vides.
+* L'écran n'atteint la machine que par un travail d'EH3D-SERVER ; ses propres déplacements (jog, origine, broche) interrogent la porte puis attendent la liaison avec le nœud, pas encore écrite. Le client du serveur et la carte n'ont jamais tourné sur un module.
 * La broche de l'arrêt matériel et le contrôleur tactile ne sont pas encore fixés : il faut les vérifier sur le schéma de l'unité.
 * Le reconnaisseur vocal et le haut-parleur ne sont pas encore dans le firmware ; les ordres et alertes sont testés comme du texte.
 * La logique des programmes de bureau (formats, contrôleur, flotte) n'est pas réutilisée : les écrans suivent le programme de bureau, mais les règles sont réécrites en C++.

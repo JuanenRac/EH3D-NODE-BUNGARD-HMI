@@ -18,7 +18,7 @@
 
 ---
 
-**诚实检查 - 今天实际能运行的内容：** 屏幕的规则用 C++17 编写，并已在计算机上测试：带安全默认值的设置文件、每次移动和每条主轴指令都必须通过的“闸门”（屏幕确认、硬件急停锁存、已就绪的连接）、八种语言的语音指令和提示，以及各界面的文本。带 LVGL 界面的 ESP-IDF 固件是为 Guition JC8012P4A1C 模块编写的，但**尚未编译、烧录或在模块上运行**，目前还没有与服务器或机床的连接，也没有连接任何机床。
+**诚实检查 - 今天实际能运行的内容：** 屏幕的规则用 C++17 编写，并已在计算机上测试：带安全默认值的设置文件、每次移动和每条主轴指令都必须通过的“闸门”（屏幕确认、硬件急停锁存、已就绪的连接）、八种语言的语音指令和提示、各界面的文本、竖屏和横屏布局、microSD 卡的文件，以及 EH3D-SERVER 的客户端（请求、机群的读取，以及一个作业从卡上的文件到结束的流程）。带 LVGL 界面的 ESP-IDF 固件是为 Guition JC8012P4A1C 模块编写的，但**尚未编译、烧录或在模块上运行**；它从未与真实服务器通信，机床本身的动作（点动、回原点）要等待与节点的连接，而该连接尚未编写。
 
 ---
 
@@ -30,7 +30,7 @@
 |---|---|
 | 版本 | `0.0.1` |
 | 成熟度 | 脚手架 |
-| 测试 | 1 个主机测试程序（共 598 项检查） |
+| 测试 | 2 个主机测试程序（共 743 项检查） |
 | 技术栈 | C++17, ESP-IDF 5.5, LVGL 9, ESP32-P4 |
 | 真实硬件 | 否：固件尚未编译或烧录，也未连接任何机床 |
 
@@ -48,9 +48,10 @@
 | 测试 | 🟢 | 1 个主机测试程序通过（`ctest`）：共 598 项检查，涵盖设置文件、闸门、语音指令和提示，以及八种语言的界面文本。 |
 | 安全规则 | 🟡 | 每次移动和每条主轴指令都经过闸门：屏幕确认、硬件急停锁存（按钮松开后只能由屏幕上的确认解除）、连接未就绪时不得移动。有测试覆盖；从未配合真实急停按钮试过。 |
 | 语音 | 🟡 | 语音指令和提示以八种语言识别和表述，并作为文本测试；未使用任何麦克风或扬声器。 |
-| 界面 | 🟠 | 机床界面（点动、回原点、主轴、开始、停止、确认、硬件急停横幅）已编写；查看、作业、机床和工位、设置标签页仍是空页面。 |
+| 界面 | 🟠 | 机床、作业（microSD）、机床和工位以及设置界面已编写，支持横屏和竖屏，外观与桌面程序一致；查看标签页仍是空卡片。目前只有布局示意图，没有模块上的截图。 |
 | 真实硬件 | 🔴 | 尚无模块运行过此固件，与服务器的连接尚不存在，也未连接任何机床。 |
 | 文档 | 🟢 | 八种语言的 README、设置参考和硬件说明。 |
+| 服务器和存储卡 | 🟡 | microSD 卡的文件（列表、安全文件名、类型）、对 EH3D-SERVER 的请求、机群的读取以及作业的流程（以就绪状态发送、通过闸门启动、跟踪、应答换刀）已在计算机上用手写的服务器应答测试；套接字和存储卡驱动从未在模块上运行。 |
 
 ## 🎯 概述
 
@@ -59,10 +60,12 @@
 * **语音**：语音提示（作业完成、换刀、错误、连接丢失、硬件急停）和八种语言的一份简短固定语音指令表；仅用于停止的指令在句子中也能识别，用于移动或转动的指令必须完整说出，并且始终需要确认。
 * **界面**：机床（点动、回原点、主轴、开始、停止）、作业、查看、服务器的机床和工位以及设置，顺序和名称与桌面程序一致；停止按钮始终在最上方。
 * **模块**：Guition JC8012P4A1C（ESP32-P4，32 MB 外部 RAM，10.1 英寸 800x1280 MIPI-DSI 触摸屏，用于 Wi-Fi 的 ESP32-C6，带扬声器功放的 ES8311 编解码器和 ES7210 麦克风输入）。本机的面板是新款。
+* **竖放或横放：** 设置 `orientation`（`auto`、`landscape`、`portrait`）旋转面板的画面：横放（1280 x 800）时作业、平面视图和点动面板分三列排在位置栏上方，竖放（800 x 1280）时叠放；两种情况下触摸都落在被触摸的位置。
+* **microSD 与服务器成为一条流程：** 卡上列出钻孔和铣切文件；屏幕把选中的文件作为就绪等待的作业发送给 EH3D-SERVER，操作员通过闸门启动，进度、换刀停顿和结束实时从机群返回，与桌面程序和节点一致。服务器对每个作业的应答会保存在卡上。
 
 ## 🧩 在 EH3D 中的角色
 
-EH3D-NODE-BUNGARD-HMI 是 Bungard CCD 机床操作员自己的屏幕：它取代机床旁的电脑。它的设计目标是像 EH3D-DRILLPRO 和 EH3D-ROUTEPRO 一样，通过 EH3D-SERVER 或 EH3D-NODE-BUNGARD（机床串口上的节点）来驱动机床。该连接尚未编写。
+EH3D-NODE-BUNGARD-HMI 是 Bungard CCD 机床操作员自己的屏幕：它取代机床旁的电脑，并且和 EH3D-DRILLPRO、EH3D-ROUTEPRO、EH3D-BUNGARD-GUI 一样，是 EH3D-SERVER 的又一个客户端。屏幕从 microSD 卡发送的作业由服务器规划，并且同时出现在桌面程序中；从桌面程序启动的作业会在这里显示进度；服务器通过 EH3D-NODE-BUNGARD 在机床上运行它。屏幕自身的直接动作（点动、回原点）将使用同一个节点，该连接尚未编写。
 
 ## 🏛️ 架构
 
@@ -75,22 +78,40 @@ EH3D-NODE-BUNGARD-HMI 是 Bungard CCD 机床操作员自己的屏幕：它取代
 ## 🖼️ 屏幕截图
 
 <p align="center">
-  <img src="images/screenshots/screen-machine.png" alt="machine screen" width="40%">
+  <img src="images/screenshots/screen-machine.png" alt="machine screen lying down" width="100%">
 </p>
 
-<p align="center"><em>英语的机床界面：停止按钮始终在最上方，其下是点动、回原点、主轴和开始。这是根据固件文本绘制的布局示意图，不是模块上的截图。</em></p>
+<p align="center"><em>横屏的机床界面（英语）：作业、平面视图和点动面板分三列，位置和停止按钮在底栏。这是根据固件文本绘制的布局示意图，不是模块上的截图。</em></p>
 
 <p align="center">
-  <img src="images/screenshots/screen-confirm.png" alt="confirmation of a move" width="40%">
+  <img src="images/screenshots/screen-portrait.png" alt="machine screen standing up" width="40%">
+</p>
+
+<p align="center"><em>同一界面竖放（德语）：卡片叠放，位置栏留在底部。</em></p>
+
+<p align="center">
+  <img src="images/screenshots/screen-card.png" alt="files of the microSD card" width="100%">
+</p>
+
+<p align="center"><em>作业页（此处为意大利语）：microSD 卡上的钻孔和铣切文件、选中的文件，以及把它作为就绪等待的作业发送到服务器的按钮。</em></p>
+
+<p align="center">
+  <img src="images/screenshots/screen-fleet.png" alt="machines and stations" width="100%">
+</p>
+
+<p align="center"><em>机床和工位（此处为葡萄牙语）：服务器的所有机床按工位排列，显示状态和作业进度，与桌面程序所见一致。</em></p>
+
+<p align="center">
+  <img src="images/screenshots/screen-confirm.png" alt="confirmation of a move" width="100%">
 </p>
 
 <p align="center"><em>移动在执行任何动作之前都要求确认（此处为西班牙语）。</em></p>
 
 <p align="center">
-  <img src="images/screenshots/screen-stop.png" alt="hardware stop pressed" width="40%">
+  <img src="images/screenshots/screen-stop.png" alt="hardware stop pressed" width="100%">
 </p>
 
-<p align="center"><em>硬件急停已按下：屏幕会提示，并在松开被确认之前拒绝移动任何东西（此处为日语）。</em></p>
+<p align="center"><em>硬件急停已按下：屏幕会提示，将会移动的按钮变暗，并在松开被确认之前拒绝移动任何东西（此处为日语）。</em></p>
 
 ## ✨ 功能
 
@@ -120,6 +141,8 @@ EH3D-NODE-BUNGARD-HMI 是 Bungard CCD 机床操作员自己的屏幕：它取代
 | 硬件急停输入 | 一个 GPIO（menuconfig 中的 `HMI_HW_STOP_GPIO`，默认低电平有效，带上拉，因此断线视为按下） | `main/board_p4.cpp` |
 | 触摸屏 | 通过 LVGL 9 驱动 800x1280 MIPI-DSI | `main/ui.cpp` |
 | 声音 | 带扬声器功放的 ES8311 编解码器和 ES7210 麦克风输入 | `main/board_p4.cpp` |
+| microSD | 卡的根目录 `/sdcard`：列出并读取钻孔、铣切、Gerber、DXF 和 ZIP 文件，写入报告；只接受简单文件名 | `core/sdfiles.hpp`, `main/board_p4.cpp` |
+| EH3D-SERVER | 带访问令牌的 HTTP：每 `poll_s` 秒 `GET /api/v1/fleet`，`POST /api/v1/machines/:id/jobs`，`POST /api/v1/jobs/:id/start`，以及 `confirm` 和 `cancel` | `core/server_link.hpp`, `main/server_link.cpp` |
 
 ## ⚙️ 配置
 
@@ -136,6 +159,8 @@ EH3D-NODE-BUNGARD-HMI 是 Bungard CCD 机床操作员自己的屏幕：它取代
 | `voice_orders` | off | on / off | 接受语音指令 |
 | `voice_confirm` | off | on / off | 把说出的“是”当作移动的确认 |
 | `token` | none | 8 - 64 characters | 服务器的访问令牌；只写，从不显示也不记录 |
+| `orientation` | `auto` | `auto landscape portrait` | 竖放或横放；`auto` 跟随模块的安装方向 |
+| `poll_s` | 3 | 1 - 60 | 屏幕多久向服务器请求一次机群 |
 
 ## 🚀 快速开始
 
@@ -150,7 +175,7 @@ python -I tools/ci_validate.py
 
 ## 🧪 测试
 
-主机测试（`build.bat` 或 `./build.sh`，然后 `ctest`）是一个程序 `test_hmi`，全部通过：共 598 项检查，涵盖设置文件（默认值、范围、错误、行结尾）、闸门（停止始终放行、硬件急停锁存、确认、超时与时钟回绕、语音规则、开关）、八种语言的语音指令和提示，以及界面文本。
+主机测试（`build.bat` 或 `./build.sh`，然后 `ctest`）是两个程序，全部通过：`test_hmi`（638 项检查）涵盖设置文件、闸门（停止始终放行、硬件急停锁存、确认、超时与时钟回绕、语音规则、开关）、八种语言的语音指令和提示以及界面文本；`test_workflow`（105 项检查）涵盖方向与触摸、卡上的文件（类型、安全文件名、排序）、JSON 读取器、服务器的请求与应答，以及作业从卡到结束的流程。
 
 ## 🏗️ 构建与发布
 
@@ -180,11 +205,14 @@ EH3D-NODE-BUNGARD-HMI/
 │   ├── hmi_config.hpp lang.hpp                  设置文件及其安全默认值
 │   ├── gate.hpp                                 闸门：确认、急停锁存
 │   ├── voice.hpp                                八种语言的语音指令和提示
+│   ├── orientation.hpp sdfiles.hpp              竖屏和横屏布局、卡上的文件
+│   ├── server_link.hpp workflow.hpp             服务器客户端和作业流程
 │   └── ui_text.hpp                              八种语言的界面文本
 ├── main/
 │   ├── app_main.cpp                             启动、设置、闸门循环
 │   ├── ui.cpp ui.hpp                            LVGL 界面和停止按钮
 │   ├── board_p4.cpp board.hpp                   模块：显示、声音、急停输入
+│   ├── server_link.cpp server_link.hpp          服务器客户端的套接字
 │   └── idf_component.yml Kconfig.projbuild      组件列表和 menuconfig 引脚
 ├── tests/                                       设置、闸门、语音和界面文本的主机测试
 ├── docs/                                        硬件说明和两幅图的源文件
@@ -210,7 +238,7 @@ EH3D-NODE-BUNGARD-HMI/
 **目前已知的限制**
 
 * 尚无任何内容在模块上运行：固件未编译、烧录或试用，所需的板级支持包可能需要为该模块做修改。
-* 还没有与 EH3D-SERVER 或机床节点的连接，因此界面无法移动机床；查看、作业、机床和工位、设置标签页都是空页面。
+* 屏幕只能通过 EH3D-SERVER 的作业到达机床；它自己的动作（点动、回原点、主轴）先经过闸门，然后等待与节点的连接，而该连接尚未编写。服务器客户端和存储卡从未在模块上运行。
 * 急停引脚和触摸控制器尚未确定：必须对照本机的原理图核实。
 * 语音识别器和扬声器尚未进入固件；指令和提示以文本方式测试。
 * 桌面程序的逻辑（格式、控制器、机群）没有复用：界面遵循桌面程序，但规则用 C++ 重写。

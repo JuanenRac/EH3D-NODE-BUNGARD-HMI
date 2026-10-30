@@ -18,7 +18,7 @@
 
 ---
 
-**Honesty check - what actually runs today:** the rules of the screen are written in C++17 and tested on a computer: the settings file with its safe defaults, the gate that every move and every spindle order must pass (a confirmation on the screen, the hardware-stop latch, the armed link), the spoken orders and alerts in eight languages and the texts of the screens. The ESP-IDF firmware with the LVGL screens is written for the Guition JC8012P4A1C module but **has not been built, flashed or run on a module**, there is no link to the server or the machine yet, and nothing has been connected to a machine.
+**Honesty check - what actually runs today:** the rules of the screen are written in C++17 and tested on a computer: the settings file with its safe defaults, the gate that every move and every spindle order must pass (a confirmation on the screen, the hardware-stop latch, the armed link), the spoken orders and alerts in eight languages, the texts of the screens, the standing and lying layouts, the files of the microSD card, and the client of EH3D-SERVER (the requests, the reading of the fleet and the flow of a job from a file of the card to its end). The ESP-IDF firmware with the LVGL screens is written for the Guition JC8012P4A1C module but **has not been built, flashed or run on a module**; it has never talked to a real server, and the moves of the machine itself (jog, home) wait for the link to the node, which is not written yet.
 
 ---
 
@@ -30,7 +30,7 @@
 |---|---|
 | Version | `0.0.1` |
 | Maturity | Scaffolding |
-| Tests | 1 host test program (598 checks counted) |
+| Tests | 2 host test programs (743 checks counted) |
 | Stack | C++17, ESP-IDF 5.5, LVGL 9, ESP32-P4 |
 | On real hardware | No: the firmware has not been built or flashed, and nothing has been connected to a machine |
 
@@ -48,9 +48,10 @@ Each line is one part of this repository and the light says how far it is today.
 | Tests | 🟢 | 1 host test program passes (`ctest`): 598 checks in the settings file, the gate, the spoken orders and alerts, and the texts of the screens in eight languages. |
 | Safety rules | 🟡 | Every move and spindle order goes through the gate: confirmation on the screen, hardware-stop latch that only an acknowledgement on the screen clears once the button is up, no move while the link is not armed. Covered by tests; never run with a real stop button. |
 | Voice | 🟡 | Spoken orders and alerts are recognised and phrased in eight languages and tested as text; no microphone or speaker has been used. |
-| Screens | 🟠 | The machine screen (jog, home, spindle, start, stop, confirmation, hardware-stop banner) is written; the viewer, job, machines-and-stations and settings tabs are still empty pages. |
+| Screens | 🟠 | The machine, job (microSD), machines-and-stations and settings screens are written, lying down and standing up, in the look of the desktop program; the viewer tab is still an empty card. Only a drawing of the layout exists, not a capture of a module. |
 | Real hardware | 🔴 | No module has run this firmware, the link to the server does not exist yet, and nothing has been connected to a machine. |
 | Documentation | 🟢 | README in eight languages, the settings reference and the hardware notes. |
+| Server and card | 🟡 | The files of the microSD card (listing, safe names, kinds), the requests to EH3D-SERVER, the reading of the fleet and the flow of a job (send it ready, start it through the gate, follow it, answer the tool change) are tested on a computer with answers of the server written down; the sockets and the card driver have never run on a module. |
 
 ## 🎯 Overview
 
@@ -59,10 +60,12 @@ Each line is one part of this repository and the light says how far it is today.
 * The **voice**: spoken alerts (job finished, tool change, error, link lost, hardware stop) and a short fixed list of spoken orders in eight languages; the orders that only halt are understood inside a sentence, the ones that move or spin must be said whole and always ask for a confirmation.
 * The **screens**: the machine (jog, home, spindle, start, stop), the job, the viewer, the machines and stations of the server and the settings, in the order and with the names of the desktop program; the stop button is always on top.
 * The **module**: the Guition JC8012P4A1C (ESP32-P4 with 32 MB of external RAM, a 10.1-inch 800x1280 MIPI-DSI touch display, an ESP32-C6 for Wi-Fi, the ES8311 codec with a speaker amplifier and the ES7210 microphone input). The panel of the unit is the new one.
+* **Standing up or lying down:** the setting `orientation` (`auto`, `landscape`, `portrait`) turns the picture of the panel: lying down (1280 x 800) the job, the plan view and the jog pad sit in three columns above the bar of the position, standing up (800 x 1280) they stack; a touch lands where the screen is touched in both.
+* **The microSD card and the server, as one flow:** the card lists the drilling and routing files; the screen sends the chosen file to EH3D-SERVER as a job that waits ready, the operator starts it through the gate, and the progress, the stops for a tool change and the end come back from the fleet in real time, the same as on the desktop programs and the node. The answer of the server for each job is saved on the card.
 
 ## 🧩 Role in EH3D
 
-EH3D-NODE-BUNGARD-HMI is the operator's own screen for a Bungard CCD machine: it takes the place of the PC next to the machine. It is meant to drive the machine through EH3D-SERVER or through EH3D-NODE-BUNGARD (the node on the machine's serial port), the same way EH3D-DRILLPRO and EH3D-ROUTEPRO do. That link is not written yet.
+EH3D-NODE-BUNGARD-HMI is the operator's own screen for a Bungard CCD machine: it takes the place of the PC next to the machine, and it is one more client of EH3D-SERVER, like EH3D-DRILLPRO, EH3D-ROUTEPRO and EH3D-BUNGARD-GUI. A job that the screen sends from the microSD card is planned by the server and is at the same moment on the desktop programs; a job started from a desktop program shows its progress here; the server runs it on the machine through EH3D-NODE-BUNGARD. The direct moves of the screen (jog, home) will use the same node, and that link is not written yet.
 
 ## 🏛️ Architecture
 
@@ -75,22 +78,40 @@ How the parts of this repository fit together: who talks to it, what it holds an
 ## 🖼️ Screenshots
 
 <p align="center">
-  <img src="images/screenshots/screen-machine.png" alt="machine screen" width="40%">
+  <img src="images/screenshots/screen-machine.png" alt="machine screen lying down" width="100%">
 </p>
 
-<p align="center"><em>The machine screen in English: the stop button always on top, then jog, home, spindle and start. A drawing of the layout from the texts of the firmware, not a capture of a module.</em></p>
+<p align="center"><em>The machine screen lying down, in English: the job, the plan view and the jog pad in three columns, the position and the stop button on the bar. A drawing of the layout from the texts of the firmware, not a capture of a module.</em></p>
 
 <p align="center">
-  <img src="images/screenshots/screen-confirm.png" alt="confirmation of a move" width="40%">
+  <img src="images/screenshots/screen-portrait.png" alt="machine screen standing up" width="40%">
+</p>
+
+<p align="center"><em>The same screen standing up, in German: the cards stack and the bar of the position stays at the bottom.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/screen-card.png" alt="files of the microSD card" width="100%">
+</p>
+
+<p align="center"><em>The job page (here in Italian): the drilling and routing files of the microSD card, the chosen one, and the button that sends it to the server as a job that waits ready.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/screen-fleet.png" alt="machines and stations" width="100%">
+</p>
+
+<p align="center"><em>Machines and stations (here in Portuguese): every machine of the server by station, with its state and the progress of its job, as the desktop programs see it.</em></p>
+
+<p align="center">
+  <img src="images/screenshots/screen-confirm.png" alt="confirmation of a move" width="100%">
 </p>
 
 <p align="center"><em>A move asks for a confirmation before anything happens (here in Spanish).</em></p>
 
 <p align="center">
-  <img src="images/screenshots/screen-stop.png" alt="hardware stop pressed" width="40%">
+  <img src="images/screenshots/screen-stop.png" alt="hardware stop pressed" width="100%">
 </p>
 
-<p align="center"><em>The hardware stop is pressed: the screen says so and refuses to move anything until the release has been acknowledged (here in Japanese).</em></p>
+<p align="center"><em>The hardware stop is pressed: the screen says so, dims the buttons that move and refuses to move anything until the release has been acknowledged (here in Japanese).</em></p>
 
 ## ✨ Features
 
@@ -120,6 +141,8 @@ How the parts of this repository fit together: who talks to it, what it holds an
 | Hardware stop input | one GPIO (`HMI_HW_STOP_GPIO` in menuconfig, active low by default, with a pull-up so an open wire reads as pressed) | `main/board_p4.cpp` |
 | Touch display | 800x1280 MIPI-DSI through LVGL 9 | `main/ui.cpp` |
 | Sound | ES8311 codec with speaker amplifier and the ES7210 microphone input | `main/board_p4.cpp` |
+| microSD | the root of the card at `/sdcard`: drilling, routing, Gerber, DXF and ZIP files are listed and read, reports are written; only plain file names are accepted | `core/sdfiles.hpp`, `main/board_p4.cpp` |
+| EH3D-SERVER | HTTP with the access token: `GET /api/v1/fleet` every `poll_s` seconds, `POST /api/v1/machines/:id/jobs`, `POST /api/v1/jobs/:id/start`, `confirm` and `cancel` | `core/server_link.hpp`, `main/server_link.cpp` |
 
 ## ⚙️ Configuration
 
@@ -136,6 +159,8 @@ Everything tuned is a line of `hmi.cfg` (copy `hmi.cfg.example` to the `config` 
 | `voice_orders` | off | on / off | accept spoken orders |
 | `voice_confirm` | off | on / off | accept a spoken yes as the confirmation of a move |
 | `token` | none | 8 - 64 characters | the access token of the server; write-only, never shown or logged |
+| `orientation` | `auto` | `auto landscape portrait` | standing up or lying down; `auto` follows the way the module is mounted |
+| `poll_s` | 3 | 1 - 60 | how often the screen asks the server for the fleet |
 
 ## 🚀 Quick start
 
@@ -150,7 +175,7 @@ The firmware has not been built yet: when it is, `idf.py set-target esp32p4 && i
 
 ## 🧪 Testing
 
-The host tests (`build.bat` or `./build.sh`, then `ctest`) are one program, `test_hmi`, and all of it passes: 598 checks on the settings file (defaults, ranges, mistakes, line ends), the gate (stop always goes, hardware-stop latch, confirmation, timeout and clock wrap-around, voice rules, switches), the spoken orders and alerts in eight languages, and the texts of the screens.
+The host tests (`build.bat` or `./build.sh`, then `ctest`) are two programs and all of it passes: `test_hmi` (638 checks) on the settings file, the gate (stop always goes, hardware-stop latch, confirmation, timeout and clock wrap-around, voice rules, switches), the spoken orders and alerts and the screen texts in eight languages; and `test_workflow` (105 checks) on the orientation and the touch, the files of the card (kinds, safe names, sorting), the JSON reader, the requests and answers of the server, and the flow of a job from the card to its end.
 
 ## 🏗️ Build & Release
 
@@ -180,11 +205,14 @@ EH3D-NODE-BUNGARD-HMI/
 │   ├── hmi_config.hpp lang.hpp                  the settings file and its safe defaults
 │   ├── gate.hpp                                 the gate: confirmation, hardware-stop latch
 │   ├── voice.hpp                                spoken orders and alerts in eight languages
+│   ├── orientation.hpp sdfiles.hpp              standing and lying layouts, files of the card
+│   ├── server_link.hpp workflow.hpp             client of the server and the flow of a job
 │   └── ui_text.hpp                              the texts of the screens in eight languages
 ├── main/
 │   ├── app_main.cpp                             start, settings, the loop of the gate
 │   ├── ui.cpp ui.hpp                            the LVGL screens and the stop button
 │   ├── board_p4.cpp board.hpp                   the module: display, sound, stop input
+│   ├── server_link.cpp server_link.hpp          the sockets of the client of the server
 │   └── idf_component.yml Kconfig.projbuild      component list and menuconfig pins
 ├── tests/                                       host tests of the settings, the gate, the voice and the screen texts
 ├── docs/                                        the hardware notes and the two pictures' sources
@@ -210,7 +238,7 @@ EH3D-NODE-BUNGARD-HMI/
 **Known limits today**
 
 * Nothing has run on a module: the firmware has not been built, flashed or tried, and the board support package it asks for may need changes for this module.
-* There is no link to EH3D-SERVER or to the node of the machine yet, so the screens cannot move a machine; the viewer, job, machines-and-stations and settings tabs are empty pages.
+* The screen reaches the machine only through a job of EH3D-SERVER; its own moves (jog, home, spindle) ask the gate and then wait for the link to the node, which is not written yet. The client of the server and the card have never run on a module.
 * The pin of the hardware stop and the touch controller are not fixed yet: they must be checked against the schematic of the unit.
 * The speech recogniser and the speaker are not in the firmware yet; the orders and alerts are tested as text.
 * The logic of the desktop programs (formats, controller, fleet) is not reused: the screens follow the desktop program, but the rules are rewritten in C++.
