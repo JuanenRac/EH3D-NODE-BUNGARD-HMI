@@ -1,0 +1,236 @@
+<p align="center">
+  <img src="images/EH3D_BANNER.svg" alt="EH3D-NODE-BUNGARD-HMI banner" width="100%">
+</p>
+
+# 🖥️ EH3D-NODE-BUNGARD-HMI
+
+<p align="center"><a href="README.md">🇺🇸 English</a> | <a href="README_spa.md">🇪🇸 Español</a> | <a href="README_fra.md">🇫🇷 Français</a> | <a href="README_ita.md">🇮🇹 Italiano</a> | <a href="README_deu.md">🇩🇪 Deutsch</a> | 🇨🇳 <b>中文</b> | <a href="README_jpn.md">🇯🇵 日本語</a> | <a href="README_por.md">🇵🇹 Português</a></p>
+
+### 一块带 ESP32-P4 的 10.1 英寸触摸屏，可独立控制 Bungard CCD 机床：与桌面程序相同的界面和流程，支持八种语言，语音提示和语音指令，硬件急停不经过屏幕。
+
+<p align="center">
+  <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
+  <img src="https://img.shields.io/badge/Stack-C%2B%2B17%20%2B%20ESP--IDF-00599C.svg" alt="C++17 and ESP-IDF">
+  <img src="https://img.shields.io/badge/Languages-8-00E5FF.svg" alt="Languages">
+  <img src="https://img.shields.io/badge/Version-0.0.1-0f6cbd.svg" alt="Version">
+  <img src="https://img.shields.io/badge/Maturity-scaffolding-FFB020.svg" alt="Maturity">
+</p>
+
+---
+
+**诚实检查 - 今天实际能运行的内容：** 屏幕的规则用 C++17 编写，并已在计算机上测试：带安全默认值的设置文件、每次移动和每条主轴指令都必须通过的“闸门”（屏幕确认、硬件急停锁存、已就绪的连接）、八种语言的语音指令和提示，以及各界面的文本。带 LVGL 界面的 ESP-IDF 固件是为 Guition JC8012P4A1C 模块编写的，但**尚未编译、烧录或在模块上运行**，目前还没有与服务器或机床的连接，也没有连接任何机床。
+
+---
+
+> **安全状态（safety 与信息安全）：** 这不是安全系统。保护人员和机床的急停是一个硬件按钮，它自行切断驱动，接线独立于本屏幕；屏幕只读取并显示它，在它被按下或未确认期间拒绝移动任何东西。移动或主轴指令需要在屏幕上确认，语音指令始终需要确认，并且语音指令在操作员打开之前处于关闭状态。在整条链路于真实机床上试验之前，请勿用本屏幕运行机床。本项目是独立的：并非由 Bungard Elektronik 或 Guition 制造、认可或支持，产品名称仅用于说明其适用的机床和模块。
+
+## 📋 速览
+
+| | |
+|---|---|
+| 版本 | `0.0.1` |
+| 成熟度 | 脚手架 |
+| 测试 | 1 个主机测试程序（共 598 项检查） |
+| 技术栈 | C++17, ESP-IDF 5.5, LVGL 9, ESP32-P4 |
+| 真实硬件 | 否：固件尚未编译或烧录，也未连接任何机床 |
+
+**跳转到：** [概述](#-概述) · [架构](#-架构) · [快速开始](#-快速开始) · [测试](#-测试) · [结构](#-仓库结构) · [相关项目](#-相关项目)
+
+## 🚦 项目状态
+
+每一行是本仓库的一个部分，灯号表示它今天做到了哪一步。内容依据仓库能够展示的证据（测试、构建、运行），而不是计划。
+
+🟢 已完成并验证 · 🟡 可用，有已知限制 · 🟠 部分完成或尚未验证 · 🔴 未完成或不可用
+
+| 领域 | 状态 | 在这里的含义 |
+|---|---|---|
+| 软件 | 🟠 | ESP-IDF 工程（ESP32-P4、LVGL 9、独立分区中的设置文件）已编写；尚未编译或烧录。 |
+| 测试 | 🟢 | 1 个主机测试程序通过（`ctest`）：共 598 项检查，涵盖设置文件、闸门、语音指令和提示，以及八种语言的界面文本。 |
+| 安全规则 | 🟡 | 每次移动和每条主轴指令都经过闸门：屏幕确认、硬件急停锁存（按钮松开后只能由屏幕上的确认解除）、连接未就绪时不得移动。有测试覆盖；从未配合真实急停按钮试过。 |
+| 语音 | 🟡 | 语音指令和提示以八种语言识别和表述，并作为文本测试；未使用任何麦克风或扬声器。 |
+| 界面 | 🟠 | 机床界面（点动、回原点、主轴、开始、停止、确认、硬件急停横幅）已编写；查看、作业、机床和工位、设置标签页仍是空页面。 |
+| 真实硬件 | 🔴 | 尚无模块运行过此固件，与服务器的连接尚不存在，也未连接任何机床。 |
+| 文档 | 🟢 | 八种语言的 README、设置参考和硬件说明。 |
+
+## 🎯 概述
+
+* **闸门**：每次移动和每条主轴指令，无论来自触摸还是语音，都经过同一个地方，由它决定执行、要求确认或附带原因地拒绝；停止指令始终放行。
+* **设置文件** `hmi.cfg`：每个调好的值（语言、亮度、服务器、安全开关、语音）都是独立分区中一个文件的一行，绝不是代码里的数字；超出范围的值会被报告，并保留安全的默认值。
+* **语音**：语音提示（作业完成、换刀、错误、连接丢失、硬件急停）和八种语言的一份简短固定语音指令表；仅用于停止的指令在句子中也能识别，用于移动或转动的指令必须完整说出，并且始终需要确认。
+* **界面**：机床（点动、回原点、主轴、开始、停止）、作业、查看、服务器的机床和工位以及设置，顺序和名称与桌面程序一致；停止按钮始终在最上方。
+* **模块**：Guition JC8012P4A1C（ESP32-P4，32 MB 外部 RAM，10.1 英寸 800x1280 MIPI-DSI 触摸屏，用于 Wi-Fi 的 ESP32-C6，带扬声器功放的 ES8311 编解码器和 ES7210 麦克风输入）。本机的面板是新款。
+
+## 🧩 在 EH3D 中的角色
+
+EH3D-NODE-BUNGARD-HMI 是 Bungard CCD 机床操作员自己的屏幕：它取代机床旁的电脑。它的设计目标是像 EH3D-DRILLPRO 和 EH3D-ROUTEPRO 一样，通过 EH3D-SERVER 或 EH3D-NODE-BUNGARD（机床串口上的节点）来驱动机床。该连接尚未编写。
+
+## 🏛️ 架构
+
+<p align="center">
+  <img src="images/architecture.svg" alt="EH3D-NODE-BUNGARD-HMI 的架构：谁在使用、包含什么、依赖什么" width="100%">
+</p>
+
+本仓库各部分如何配合：谁与它通信、它包含什么、依赖什么。图由 `docs/architecture.json` 生成，并与代码核对。
+
+## ✨ 功能
+
+* **忘不掉的停止：** 停止按钮始终在最上方并且始终有效；硬件急停会被锁存，只有在按钮松开后在屏幕上确认才能解除。
+* **移动前确认：** 移动或主轴指令会显示将要做什么，并在限时内等待一次触摸；新的请求或连接丢失会将其丢弃。
+* **八种语言，语音也一样：** 英语、西班牙语、意大利语、德语、法语、欧洲葡萄牙语、中文和日语，覆盖界面、语音提示和语音指令。
+* **默认即安全：** 每个安全开关都在设置中有对应项，并从保守位置开始：语音指令关闭、语音确认关闭、确认开启、要求硬件急停。
+
+## 🔒 安全与防护
+
+| 威胁 | 防御 |
+|---|---|
+| 触摸或语音指令意外移动机床 | 移动需要在屏幕上限时确认；语音指令始终需要确认；只有设置 `voice_confirm` 打开（默认关闭）时，说出的“是”才算确认 |
+| 硬件急停被按下时屏幕开始移动 | 硬件急停是锁存的：按下，或松开但未在屏幕上确认时，所有移动和主轴指令都被拒绝，等待中的请求被丢弃；等待确认时按下急停会取消它 |
+| 机床尚未就绪 | 连接未就绪、硬件急停输入未接线（`hw_stop_required`，默认开启）或主轴上限为 0 时，什么都不会移动 |
+| 把说出的某个词当成指令 | 指令来自每种语言的一份简短固定列表，绝不是自由文本；只是包含指令的词（`stopwatch`）不是指令；语音指令在操作员打开前处于关闭状态 |
+| 设置中的输入错误 | 超出范围的值或未知的键会被报告，并保留安全默认值；不会因失误而打开任何开关 |
+| 固件或仓库中的机密 | 没有任何机密被编译进去；令牌是其分区中的设置，从不显示也不记录 |
+
+**未设防的部分：** 屏幕不是安全装置，无法切断机床的驱动；这必须由硬件急停自行完成。目前还没有与服务器的连接，所以屏幕今天无法移动任何机床。语音识别在测试中以文本方式运行；真实的麦克风通路（回声消除、噪声、口音）尚未试过。拿到模块的人可以修改设置文件。
+
+## 🔌 接口
+
+| 接口 | 内容 | 位置 |
+|---|---|---|
+| 设置文件 | `config` 分区中的 `hmi.cfg`：`键 = 值` 行；见 `hmi.cfg.example` 和上表 | `core/hmi_config.hpp` |
+| 硬件急停输入 | 一个 GPIO（menuconfig 中的 `HMI_HW_STOP_GPIO`，默认低电平有效，带上拉，因此断线视为按下） | `main/board_p4.cpp` |
+| 触摸屏 | 通过 LVGL 9 驱动 800x1280 MIPI-DSI | `main/ui.cpp` |
+| 声音 | 带扬声器功放的 ES8311 编解码器和 ES7210 麦克风输入 | `main/board_p4.cpp` |
+
+## ⚙️ 配置
+
+所有调整项都是 `hmi.cfg` 中的一行（把 `hmi.cfg.example` 复制到 `config` 分区）；超出范围的值会在日志中报告并保留默认值。下面是默认值；所有安全默认值都是保守的。
+
+| 设置 | 默认 | 范围 | 作用 |
+|---|---|---|---|
+| `language` | `en` | `en es it de fr pt zh ja` | 屏幕和语音的语言 |
+| `confirm_moves` | on | on / off | 移动需要确认：仅在试验台上才关闭 |
+| `confirm_timeout_ms` | 8000 | 1000 - 60000 | 确认等待多久 |
+| `jog_max_mm` | 20 | 1 - 200 | 屏幕发送的最长单次点动 |
+| `spindle_max_rpm` | 24000 | 0 - 65535 | 请求的最高主轴转速（0：永不启动主轴） |
+| `hw_stop_required` | on | on / off | 仅当硬件急停输入已接线且松开时才控制机床 |
+| `voice_orders` | off | on / off | 接受语音指令 |
+| `voice_confirm` | off | on / off | 把说出的“是”当作移动的确认 |
+| `token` | none | 8 - 64 characters | 服务器的访问令牌；只写，从不显示也不记录 |
+
+## 🚀 快速开始
+
+主机测试需要 C++17 编译器和 CMake，固件需要 ESP-IDF 5.5.5（模块的 ESP32-P4 目标）。
+
+```bash
+build.bat            # the host tests (Windows)  -  ./build.sh on Linux
+python -I tools/ci_validate.py
+```
+
+固件尚未编译：编译后，`idf.py set-target esp32p4 && idf.py build` 生成镜像，名为 `config` 的分区保存 `hmi.cfg`。
+
+## 🧪 测试
+
+主机测试（`build.bat` 或 `./build.sh`，然后 `ctest`）是一个程序 `test_hmi`，全部通过：共 598 项检查，涵盖设置文件（默认值、范围、错误、行结尾）、闸门（停止始终放行、硬件急停锁存、确认、超时与时钟回绕、语音规则、开关）、八种语言的语音指令和提示，以及界面文本。
+
+## 🏗️ 构建与发布
+
+版本保存在 `eh3d.project.json` 中，每个版本在 [CHANGELOG.md](CHANGELOG.md) 中都有条目。`build.sh` / `build.bat` 编译并运行主机测试，`test.sh` / `test.bat` 运行仓库检查。固件在本仓库脚本之外、在可见窗口中编译，一次一个构建。
+
+## 🩺 故障排除
+
+| 现象 | 处理方法 |
+|---|---|
+| 什么都不动，屏幕提示硬件急停已按下或未确认 | 松开按钮，然后按屏幕上的确认按钮：已松开的急停不会自行解除。 |
+| 屏幕提示机床未就绪 | 此版本还没有与机床的连接；在连接使其就绪之前，闸门拒绝一切移动。 |
+| 屏幕提示硬件急停输入未接线 | 把急停按钮接到 menuconfig 中设置的引脚（`HMI_HW_STOP_GPIO`），或仅在试验台上关闭 `hw_stop_required`。 |
+| 语音指令没有反应 | 语音指令默认关闭：设置 `voice_orders = on`。除非 `voice_confirm` 打开，移动或转动类指令需要在屏幕上触摸确认。 |
+
+## 📂 仓库结构
+
+<p align="center">
+  <img src="images/repository-structure.svg" alt="EH3D-NODE-BUNGARD-HMI 的仓库结构" width="100%">
+</p>
+
+<details>
+<summary>目录树的文本版</summary>
+
+```text
+EH3D-NODE-BUNGARD-HMI/
+├── core/
+│   ├── hmi_config.hpp lang.hpp                  设置文件及其安全默认值
+│   ├── gate.hpp                                 闸门：确认、急停锁存
+│   ├── voice.hpp                                八种语言的语音指令和提示
+│   └── ui_text.hpp                              八种语言的界面文本
+├── main/
+│   ├── app_main.cpp                             启动、设置、闸门循环
+│   ├── ui.cpp ui.hpp                            LVGL 界面和停止按钮
+│   ├── board_p4.cpp board.hpp                   模块：显示、声音、急停输入
+│   └── idf_component.yml Kconfig.projbuild      组件列表和 menuconfig 引脚
+├── tests/                                       设置、闸门、语音和界面文本的主机测试
+├── docs/                                        硬件说明和两幅图的源文件
+├── tools/                                       CI 检查、README 检查和绘图工具
+├── CMakeLists.txt                               ESP-IDF 工程
+├── partitions.csv                               带两个槽位的闪存布局
+├── hmi.cfg.example                              每个设置及其默认值和范围
+├── sdkconfig.defaults                           ESP32-P4 模块的 ESP-IDF 设置
+├── images/                                      横幅图以及架构和仓库结构图片
+├── .github/                                     CI 与发布工作流、Issue 和 PR 模板
+├── build.sh build.bat                           在实时面板中编译并运行主机测试
+├── eh3d.project.json                            清单：版本、角色、成熟度和构建命令
+├── CHANGELOG.md                                 每个版本的变更
+├── SECURITY.md SUPPORT.md                       如何报告漏洞及在哪里提问
+├── CONTRIBUTING.md CODE_OF_CONDUCT.md LICENSE   参与贡献、行为准则和许可证
+└── bump_manifest_version.py                     清单的版本工具
+```
+
+</details>
+
+## 🗺️ 路线图与已知限制
+
+**目前已知的限制**
+
+* 尚无任何内容在模块上运行：固件未编译、烧录或试用，所需的板级支持包可能需要为该模块做修改。
+* 还没有与 EH3D-SERVER 或机床节点的连接，因此界面无法移动机床；查看、作业、机床和工位、设置标签页都是空页面。
+* 急停引脚和触摸控制器尚未确定：必须对照本机的原理图核实。
+* 语音识别器和扬声器尚未进入固件；指令和提示以文本方式测试。
+* 桌面程序的逻辑（格式、控制器、机群）没有复用：界面遵循桌面程序，但规则用 C++ 重写。
+
+**下一步**
+
+* 编译固件并启动模块：显示、触摸和声音。
+* 编写与 EH3D-SERVER 和节点的连接，并补全界面的其他标签页。
+* 加入语音识别器和扬声器，并配合回声消除试验。
+* 接上真实的急停按钮，并在机床上试验锁存。
+
+## 🌍 语言
+
+README 和文本提供英语、西班牙语、法语、意大利语、德语、汉语、日语和欧洲葡萄牙语版本。
+
+## 🔗 相关项目
+
+* [EH3D-DRILLPRO](https://github.com/JuanenRac/EH3D-DRILLPRO): 界面所遵循的桌面程序
+* [EH3D-ROUTEPRO](https://github.com/JuanenRac/EH3D-ROUTEPRO): 铣切程序；共享机床文件和协议库
+* [EH3D-SERVER](https://github.com/JuanenRac/EH3D-SERVER): 家族的中心：运行所有客户端的作业
+* [EH3D-NODE-BUNGARD](https://github.com/JuanenRac/EH3D-NODE-BUNGARD): 机床控制单元串口上的节点
+* [EH3D-COMMON](https://github.com/JuanenRac/EH3D-COMMON): 家族的公共部分（格式、控制器、机群、主题）
+
+## 📚 文档
+
+* 设置：`hmi.cfg.example` 列出每个键及其默认值和范围。
+* 硬件：模块的引脚以及厂商演示附带的说明，见 `docs/HARDWARE.md`。
+* [更新日志](CHANGELOG.md)
+
+## 🤝 参与贡献与社区
+
+* 提交 pull request 之前请运行主机测试（`./build.sh` 或 `build.bat`）和 `python -I tools/ci_validate.py`：必须全部通过。参见 [CONTRIBUTING.md](CONTRIBUTING.md) 和[行为准则](CODE_OF_CONDUCT.md)。
+* README 有八种语言：文本改动要在八个文件中同时进行，两幅图由 `tools/make_architecture.py` 和 `tools/make_structure.py` 根据 `docs/architecture.json` 和 `docs/structure.json` 绘制。
+* 任何让屏幕能够移动机床的改动，都必须有覆盖它的闸门测试，以及在硬件上观察结果的记录。
+* 请私下报告漏洞：[SECURITY.md](SECURITY.md)。问题、想法和报告：electrohobby3d@gmail.com（[SUPPORT.md](SUPPORT.md)）。
+
+## 👤 作者
+
+**JuanenRac (Electro Hobby 3D)** · electrohobby3d@gmail.com
+
+## 📜 许可证
+
+软件：GPL-3.0-or-later。见 [LICENSE](LICENSE)。套件的硬件设计使用 CERN OHL-S。

@@ -1,0 +1,236 @@
+<p align="center">
+  <img src="images/EH3D_BANNER.svg" alt="EH3D-NODE-BUNGARD-HMI banner" width="100%">
+</p>
+
+# 🖥️ EH3D-NODE-BUNGARD-HMI
+
+<p align="center"><a href="README.md">🇺🇸 English</a> | <a href="README_spa.md">🇪🇸 Español</a> | <a href="README_fra.md">🇫🇷 Français</a> | <a href="README_ita.md">🇮🇹 Italiano</a> | 🇩🇪 <b>Deutsch</b> | <a href="README_zho.md">🇨🇳 中文</a> | <a href="README_jpn.md">🇯🇵 日本語</a> | <a href="README_por.md">🇵🇹 Português</a></p>
+
+### Ein 10,1-Zoll-Touchscreen mit ESP32-P4, der eine Bungard-CCD-Maschine allein steuert: die Bildschirme und der Ablauf des Desktop-Programms in acht Sprachen, gesprochene Hinweise und Befehle und ein Hardware-Stopp, der nicht über den Bildschirm läuft.
+
+<p align="center">
+  <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
+  <img src="https://img.shields.io/badge/Stack-C%2B%2B17%20%2B%20ESP--IDF-00599C.svg" alt="C++17 and ESP-IDF">
+  <img src="https://img.shields.io/badge/Languages-8-00E5FF.svg" alt="Languages">
+  <img src="https://img.shields.io/badge/Version-0.0.1-0f6cbd.svg" alt="Version">
+  <img src="https://img.shields.io/badge/Maturity-scaffolding-FFB020.svg" alt="Maturity">
+</p>
+
+---
+
+**Ehrlichkeitscheck - was heute läuft:** Die Regeln des Bildschirms sind in C++17 geschrieben und auf einem Computer getestet: die Einstellungsdatei mit sicheren Standardwerten, das Tor, das jede Bewegung und jeder Spindelbefehl passieren muss (eine Bestätigung auf dem Bildschirm, die Hardware-Stopp-Sperre, die scharfe Verbindung), die gesprochenen Befehle und Hinweise in acht Sprachen und die Texte der Bildschirme. Die ESP-IDF-Firmware mit den LVGL-Bildschirmen ist für das Modul Guition JC8012P4A1C geschrieben, **wurde aber weder gebaut noch geflasht noch auf einem Modul ausgeführt**; es gibt noch keine Verbindung zum Server oder zur Maschine, und nichts wurde an eine Maschine angeschlossen.
+
+---
+
+> **Sicherheitsstatus (Safety und IT-Sicherheit):** Dies ist kein Sicherheitssystem. Der Stopp, der Menschen und Maschine schützt, ist ein Hardware-Taster, der den Antrieb von selbst abschaltet und getrennt von diesem Bildschirm verdrahtet ist; der Bildschirm liest ihn nur, zeigt ihn an und bewegt nichts, solange er gedrückt oder nicht quittiert ist. Eine Bewegung oder ein Spindelbefehl verlangt eine Bestätigung auf dem Bildschirm, ein gesprochener Befehl immer, und gesprochene Befehle sind aus, bis der Bediener sie einschaltet. Benutze diesen Bildschirm nicht zum Betrieb einer Maschine, bevor die ganze Kette an einer echten erprobt wurde. Das Projekt ist unabhängig: Es wird nicht von Bungard Elektronik oder Guition hergestellt, unterstützt oder gebilligt, und Produktnamen erscheinen nur, um zu sagen, mit welchen Maschinen und Modulen es arbeiten soll.
+
+## 📋 Auf einen Blick
+
+| | |
+|---|---|
+| Version | `0.0.1` |
+| Reifegrad | Gerüst |
+| Tests | 1 Host-Testprogramm (598 Prüfungen gezählt) |
+| Technologie-Stack | C++17, ESP-IDF 5.5, LVGL 9, ESP32-P4 |
+| Auf echter Hardware | Nein: die Firmware wurde weder gebaut noch geflasht, und nichts wurde an eine Maschine angeschlossen |
+
+**Springe zu:** [Überblick](#-überblick) · [Architektur](#-architektur) · [Schnellstart](#-schnellstart) · [Tests](#-tests) · [Struktur](#-struktur-des-repositorys) · [Verwandte](#-verwandte-projekte)
+
+## 🚦 Projektstatus
+
+Jede Zeile ist ein Teil dieses Repositorys, und die Ampel sagt, wie weit er heute ist. Sie beruht auf dem, was das Repository zeigen kann (Tests, Builds, Läufe), nicht auf dem, was geplant ist.
+
+🟢 Fertig und überprüft · 🟡 Funktioniert, mit bekannten Grenzen · 🟠 Teilweise fertig oder noch nicht überprüft · 🔴 Nicht gemacht oder funktioniert nicht
+
+| Bereich | Stand | Was das hier bedeutet |
+|---|---|---|
+| Software | 🟠 | Das ESP-IDF-Projekt (ESP32-P4, LVGL 9, die Einstellungsdatei in einer eigenen Partition) ist geschrieben; es wurde weder gebaut noch geflasht. |
+| Tests | 🟢 | 1 Host-Testprogramm besteht (`ctest`): 598 Prüfungen zu Einstellungsdatei, Tor, gesprochenen Befehlen und Hinweisen und den Bildschirmtexten in acht Sprachen. |
+| Sicherheitsregeln | 🟡 | Jede Bewegung und jeder Spindelbefehl läuft durch das Tor: Bestätigung auf dem Bildschirm, Hardware-Stopp-Sperre, die bei losgelassenem Taster nur eine Quittung auf dem Bildschirm löst, keine Bewegung bei nicht scharfer Verbindung. Durch Tests gedeckt; nie mit einem echten Stopp-Taster erprobt. |
+| Sprache | 🟡 | Gesprochene Befehle und Hinweise werden in acht Sprachen erkannt und formuliert und als Text getestet; es wurde kein Mikrofon und kein Lautsprecher benutzt. |
+| Bildschirme | 🟠 | Der Maschinenbildschirm (Tippen, Referenz, Spindel, Start, Stopp, Bestätigung, Hardware-Stopp-Banner) ist geschrieben; die Reiter Ansicht, Auftrag, Maschinen und Stationen und Einstellungen sind noch leere Seiten. |
+| Echte Hardware | 🔴 | Kein Modul hat diese Firmware ausgeführt, die Verbindung zum Server gibt es noch nicht, und nichts wurde an eine Maschine angeschlossen. |
+| Dokumentation | 🟢 | README in acht Sprachen, die Einstellungsreferenz und die Hardware-Hinweise. |
+
+## 🎯 Überblick
+
+* Das **Tor**: jede Bewegung und jeder Spindelbefehl, per Touch oder Sprache, läuft über eine Stelle, die entscheidet, ob sie ausgeführt, bestätigt oder mit Begründung abgelehnt wird; ein Stopp geht immer durch.
+* Die **Einstellungsdatei** `hmi.cfg`: jeder abgestimmte Wert (Sprache, Helligkeit, der Server, die Sicherheitsschalter, die Sprache) ist eine Zeile einer Datei in einer eigenen Partition, nie eine Zahl im Code; ein Wert außerhalb des Bereichs wird gemeldet und der sichere Standard bleibt.
+* Die **Sprache**: gesprochene Hinweise (Auftrag fertig, Werkzeugwechsel, Fehler, Verbindung verloren, Hardware-Stopp) und eine kurze feste Liste gesprochener Befehle in acht Sprachen; Befehle, die nur anhalten, werden auch in einem Satz verstanden, die zum Bewegen oder Drehen müssen vollständig gesagt werden und verlangen immer eine Bestätigung.
+* Die **Bildschirme**: die Maschine (Tippen, Referenz, Spindel, Start, Stopp), der Auftrag, die Ansicht, die Maschinen und Stationen des Servers und die Einstellungen, in der Reihenfolge und mit den Namen des Desktop-Programms; der Stopp-Knopf ist immer oben.
+* Das **Modul**: das Guition JC8012P4A1C (ESP32-P4 mit 32 MB externem RAM, 10,1-Zoll-MIPI-DSI-Touchdisplay mit 800x1280, ein ESP32-C6 für WLAN, der Codec ES8311 mit Lautsprecherverstärker und der Mikrofoneingang ES7210). Das Panel der Einheit ist das neue.
+
+## 🧩 Rolle in EH3D
+
+EH3D-NODE-BUNGARD-HMI ist der eigene Bildschirm des Bedieners für eine Bungard-CCD-Maschine: Er ersetzt den PC neben der Maschine. Er soll die Maschine über EH3D-SERVER oder über EH3D-NODE-BUNGARD (den Knoten am seriellen Anschluss der Maschine) steuern, wie es EH3D-DRILLPRO und EH3D-ROUTEPRO tun. Diese Verbindung ist noch nicht geschrieben.
+
+## 🏛️ Architektur
+
+<p align="center">
+  <img src="images/architecture.svg" alt="Architektur von EH3D-NODE-BUNGARD-HMI: wer es nutzt, was es enthält und wovon es abhängt" width="100%">
+</p>
+
+Wie die Teile dieses Repositorys zusammenpassen: wer mit ihm spricht, was es enthält und wovon es abhängt. Das Bild wird aus `docs/architecture.json` gezeichnet und gegen den Code geprüft.
+
+## ✨ Funktionen
+
+* **Ein Stopp, den man nicht vergessen kann:** Der Stopp-Knopf ist immer oben und funktioniert immer; der Hardware-Stopp rastet ein, und nur eine Quittung auf dem Bildschirm bei losgelassenem Taster löst ihn.
+* **Bestätigung vor der Bewegung:** Eine Bewegung oder ein Spindelbefehl zeigt, was sie tun wird, und wartet mit Zeitlimit auf eine Berührung; eine neue Anfrage oder eine verlorene Verbindung verwirft sie.
+* **Acht Sprachen, auch per Sprache:** Englisch, Spanisch, Italienisch, Deutsch, Französisch, europäisches Portugiesisch, Chinesisch und Japanisch auf den Bildschirmen, in den gesprochenen Hinweisen und in den gesprochenen Befehlen.
+* **Standardmäßig sicher:** Jeder Sicherheitsschalter hat seine Einstellung und beginnt in der vorsichtigen Stellung: gesprochene Befehle aus, gesprochene Bestätigung aus, Bestätigung an, Hardware-Stopp erforderlich.
+
+## 🔒 Sicherheit und Schutz
+
+| Bedrohung | Abwehr |
+|---|---|
+| Eine Berührung oder ein gesprochener Befehl bewegt die Maschine versehentlich | eine Bewegung verlangt eine Bestätigung auf dem Bildschirm mit Zeitlimit; ein gesprochener Befehl immer; ein gesprochenes Ja bestätigt nur bei eingeschalteter Einstellung `voice_confirm` (standardmäßig aus) |
+| Der Bildschirm bewegt bei gedrücktem Hardware-Stopp | der Hardware-Stopp ist eine Sperre: gedrückt, oder gelöst aber nicht auf dem Bildschirm quittiert, wird jede Bewegung und jeder Spindelbefehl abgelehnt und Wartendes verworfen; ein Stopp während einer wartenden Bestätigung bricht sie ab |
+| Eine Maschine, die nicht bereit ist | nichts bewegt sich bei nicht scharfer Verbindung, bei nicht verdrahtetem Hardware-Stopp-Eingang (`hw_stop_required`, standardmäßig an) oder bei Spindelgrenze 0 |
+| Ein gesprochenes Wort wird für einen Befehl gehalten | Befehle stammen aus einer kurzen festen Liste je Sprache, nie aus freiem Text; ein Wort, das nur einen Befehl enthält (`stopwatch`), ist kein Befehl; gesprochene Befehle sind aus, bis der Bediener sie einschaltet |
+| Ein Tippfehler in den Einstellungen | ein Wert außerhalb des Bereichs oder ein unbekannter Schlüssel wird gemeldet und der sichere Standard bleibt; kein Schalter öffnet sich durch einen Fehler |
+| Ein Geheimnis in der Firmware oder im Repository | nichts Geheimes ist einkompiliert; das Token ist eine Einstellung in seiner Partition und wird nie angezeigt oder protokolliert |
+
+**Was nicht abgesichert ist:** Der Bildschirm ist kein Sicherheitsgerät und kann den Antrieb der Maschine nicht abschalten; das muss der Hardware-Stopp von selbst tun. Es gibt noch keine Verbindung zum Server, daher kann der Bildschirm heute keine Maschine bewegen. Die Spracherkennung wird als Text getestet; der echte Mikrofonweg (Echounterdrückung, Rauschen, Akzente) wurde nicht erprobt. Wer das Modul in der Hand hat, kann die Einstellungsdatei ändern.
+
+## 🔌 Schnittstellen
+
+| Schnittstelle | Was es ist | Wo |
+|---|---|---|
+| Einstellungsdatei | `hmi.cfg` in der Partition `config`: Zeilen `Schlüssel = Wert`; siehe `hmi.cfg.example` und die Tabelle oben | `core/hmi_config.hpp` |
+| Hardware-Stopp-Eingang | ein GPIO (`HMI_HW_STOP_GPIO` in menuconfig, standardmäßig aktiv niedrig, mit Pull-up, damit ein offenes Kabel als gedrückt gilt) | `main/board_p4.cpp` |
+| Touchdisplay | 800x1280 MIPI-DSI über LVGL 9 | `main/ui.cpp` |
+| Ton | Codec ES8311 mit Lautsprecherverstärker und Mikrofoneingang ES7210 | `main/board_p4.cpp` |
+
+## ⚙️ Konfiguration
+
+Alles Abgestimmte ist eine Zeile in `hmi.cfg` (kopiere `hmi.cfg.example` in die Partition `config`); ein Wert außerhalb des Bereichs wird im Protokoll gemeldet und der Standard bleibt. Die Werte unten sind die Standardwerte; jeder Sicherheitsstandard ist der vorsichtige.
+
+| Einstellung | Standard | Bereich | Was sie tut |
+|---|---|---|---|
+| `language` | `en` | `en es it de fr pt zh ja` | die Sprache der Bildschirme und der Stimme |
+| `confirm_moves` | on | on / off | verlangt Bestätigung zum Bewegen: nur auf dem Prüfstand ausschalten |
+| `confirm_timeout_ms` | 8000 | 1000 - 60000 | wie lange eine Bestätigung wartet |
+| `jog_max_mm` | 20 | 1 - 200 | die längste einzelne Tippbewegung, die der Bildschirm sendet |
+| `spindle_max_rpm` | 24000 | 0 - 65535 | die höchste angeforderte Spindeldrehzahl (0: startet nie die Spindel) |
+| `hw_stop_required` | on | on / off | steuert die Maschine nur bei verdrahtetem und gelöstem Hardware-Stopp-Eingang |
+| `voice_orders` | off | on / off | nimmt gesprochene Befehle an |
+| `voice_confirm` | off | on / off | nimmt ein gesprochenes Ja als Bestätigung einer Bewegung an |
+| `token` | none | 8 - 64 characters | das Zugriffstoken des Servers; nur schreibbar, nie angezeigt oder protokolliert |
+
+## 🚀 Schnellstart
+
+Du brauchst einen C++17-Compiler und CMake für die Host-Tests und ESP-IDF 5.5.5 für die Firmware (das Ziel ESP32-P4 des Moduls).
+
+```bash
+build.bat            # the host tests (Windows)  -  ./build.sh on Linux
+python -I tools/ci_validate.py
+```
+
+Die Firmware wurde noch nicht gebaut: wenn es so weit ist, erzeugt `idf.py set-target esp32p4 && idf.py build` das Abbild, und eine Partition namens `config` enthält `hmi.cfg`.
+
+## 🧪 Tests
+
+Die Host-Tests (`build.bat` oder `./build.sh`, dann `ctest`) sind ein Programm, `test_hmi`, und es besteht vollständig: 598 Prüfungen zur Einstellungsdatei (Standardwerte, Bereiche, Fehler, Zeilenenden), zum Tor (Stopp geht immer, Hardware-Stopp-Sperre, Bestätigung, Zeitlimit und Uhrenüberlauf, Sprachregeln, Schalter), zu den gesprochenen Befehlen und Hinweisen in acht Sprachen und zu den Bildschirmtexten.
+
+## 🏗️ Build und Veröffentlichung
+
+Die Version steht in `eh3d.project.json`, und jede Version hat ihren Eintrag in [CHANGELOG.md](CHANGELOG.md). `build.sh` / `build.bat` bauen und führen die Host-Tests aus, `test.sh` / `test.bat` die Prüfungen des Repositorys. Die Firmware wird außerhalb der Skripte dieses Repositorys gebaut, in einem sichtbaren Fenster, immer nur ein Build.
+
+## 🩺 Fehlerbehebung
+
+| Symptom | Was zu tun ist |
+|---|---|
+| Nichts bewegt sich und der Bildschirm meldet, der Hardware-Stopp sei gedrückt oder nicht quittiert | Taster loslassen und dann die Quittierungstaste auf dem Bildschirm drücken: ein gelöster Stopp wird nicht von selbst aufgehoben. |
+| Der Bildschirm meldet, die Maschine sei nicht scharf | In dieser Version gibt es noch keine Verbindung zur Maschine; das Tor lehnt jede Bewegung ab, bis eine Verbindung sie scharf macht. |
+| Der Bildschirm meldet, der Hardware-Stopp-Eingang sei nicht verdrahtet | Den Stopp-Taster an den in menuconfig gesetzten Pin (`HMI_HW_STOP_GPIO`) anschließen oder `hw_stop_required` nur auf dem Prüfstand ausschalten. |
+| Ein gesprochener Befehl bewirkt nichts | Gesprochene Befehle sind standardmäßig aus: `voice_orders = on` setzen. Befehle zum Bewegen oder Drehen verlangen eine Berührung, außer `voice_confirm` ist an. |
+
+## 📂 Struktur des Repositorys
+
+<p align="center">
+  <img src="images/repository-structure.svg" alt="Struktur des Repositorys EH3D-NODE-BUNGARD-HMI" width="100%">
+</p>
+
+<details>
+<summary>Textversion des Baums</summary>
+
+```text
+EH3D-NODE-BUNGARD-HMI/
+├── core/
+│   ├── hmi_config.hpp lang.hpp                  die Einstellungsdatei und ihre sicheren Standardwerte
+│   ├── gate.hpp                                 das Tor: Bestätigung, Stopp-Sperre
+│   ├── voice.hpp                                gesprochene Befehle und Hinweise in acht Sprachen
+│   └── ui_text.hpp                              die Bildschirmtexte in acht Sprachen
+├── main/
+│   ├── app_main.cpp                             Start, Einstellungen, die Schleife des Tors
+│   ├── ui.cpp ui.hpp                            die LVGL-Bildschirme und der Stopp-Knopf
+│   ├── board_p4.cpp board.hpp                   das Modul: Display, Ton, Stopp-Eingang
+│   └── idf_component.yml Kconfig.projbuild      Komponentenliste und menuconfig-Pins
+├── tests/                                       Host-Tests von Einstellungen, Tor, Sprache und Bildschirmtexten
+├── docs/                                        die Hardware-Hinweise und die Quellen der beiden Bilder
+├── tools/                                       CI-Prüfung, README-Prüfung und Bildwerkzeuge
+├── CMakeLists.txt                               das ESP-IDF-Projekt
+├── partitions.csv                               die Flash-Aufteilung mit zwei Slots
+├── hmi.cfg.example                              jede Einstellung mit Standardwert und Bereich
+├── sdkconfig.defaults                           ESP-IDF-Einstellungen für das ESP32-P4-Modul
+├── images/                                      Banner und die Bilder von Architektur und Repository-Struktur
+├── .github/                                     CI- und Release-Workflows, Vorlagen für Issues und Pull Requests
+├── build.sh build.bat                           baut und führt die Host-Tests in einem Live-Panel aus
+├── eh3d.project.json                            Manifest: Version, Rolle, Reifegrad und Build-Befehl
+├── CHANGELOG.md                                 was sich in jeder Version geändert hat
+├── SECURITY.md SUPPORT.md                       Schwachstellen melden und Fragen stellen
+├── CONTRIBUTING.md CODE_OF_CONDUCT.md LICENSE   Mitwirken, Verhaltenskodex und Lizenz
+└── bump_manifest_version.py                     Versionswerkzeug des Manifests
+```
+
+</details>
+
+## 🗺️ Roadmap und bekannte Grenzen
+
+**Bekannte Grenzen heute**
+
+* Nichts hat auf einem Modul gelaufen: Die Firmware wurde weder gebaut noch geflasht noch erprobt, und das verlangte Board-Support-Paket braucht für dieses Modul vielleicht Änderungen.
+* Es gibt noch keine Verbindung zu EH3D-SERVER oder zum Knoten der Maschine, daher können die Bildschirme keine Maschine bewegen; die Reiter Ansicht, Auftrag, Maschinen und Stationen und Einstellungen sind leere Seiten.
+* Der Pin des Hardware-Stopps und der Touch-Controller sind noch nicht festgelegt: Sie müssen am Schaltplan der Einheit geprüft werden.
+* Spracherkenner und Lautsprecher sind noch nicht in der Firmware; Befehle und Hinweise werden als Text getestet.
+* Die Logik der Desktop-Programme (Formate, Controller, Flotte) wird nicht wiederverwendet: Die Bildschirme folgen dem Desktop-Programm, die Regeln sind aber in C++ neu geschrieben.
+
+**Als Nächstes**
+
+* Die Firmware bauen und das Modul starten: Display, Touch und Ton.
+* Die Verbindung zu EH3D-SERVER und zum Knoten schreiben und die übrigen Reiter der Bildschirme füllen.
+* Spracherkenner und Lautsprecher hinzufügen und mit Echounterdrückung erproben.
+* Einen echten Stopp-Taster verdrahten und die Sperre an einer Maschine erproben.
+
+## 🌍 Sprachen
+
+README und Texte gibt es auf Englisch, Spanisch, Französisch, Italienisch, Deutsch, Chinesisch, Japanisch und europäischem Portugiesisch.
+
+## 🔗 Verwandte Projekte
+
+* [EH3D-DRILLPRO](https://github.com/JuanenRac/EH3D-DRILLPRO): das Desktop-Programm, dem die Bildschirme folgen
+* [EH3D-ROUTEPRO](https://github.com/JuanenRac/EH3D-ROUTEPRO): das Fräsprogramm; teilt die Maschinendatei und die Protokollbibliothek
+* [EH3D-SERVER](https://github.com/JuanenRac/EH3D-SERVER): das Zentrum der Familie: führt die Aufträge aller Clients aus
+* [EH3D-NODE-BUNGARD](https://github.com/JuanenRac/EH3D-NODE-BUNGARD): der Knoten am seriellen Anschluss der Steuereinheit der Maschine
+* [EH3D-COMMON](https://github.com/JuanenRac/EH3D-COMMON): die gemeinsamen Teile der Familie (Formate, Controller, Flotte, Themen)
+
+## 📚 Dokumentation
+
+* Die Einstellungen: `hmi.cfg.example` listet jeden Schlüssel mit Standardwert und Bereich.
+* Die Hardware: die Pins des Moduls und die Hinweise zur Demo des Herstellers in `docs/HARDWARE.md`.
+* [Änderungsprotokoll](CHANGELOG.md)
+
+## 🤝 Mitwirken und Community
+
+* Führe vor einem Pull Request die Host-Tests (`./build.sh` oder `build.bat`) und `python -I tools/ci_validate.py` aus: alles muss bestehen. Siehe [CONTRIBUTING.md](CONTRIBUTING.md) und den [Verhaltenskodex](CODE_OF_CONDUCT.md).
+* Das README gibt es in acht Sprachen: Eine Textänderung wird in allen acht Dateien gemacht, und die beiden Bilder werden aus `docs/architecture.json` und `docs/structure.json` mit `tools/make_architecture.py` und `tools/make_structure.py` gezeichnet.
+* Nichts, was dem Bildschirm erlaubt, eine Maschine zu bewegen, ändert sich ohne einen Test des Tors, der es abdeckt, und eine Notiz dessen, was an der Hardware beobachtet wurde.
+* Eine Schwachstelle bitte privat melden: [SECURITY.md](SECURITY.md). Fragen, Ideen und Meldungen: electrohobby3d@gmail.com ([SUPPORT.md](SUPPORT.md)).
+
+## 👤 AUTOR
+
+**JuanenRac (Electro Hobby 3D)** · electrohobby3d@gmail.com
+
+## 📜 LIZENZ
+
+Software: GPL-3.0-or-later. Siehe [LICENSE](LICENSE). Die Hardware-Entwürfe der Suite verwenden die CERN OHL-S.
