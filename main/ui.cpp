@@ -80,6 +80,18 @@ lv_obj_t* button(lv_obj_t* parent, const char* label, lv_event_cb_t cb, void* us
     return b;
 }
 
+// A button with a symbol in place of a word: the symbols are the ones of LVGL (the same meaning in every language), drawn in the larger font.
+lv_obj_t* icon_button(lv_obj_t* parent, const char* symbol, lv_event_cb_t cb, void* user, lv_color_t colour, int w, int h) {
+    lv_obj_t* b = button(parent, symbol, cb, user, colour, w, h);
+    lv_obj_set_style_text_font(lv_obj_get_child(b, 0), &lv_font_montserrat_24, 0);
+    return b;
+}
+
+// the colours of the buttons of a job, as in the desktop program: green to start, blue to pause, red to stop
+const lv_color_t kGo = LV_COLOR_MAKE(0x28, 0xe6, 0x5a);
+const lv_color_t kHold = LV_COLOR_MAKE(0x28, 0x96, 0xff);
+const lv_color_t kHalt = LV_COLOR_MAKE(0xff, 0x28, 0x28);
+
 void on_stop(lv_event_t*) { send_action({hmi::Kind::Stop, "stop"}); }
 void on_ack(lv_event_t*) { Request r; r.what = What::AckRelease; send(r); }
 void on_confirm(lv_event_t*) { Request r; r.what = What::Confirm; send(r); }
@@ -182,14 +194,11 @@ void build(const hmi::Settings& s, const hmi::Layout& layout, void (*post)(const
     lv_obj_t* jog = card(g_pages[0], hmi::text(T::Jog, s.language));
     lv_obj_set_size(jog, col_w, layout.portrait ? 380 : LV_PCT(100));
     lv_obj_set_flex_flow(jog, LV_FLEX_FLOW_ROW_WRAP);
-    static char labels[6][40];
-    const T axes[6] = {T::JogX, T::JogX, T::JogY, T::JogY, T::JogZ, T::JogZ};
-    for (int i = 0; i < 6; ++i) {
-        std::snprintf(labels[i], sizeof labels[i], "%s %s", hmi::text(axes[i], s.language), (i % 2 == 0) ? "-" : "+");
-        remember_move(button(jog, labels[i], on_action, const_cast<hmi::Action*>(&kJog[i]), kSlate, 120, 80));
-    }
-    remember_move(button(jog, hmi::text(T::Home, s.language), on_action, const_cast<hmi::Action*>(&kHome), kSlate, 190, 80));
-    remember_move(button(jog, hmi::text(T::Spindle, s.language), on_action, const_cast<hmi::Action*>(&kSpindle), kSlate, 190, 80));
+    // the jog pad: the letter of the axis and an arrow, which mean the same in every language
+    static const char* const arrows[6] = {"X " LV_SYMBOL_LEFT, "X " LV_SYMBOL_RIGHT, "Y " LV_SYMBOL_DOWN, "Y " LV_SYMBOL_UP, "Z " LV_SYMBOL_DOWN, "Z " LV_SYMBOL_UP};
+    for (int i = 0; i < 6; ++i) remember_move(icon_button(jog, arrows[i], on_action, const_cast<hmi::Action*>(&kJog[i]), kSlate, 120, 80));
+    remember_move(icon_button(jog, LV_SYMBOL_HOME, on_action, const_cast<hmi::Action*>(&kHome), kSlate, 120, 80));
+    remember_move(icon_button(jog, LV_SYMBOL_REFRESH, on_action, const_cast<hmi::Action*>(&kSpindle), kSlate, 120, 80));
 
     // job: the files of the microSD card, and the button that sends the chosen one to the server as a job
     lv_obj_t* files = card(g_pages[1], "microSD");
@@ -198,8 +207,8 @@ void build(const hmi::Settings& s, const hmi::Layout& layout, void (*post)(const
     lv_obj_set_size(g_card_list, LV_PCT(100), LV_PCT(80));
     lv_obj_t* side = card(g_pages[1], hmi::text(T::Job, s.language));
     lv_obj_set_size(side, layout.portrait ? LV_PCT(100) : LV_PCT(32), LV_PCT(100));
-    button(side, "microSD", on_refresh_card, nullptr, kSlate, 180, 64);
-    remember_move(button(side, hmi::text(T::Start, s.language), on_send_job, nullptr, LV_COLOR_MAKE(0x2e, 0x5d, 0x1e), 180, 64));
+    icon_button(side, LV_SYMBOL_SD_CARD " " LV_SYMBOL_REFRESH, on_refresh_card, nullptr, kSlate, 180, 64);
+    remember_move(icon_button(side, LV_SYMBOL_UPLOAD, on_send_job, nullptr, kGo, 180, 64));
 
     // viewer: the plan of the chosen job
     lv_obj_t* view = card(g_pages[2], hmi::text(T::Viewer, s.language));
@@ -232,13 +241,13 @@ void build(const hmi::Settings& s, const hmi::Layout& layout, void (*post)(const
     lv_obj_set_flex_align(g_bar, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
     lv_obj_t* pos = lv_label_create(g_bar);
     lv_label_set_text(pos, "X 19.5   Y 77.5   Z -0.4 mm");
-    lv_obj_t* stop = button(g_bar, hmi::text(T::Stop, s.language), on_stop, nullptr, LV_COLOR_MAKE(0xc6, 0x28, 0x28), 130, 130);
+    lv_obj_t* stop = icon_button(g_bar, LV_SYMBOL_WARNING, on_stop, nullptr, LV_COLOR_MAKE(0xc6, 0x28, 0x28), 130, 130);
     lv_obj_set_style_radius(stop, LV_RADIUS_CIRCLE, 0);
     lv_obj_set_style_border_width(stop, 6, 0);
     lv_obj_set_style_border_color(stop, kAmber, 0);
-    remember_move(button(g_bar, hmi::text(T::Pause, s.language), on_action, const_cast<hmi::Action*>(&kPause), LV_COLOR_MAKE(0xff, 0x5a, 0x1f), 150, 80));
-    remember_move(button(g_bar, hmi::text(T::Start, s.language), on_action, const_cast<hmi::Action*>(&kStart), LV_COLOR_MAKE(0x2e, 0x5d, 0x1e), 150, 80));
-    button(g_bar, hmi::text(T::Stop, s.language), on_stop, nullptr, LV_COLOR_MAKE(0xff, 0x4d, 0x6d), 150, 80);
+    remember_move(icon_button(g_bar, LV_SYMBOL_PAUSE, on_action, const_cast<hmi::Action*>(&kPause), kHold, 150, 80));
+    remember_move(icon_button(g_bar, LV_SYMBOL_PLAY, on_action, const_cast<hmi::Action*>(&kStart), kGo, 150, 80));
+    icon_button(g_bar, LV_SYMBOL_STOP, on_stop, nullptr, kHalt, 150, 80);
     g_ack = button(g_bar, hmi::text(T::AckRelease, s.language), on_ack, nullptr, LV_COLOR_MAKE(0xf9, 0xa8, 0x25), 260, 80);
     lv_obj_add_flag(g_ack, LV_OBJ_FLAG_HIDDEN);
 
@@ -250,9 +259,9 @@ void build(const hmi::Settings& s, const hmi::Layout& layout, void (*post)(const
     lv_obj_center(g_dialog);
     g_dialog_text = lv_label_create(g_dialog);
     lv_obj_align(g_dialog_text, LV_ALIGN_TOP_MID, 0, 16);
-    lv_obj_t* yes = button(g_dialog, hmi::text(T::Confirm, s.language), on_confirm, nullptr, LV_COLOR_MAKE(0x2e, 0x5d, 0x1e), 220, 90);
+    lv_obj_t* yes = icon_button(g_dialog, LV_SYMBOL_OK, on_confirm, nullptr, kGo, 220, 90);
     lv_obj_align(yes, LV_ALIGN_BOTTOM_LEFT, 8, -8);
-    lv_obj_t* no = button(g_dialog, hmi::text(T::Cancel, s.language), on_cancel, nullptr, LV_COLOR_MAKE(0x54, 0x6e, 0x7a), 220, 90);
+    lv_obj_t* no = icon_button(g_dialog, LV_SYMBOL_CLOSE, on_cancel, nullptr, LV_COLOR_MAKE(0x54, 0x6e, 0x7a), 220, 90);
     lv_obj_align(no, LV_ALIGN_BOTTOM_RIGHT, -8, -8);
     lv_obj_add_flag(g_dialog, LV_OBJ_FLAG_HIDDEN);
 }

@@ -30,7 +30,7 @@
 |---|---|
 | Version | `0.0.1` |
 | Reifegrad | Gerüst |
-| Tests | 2 Host-Testprogramme (743 Prüfungen gezählt) |
+| Tests | 4 Host-Testprogramme (946 Prüfungen gezählt) |
 | Technologie-Stack | C++17, ESP-IDF 5.5, LVGL 9, ESP32-P4 |
 | Auf echter Hardware | Nein: die Firmware wurde weder gebaut noch geflasht, und nichts wurde an eine Maschine angeschlossen |
 
@@ -45,7 +45,7 @@ Jede Zeile ist ein Teil dieses Repositorys, und die Ampel sagt, wie weit er heut
 | Bereich | Stand | Was das hier bedeutet |
 |---|---|---|
 | Software | 🟠 | Das ESP-IDF-Projekt (ESP32-P4, LVGL 9, die Einstellungsdatei in einer eigenen Partition) ist geschrieben; es wurde weder gebaut noch geflasht. |
-| Tests | 🟢 | 1 Host-Testprogramm besteht (`ctest`): 598 Prüfungen zu Einstellungsdatei, Tor, gesprochenen Befehlen und Hinweisen und den Bildschirmtexten in acht Sprachen. |
+| Tests | 🟢 | 4 Host-Testprogramme bestehen (`ctest`): 946 Prüfungen zu Einstellungsdatei, Tor, gesprochenen Befehlen und Hinweisen, den Tastaturen, den aufgenommenen Hinweisen, dem Server-Client und den Bildschirmtexten in acht Sprachen. |
 | Sicherheitsregeln | 🟡 | Jede Bewegung und jeder Spindelbefehl läuft durch das Tor: Bestätigung auf dem Bildschirm, Hardware-Stopp-Sperre, die bei losgelassenem Taster nur eine Quittung auf dem Bildschirm löst, keine Bewegung bei nicht scharfer Verbindung. Durch Tests gedeckt; nie mit einem echten Stopp-Taster erprobt. |
 | Sprache | 🟡 | Gesprochene Befehle und Hinweise werden in acht Sprachen erkannt und formuliert und als Text getestet; es wurde kein Mikrofon und kein Lautsprecher benutzt. |
 | Bildschirme | 🟠 | Die Bildschirme Maschine, Auftrag (microSD), Maschinen und Stationen und Einstellungen sind geschrieben, im Quer- und im Hochformat, im Aussehen des Desktop-Programms; der Reiter Ansicht ist noch eine leere Karte. Es gibt nur eine Zeichnung des Layouts, keine Aufnahme eines Moduls. |
@@ -119,6 +119,9 @@ Wie die Teile dieses Repositorys zusammenpassen: wer mit ihm spricht, was es ent
 * **Bestätigung vor der Bewegung:** Eine Bewegung oder ein Spindelbefehl zeigt, was sie tun wird, und wartet mit Zeitlimit auf eine Berührung; eine neue Anfrage oder eine verlorene Verbindung verwirft sie.
 * **Acht Sprachen, auch per Sprache:** Englisch, Spanisch, Italienisch, Deutsch, Französisch, europäisches Portugiesisch, Chinesisch und Japanisch auf den Bildschirmen, in den gesprochenen Hinweisen und in den gesprochenen Befehlen.
 * **Standardmäßig sicher:** Jeder Sicherheitsschalter hat seine Einstellung und beginnt in der vorsichtigen Stellung: gesprochene Befehle aus, gesprochene Bestätigung aus, Bestätigung an, Hardware-Stopp erforderlich.
+* **Die passende Tastatur für jede Einstellung:** eine Zahl wird auf einem Zahlenblock getippt, der Bereich und Nachkommastellen dieser Einstellung kennt (die Pfeile verschieben um eine Einheit, ein Wert außerhalb des Bereichs wird nicht angenommen); ein Text, etwa die Adresse des Servers oder das Token, auf einer vollen Tastatur mit den Tasten der gewählten Sprache (Umlaute, Akzente, Tilde, Cedille), mit Umschalten für einen Buchstaben und einer Symbolebene; Schalter und Listen brauchen keine Tastatur.
+* **Tasten mit Symbol:** das Jog-Feld, Referenzfahrt, Spindel, Pause, Start, Stopp und die Antworten auf eine Frage nutzen Symbole und den Buchstaben der Achse statt Wörter, in den Farben des Desktop-Programms (grün zum Starten, blau für Pause, rot zum Stoppen).
+* **Aufgenommene Hinweise:** das Auftragsende und die Werkzeuganforderung können von einer aufgenommenen Stimme gesagt werden, in der eingestellten Sprache und dem Geschlecht (`sound_finish = voice:es:f`), aus dem Ordner `voices` der Karte; die Aufnahmen sind die von EH3D-BUNGARD-GUI. Der Lautsprecher ist in der Firmware noch nicht angeschlossen.
 
 ## 🔒 Sicherheit und Schutz
 
@@ -175,7 +178,7 @@ Die Firmware wurde noch nicht gebaut: wenn es so weit ist, erzeugt `idf.py set-t
 
 ## 🧪 Tests
 
-Die Host-Tests (`build.bat` oder `./build.sh`, dann `ctest`) sind zwei Programme und alles besteht: `test_hmi` (638 Prüfungen) zu Einstellungsdatei, Tor (Stopp geht immer, Hardware-Stopp-Sperre, Bestätigung, Zeitlimit und Uhrenüberlauf, Sprachregeln, Schalter), gesprochenen Befehlen und Hinweisen und Bildschirmtexten in acht Sprachen; und `test_workflow` (105 Prüfungen) zu Ausrichtung und Berührung, Dateien der Karte (Arten, sichere Namen, Sortierung), JSON-Leser, Anfragen und Antworten des Servers und dem Ablauf eines Auftrags von der Karte bis zum Ende.
+Die Host-Tests (`build.bat` oder `./build.sh`, dann `ctest`) sind zwei Programme und alles besteht: `test_hmi` (638 Prüfungen) zu Einstellungsdatei, Tor (Stopp geht immer, Hardware-Stopp-Sperre, Bestätigung, Zeitlimit und Uhrenüberlauf, Sprachregeln, Schalter), gesprochenen Befehlen und Hinweisen und Bildschirmtexten in acht Sprachen; und `test_workflow` (105 Prüfungen) zu Ausrichtung und Berührung, Dateien der Karte (Arten, sichere Namen, Sortierung), JSON-Leser, Anfragen und Antworten des Servers und dem Ablauf eines Auftrags von der Karte bis zum Ende. Die beiden anderen Programme decken die Tastaturen ab (`test_keyboard`, 137 Prüfungen: jede Einstellung hat ihre Tastatur, die Bereiche des Zahlenblocks sind die der Einstellungsdatei, die Nachkommastellen, das Vorzeichen, die Pfeile, die volle Tastatur jeder Sprache, die Umschaltung, die Symbole und die Länge) und die aufgenommenen Hinweise (`test_notices`, 66 Prüfungen: die Einstellung, die Datei jeder Sprache und jedes Geschlechts).
 
 ## 🏗️ Build und Veröffentlichung
 
@@ -207,7 +210,7 @@ EH3D-NODE-BUNGARD-HMI/
 │   ├── voice.hpp                                gesprochene Befehle und Hinweise in acht Sprachen
 │   ├── orientation.hpp sdfiles.hpp              Hoch- und Querformat, Dateien der Karte
 │   ├── server_link.hpp workflow.hpp             Client des Servers und Ablauf eines Auftrags
-│   └── ui_text.hpp                              die Bildschirmtexte in acht Sprachen
+│   └── ui_text.hpp keyboard.hpp notices.hpp     Texte, Tastaturen und Hinweise
 ├── main/
 │   ├── app_main.cpp                             Start, Einstellungen, die Schleife des Tors
 │   ├── ui.cpp ui.hpp                            die LVGL-Bildschirme und der Stopp-Knopf

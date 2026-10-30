@@ -13,7 +13,11 @@ endif()
 
 add_executable(test_hmi test_hmi.cpp)
 add_executable(test_workflow test_workflow.cpp)
+add_executable(test_keyboard test_keyboard.cpp)
+add_executable(test_notices test_notices.cpp)
 
 enable_testing()
 add_test(NAME hmi COMMAND test_hmi)
 add_test(NAME workflow COMMAND test_workflow)
+add_test(NAME keyboard COMMAND test_keyboard)
+add_test(NAME notices COMMAND test_notices)

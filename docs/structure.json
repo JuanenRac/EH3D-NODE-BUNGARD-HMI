@@ -92,16 +92,17 @@
         },
         {
           "desc": {
-            "en": "the texts of the screens in eight languages",
-            "es": "los textos de las pantallas en ocho idiomas",
-            "it": "i testi delle schermate in otto lingue",
-            "de": "die Bildschirmtexte in acht Sprachen",
-            "fr": "les textes des écrans en huit langues",
-            "pt": "os textos dos ecrãs em oito idiomas",
-            "zh": "八种语言的界面文本",
-            "ja": "8 言語の画面文言"
+            "en": "texts, keyboards and notices",
+            "es": "textos, teclados y avisos",
+            "it": "testi, tastiere e avvisi",
+            "de": "Texte, Tastaturen und Hinweise",
+            "fr": "textes, claviers et avis",
+            "pt": "textos, teclados e avisos",
+            "zh": "文本、键盘与提示",
+            "ja": "文言、キーボード、通知"
           },
-          "name": "ui_text.hpp"
+          "name": "ui_text.hpp  keyboard.hpp  notices.hpp",
+          "tree_name": "ui_text.hpp keyboard.hpp notices.hpp"
         }
       ],
       "sub": {
@@ -219,6 +220,20 @@
           },
           "name": "test_hmi.cpp  test_workflow.cpp",
           "tree_name": "test_hmi.cpp test_workflow.cpp"
+        },
+        {
+          "desc": {
+            "en": "keyboards and notices",
+            "es": "teclados y avisos",
+            "it": "tastiere e avvisi",
+            "de": "Tastaturen und Hinweise",
+            "fr": "claviers et avis",
+            "pt": "teclados e avisos",
+            "zh": "键盘与提示",
+            "ja": "キーボードと通知"
+          },
+          "name": "test_keyboard.cpp  test_notices.cpp",
+          "tree_name": "test_keyboard.cpp test_notices.cpp"
         }
       ],
       "tree": {

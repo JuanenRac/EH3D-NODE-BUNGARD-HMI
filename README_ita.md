@@ -30,7 +30,7 @@
 |---|---|
 | Versione | `0.0.1` |
 | Maturità | Impalcatura |
-| Test | 2 programmi di test sul computer (743 controlli contati) |
+| Test | 4 programmi di test sul computer (946 controlli contati) |
 | Stack tecnologico | C++17, ESP-IDF 5.5, LVGL 9, ESP32-P4 |
 | Su hardware reale | No: il firmware non è stato compilato né scritto e nulla è stato collegato a una macchina |
 
@@ -45,7 +45,7 @@ Ogni riga è una parte di questo repository e il semaforo dice a che punto è og
 | Area | Stato | Cosa significa qui |
 |---|---|---|
 | Software | 🟠 | Il progetto ESP-IDF (ESP32-P4, LVGL 9, il file delle impostazioni in una partizione propria) è scritto; non è stato compilato né scritto sul chip. |
-| Test | 🟢 | 1 programma di test sul computer passa (`ctest`): 598 controlli sul file delle impostazioni, il varco, gli ordini e gli avvisi vocali e i testi delle schermate in otto lingue. |
+| Test | 🟢 | 4 programmi di test sul computer passano (`ctest`): 946 controlli sul file delle impostazioni, il varco, gli ordini e gli avvisi vocali, le tastiere, gli avvisi registrati, il client del server e i testi delle schermate in otto lingue. |
 | Regole di sicurezza | 🟡 | Ogni movimento e ogni ordine al mandrino passa dal varco: conferma sullo schermo, blocco dell'arresto hardware che solo una conferma sullo schermo toglie a pulsante rilasciato, nessun movimento con il collegamento non armato. Coperto da test; mai provato con un vero pulsante di arresto. |
 | Voce | 🟡 | Ordini e avvisi vocali sono riconosciuti e formulati in otto lingue e provati come testo; nessun microfono o altoparlante è stato usato. |
 | Schermate | 🟠 | Le schermate macchina, lavoro (microSD), macchine e stazioni e impostazioni sono scritte, in orizzontale e in verticale, con l'aspetto del programma desktop; la scheda della vista è ancora una scheda vuota. Esiste solo un disegno del layout, non una cattura di un modulo. |
@@ -119,6 +119,9 @@ Come si incastrano le parti di questo repository: chi parla con esso, cosa conti
 * **Conferma prima del movimento:** un movimento o un ordine al mandrino mostra cosa farà e aspetta un tocco, con un limite di tempo; una nuova richiesta o un collegamento perso la scarta.
 * **Otto lingue, anche a voce:** inglese, spagnolo, italiano, tedesco, francese, portoghese europeo, cinese e giapponese nelle schermate, negli avvisi parlati e negli ordini vocali.
 * **Sicuro di default:** ogni interruttore di sicurezza ha la sua impostazione e parte nella posizione prudente: ordini vocali spenti, conferma vocale spenta, conferma attiva, arresto hardware richiesto.
+* **La tastiera giusta per ogni impostazione:** un numero si scrive su un tastierino numerico che conosce l'intervallo e i decimali di quell'impostazione (le frecce lo spostano di un'unità, un valore fuori intervallo non è accettato); un testo, come l'indirizzo del server o il token, su una tastiera completa con i tasti della lingua in uso (dieresi, accenti, tilde, cediglia), con un maiuscolo di una lettera e un livello di simboli; interruttori ed elenchi non hanno bisogno di tastiera.
+* **Pulsanti con simbolo:** il pad di movimento, l'origine, il mandrino, pausa, avvio, arresto e le risposte a una domanda usano simboli e la lettera dell'asse al posto delle parole, con i colori del programma desktop (verde per avviare, blu per la pausa, rosso per fermare).
+* **Avvisi registrati:** la fine di un lavoro e la richiesta di utensile possono essere dette da una voce registrata, nella lingua e nel genere impostati (`sound_finish = voice:es:f`), dalla cartella `voices` della scheda; le registrazioni sono quelle di EH3D-BUNGARD-GUI. L'altoparlante non è ancora collegato nel firmware.
 
 ## 🔒 Sicurezza e protezione
 
@@ -175,7 +178,7 @@ Il firmware non è ancora stato compilato: quando lo sarà, `idf.py set-target e
 
 ## 🧪 Test
 
-I test sul computer (`build.bat` o `./build.sh`, poi `ctest`) sono due programmi e passa tutto: `test_hmi` (638 controlli) su file delle impostazioni, varco (l'arresto passa sempre, blocco dell'arresto hardware, conferma, tempo limite e giro dell'orologio, regole vocali, interruttori), ordini e avvisi vocali e testi delle schermate in otto lingue; e `test_workflow` (105 controlli) su orientamento e tocco, file della scheda (tipi, nomi sicuri, ordinamento), lettore JSON, richieste e risposte del server e flusso di un lavoro dalla scheda alla fine.
+I test sul computer (`build.bat` o `./build.sh`, poi `ctest`) sono due programmi e passa tutto: `test_hmi` (638 controlli) su file delle impostazioni, varco (l'arresto passa sempre, blocco dell'arresto hardware, conferma, tempo limite e giro dell'orologio, regole vocali, interruttori), ordini e avvisi vocali e testi delle schermate in otto lingue; e `test_workflow` (105 controlli) su orientamento e tocco, file della scheda (tipi, nomi sicuri, ordinamento), lettore JSON, richieste e risposte del server e flusso di un lavoro dalla scheda alla fine. Gli altri due programmi coprono le tastiere (`test_keyboard`, 137 controlli: ogni impostazione ha la sua tastiera, gli intervalli del tastierino sono quelli del file delle impostazioni, i decimali, il segno, le frecce, la tastiera completa di ogni lingua, il maiuscolo, i simboli e la lunghezza) e gli avvisi registrati (`test_notices`, 66 controlli: l'impostazione, il file di ogni lingua e genere).
 
 ## 🏗️ Compilazione e rilascio
 
@@ -207,7 +210,7 @@ EH3D-NODE-BUNGARD-HMI/
 │   ├── voice.hpp                                ordini e avvisi vocali in otto lingue
 │   ├── orientation.hpp sdfiles.hpp              layout verticale e orizzontale, file della scheda
 │   ├── server_link.hpp workflow.hpp             client del server e flusso di un lavoro
-│   └── ui_text.hpp                              i testi delle schermate in otto lingue
+│   └── ui_text.hpp keyboard.hpp notices.hpp     testi, tastiere e avvisi
 ├── main/
 │   ├── app_main.cpp                             avvio, impostazioni, il ciclo del varco
 │   ├── ui.cpp ui.hpp                            le schermate LVGL e il pulsante di arresto

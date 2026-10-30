@@ -4,6 +4,9 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The right keyboard for each setting:** a numeric pad that knows the range and the decimals of the setting, and a full keyboard with the keys of each of the eight languages (a one-letter shift, a layer of symbols, the length of the setting); every setting that the screen edits is described once.
+- **Buttons with a symbol:** the jog pad, home, the spindle, pause, start, stop and the answers of a question use symbols and the letter of the axis, in the colours of the desktop program.
+- **Recorded notices:** `sound_finish` and `sound_tool_change` (`off`, `default` or `voice:LANG:f|m`) and the file that each one names in the folder `voices`; the speaker is not wired yet.
 ## [0.0.1] - The rules of the screen, the settings file, the spoken orders and the first screens
 
 - **The gate:** every move and every spindle order, from a touch or from the voice, passes one place that runs it, asks for a confirmation on the screen with a time limit or refuses it with a reason; a stop always goes, the hardware stop is a latch that only an acknowledgement on the screen clears once the button is up, nothing moves while the link is not armed, and a spoken order always asks.

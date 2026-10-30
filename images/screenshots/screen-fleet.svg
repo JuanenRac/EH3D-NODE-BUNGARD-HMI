@@ -40,8 +40,8 @@
 <text x="44" y="678" font-size="12" fill="#a89878">PROGRESSO</text>
 <rect x="44" y="690" width="560" height="14" rx="7" fill="#241c10"/><rect x="44" y="690" width="207" height="14" rx="7" fill="#ffb300"/>
 <text x="618" y="704" font-size="16" fill="#f0e6d0">37 %</text>
-<circle cx="790" cy="650" r="52" fill="#1d1812" stroke="#ffb300" stroke-width="5"/><circle cx="790" cy="650" r="40" fill="#c62828"/><text x="790" y="657" font-size="18" fill="#ffffff" text-anchor="middle">PARAR</text>
-<polygon points="870,618 982,618 994,630 994,682 882,682 870,670" fill="#ff5a1f"/><text x="932.0" y="655.6666666666666" font-size="17" fill="#ffffff" text-anchor="middle">PAUSA</text>
-<polygon points="1006,618 1118,618 1130,630 1130,682 1018,682 1006,670" fill="#2e5d1e"/><text x="1068.0" y="655.6666666666666" font-size="17" fill="#ffffff" text-anchor="middle">INICIAR</text>
-<polygon points="1142,618 1234,618 1246,630 1246,682 1154,682 1142,670" fill="#ff4d6d"/><text x="1194.0" y="655.6666666666666" font-size="17" fill="#ffffff" text-anchor="middle">PARAR</text>
+<circle cx="790" cy="650" r="52" fill="#1d1812" stroke="#ffb300" stroke-width="5"/><circle cx="790" cy="650" r="40" fill="#c62828"/><polygon points="790,622.72 760.24,674.8 819.76,674.8" fill="#ffffff"/><rect x="787.52" y="640.08" width="4.960000000000001" height="17.36" fill="#c62828"/><circle cx="790" cy="665.376" r="3.224" fill="#c62828"/>
+<polygon points="870,618 982,618 994,630 994,682 882,682 870,670" fill="#2896ff"/><g><rect x="918.5088" y="636.5088" width="10.79296" height="26.982400000000002" fill="#ffffff"/><rect x="934.69824" y="636.5088" width="10.79296" height="26.982400000000002" fill="#ffffff"/></g>
+<polygon points="1006,618 1118,618 1130,630 1130,682 1018,682 1006,670" fill="#28e65a"/><g><polygon points="1058.55616,636.5088 1081.4912,650.0 1058.55616,663.4912" fill="#ffffff"/></g>
+<polygon points="1142,618 1234,618 1246,630 1246,682 1154,682 1142,670" fill="#ff2828"/><g><rect x="1180.5088" y="636.5088" width="26.982400000000002" height="26.982400000000002" fill="#ffffff"/></g>
 </svg>

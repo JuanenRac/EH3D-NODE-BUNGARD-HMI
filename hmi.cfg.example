@@ -25,3 +25,7 @@ voice_orders = off         # spoken orders; a spoken order always asks for a con
 voice_confirm = off        # on: a spoken "yes" confirms; off: only a touch does
 volume_percent = 60
 mic_gain_percent = 50
+
+# the notices: off, default (the tone) or a recorded voice in the folder voices of the card: voice:LANG:f (female) or voice:LANG:m (male); LANG is en, es, it, de, fr, pt, zh or ja
+sound_finish = off
+sound_tool_change = off

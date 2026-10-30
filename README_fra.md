@@ -30,7 +30,7 @@
 |---|---|
 | Version | `0.0.1` |
 | Maturité | Échafaudage |
-| Tests | 2 programmes de test sur ordinateur (743 vérifications comptées) |
+| Tests | 4 programmes de test sur ordinateur (946 vérifications comptées) |
 | Pile technique | C++17, ESP-IDF 5.5, LVGL 9, ESP32-P4 |
 | Sur du matériel réel | Non : le firmware n'a été ni compilé ni flashé et rien n'a été branché sur une machine |
 
@@ -45,7 +45,7 @@ Chaque ligne est une partie de ce dépôt et le feu dit où elle en est aujourd'
 | Domaine | État | Ce que cela veut dire ici |
 |---|---|---|
 | Logiciel | 🟠 | Le projet ESP-IDF (ESP32-P4, LVGL 9, le fichier de réglages dans sa propre partition) est écrit ; il n'a été ni compilé ni flashé. |
-| Tests | 🟢 | 1 programme de test sur ordinateur réussit (`ctest`) : 598 vérifications du fichier de réglages, de la porte, des ordres et alertes vocaux et des textes des écrans en huit langues. |
+| Tests | 🟢 | 4 programmes de test sur ordinateur réussissent (`ctest`) : 946 vérifications du fichier de réglages, de la porte, des ordres et alertes vocaux, des claviers, des avis enregistrés, du client du serveur et des textes des écrans en huit langues. |
 | Règles de sécurité | 🟡 | Tout déplacement et tout ordre de broche passent par la porte : confirmation à l'écran, verrou de l'arrêt matériel que seul un acquittement à l'écran lève une fois le bouton relâché, aucun déplacement si la liaison n'est pas armée. Couvert par des tests ; jamais essayé avec un vrai bouton d'arrêt. |
 | Voix | 🟡 | Les ordres et alertes vocaux sont reconnus et formulés en huit langues et testés comme du texte ; aucun micro ni haut-parleur n'a été utilisé. |
 | Écrans | 🟠 | Les écrans machine, travail (microSD), machines et stations et réglages sont écrits, en paysage et en portrait, avec l'aspect du programme de bureau ; l'onglet vue est encore une carte vide. Il n'existe qu'un dessin de la mise en page, pas une capture d'un module. |
@@ -119,6 +119,9 @@ Comment s'assemblent les parties de ce dépôt : qui lui parle, ce qu'il contien
 * **Confirmation avant le mouvement :** un déplacement ou un ordre de broche montre ce qu'il va faire et attend un toucher, avec une limite de temps ; une nouvelle demande ou une liaison perdue l'abandonne.
 * **Huit langues, aussi à la voix :** anglais, espagnol, italien, allemand, français, portugais européen, chinois et japonais dans les écrans, les alertes parlées et les ordres vocaux.
 * **Sûr par défaut :** chaque interrupteur de sécurité a son réglage et démarre dans sa position prudente : ordres vocaux désactivés, confirmation vocale désactivée, confirmation activée, arrêt matériel exigé.
+* **Le bon clavier pour chaque réglage :** un nombre se saisit sur un pavé numérique qui connaît la plage et les décimales de ce réglage (les flèches le déplacent d'une unité, une valeur hors plage n'est pas acceptée) ; un texte, comme l'adresse du serveur ou le jeton, sur un clavier complet avec les touches de la langue utilisée (trémas, accents, tilde, cédille), avec une majuscule pour une lettre et une couche de symboles ; les interrupteurs et les listes n'ont pas besoin de clavier.
+* **Boutons avec symbole :** le pavé de déplacement, l'origine, la broche, pause, démarrage, arrêt et les réponses à une question utilisent des symboles et la lettre de l'axe au lieu de mots, aux couleurs du programme de bureau (vert pour démarrer, bleu pour la pause, rouge pour arrêter).
+* **Avis enregistrés :** la fin d'un travail et la demande d'outil peuvent être dites par une voix enregistrée, dans la langue et le genre réglés (`sound_finish = voice:es:f`), depuis le dossier `voices` de la carte ; les enregistrements sont ceux d'EH3D-BUNGARD-GUI. Le haut-parleur n'est pas encore câblé dans le firmware.
 
 ## 🔒 Sécurité et protection
 
@@ -175,7 +178,7 @@ Le firmware n'a pas encore été compilé : le moment venu, `idf.py set-target e
 
 ## 🧪 Tests
 
-Les tests sur ordinateur (`build.bat` ou `./build.sh`, puis `ctest`) sont deux programmes et tout passe : `test_hmi` (638 vérifications) sur le fichier de réglages, la porte (l'arrêt passe toujours, verrou de l'arrêt matériel, confirmation, délai et débordement de l'horloge, règles vocales, interrupteurs), les ordres et alertes vocaux et les textes d'écran en huit langues ; et `test_workflow` (105 vérifications) sur l'orientation et le toucher, les fichiers de la carte (types, noms sûrs, tri), le lecteur JSON, les requêtes et réponses du serveur et le déroulement d'un travail de la carte à sa fin.
+Les tests sur ordinateur (`build.bat` ou `./build.sh`, puis `ctest`) sont deux programmes et tout passe : `test_hmi` (638 vérifications) sur le fichier de réglages, la porte (l'arrêt passe toujours, verrou de l'arrêt matériel, confirmation, délai et débordement de l'horloge, règles vocales, interrupteurs), les ordres et alertes vocaux et les textes d'écran en huit langues ; et `test_workflow` (105 vérifications) sur l'orientation et le toucher, les fichiers de la carte (types, noms sûrs, tri), le lecteur JSON, les requêtes et réponses du serveur et le déroulement d'un travail de la carte à sa fin. Les deux autres programmes couvrent les claviers (`test_keyboard`, 137 vérifications : chaque réglage a son clavier, les plages du pavé sont celles du fichier de réglages, les décimales, le signe, les flèches, le clavier complet de chaque langue, la majuscule, les symboles et la longueur) et les avis enregistrés (`test_notices`, 66 vérifications : le réglage, le fichier de chaque langue et genre).
 
 ## 🏗️ Compilation et publication
 
@@ -207,7 +210,7 @@ EH3D-NODE-BUNGARD-HMI/
 │   ├── voice.hpp                                ordres et alertes vocaux en huit langues
 │   ├── orientation.hpp sdfiles.hpp              portrait et paysage, fichiers de la carte
 │   ├── server_link.hpp workflow.hpp             client du serveur et déroulement d'un travail
-│   └── ui_text.hpp                              les textes des écrans en huit langues
+│   └── ui_text.hpp keyboard.hpp notices.hpp     textes, claviers et avis
 ├── main/
 │   ├── app_main.cpp                             démarrage, réglages, la boucle de la porte
 │   ├── ui.cpp ui.hpp                            les écrans LVGL et le bouton d'arrêt

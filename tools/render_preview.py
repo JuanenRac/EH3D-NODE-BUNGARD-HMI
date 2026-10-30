@@ -69,6 +69,62 @@ def cut_button(x, y, w, h, label, fill, color="#ffffff", size=20, dim=False, cut
             f'<text x="{x + w / 2}" y="{y + h / 2 + size / 3}" font-size="{size}" fill="{color}" text-anchor="middle"{op}>{esc(label)}</text>')
 
 
+
+GO, HOLD, HALT = "#28e65a", "#2896ff", "#ff2828"
+
+
+def glyph(cx, cy, r, kind, color="#ffffff"):
+    """A symbol of the buttons (the same shapes as the symbols of LVGL that the firmware uses), drawn with lines and polygons."""
+    f = f'fill="{color}"'
+    k = r * 0.62
+    if kind == "play":
+        return f'<polygon points="{cx - k * 0.7},{cy - k} {cx + k},{cy} {cx - k * 0.7},{cy + k}" {f}/>'
+    if kind == "pause":
+        return f'<rect x="{cx - k}" y="{cy - k}" width="{k * 0.8}" height="{k * 2}" {f}/><rect x="{cx + k * 0.2}" y="{cy - k}" width="{k * 0.8}" height="{k * 2}" {f}/>'
+    if kind == "stop":
+        return f'<rect x="{cx - k}" y="{cy - k}" width="{k * 2}" height="{k * 2}" {f}/>'
+    if kind in ("left", "right", "up", "down"):
+        pts = {"left": [(-k, 0), (k * 0.5, -k), (k * 0.5, k)], "right": [(k, 0), (-k * 0.5, -k), (-k * 0.5, k)],
+               "up": [(0, -k), (-k, k * 0.5), (k, k * 0.5)], "down": [(0, k), (-k, -k * 0.5), (k, -k * 0.5)]}[kind]
+        return f'<polygon points="{" ".join(f"{cx + a},{cy + b}" for a, b in pts)}" {f}/>'
+    if kind == "home":
+        return (f'<polygon points="{cx - k * 1.2},{cy} {cx},{cy - k * 1.1} {cx + k * 1.2},{cy}" {f}/>'
+                f'<rect x="{cx - k * 0.8}" y="{cy}" width="{k * 1.6}" height="{k * 1.0}" {f}/>')
+    if kind == "spindle":
+        return (f'<path d="M {cx - k},{cy} A {k},{k} 0 1 1 {cx + k * 0.7},{cy + k * 0.7}" fill="none" stroke="{color}" stroke-width="{r * 0.16}"/>'
+                f'<polygon points="{cx + k * 0.2},{cy + k * 1.2} {cx + k * 1.3},{cy + k * 0.8} {cx + k * 0.8},{cy - k * 0.1}" {f}/>')
+    if kind == "ok":
+        return f'<polyline points="{cx - k},{cy} {cx - k * 0.3},{cy + k * 0.7} {cx + k},{cy - k * 0.7}" fill="none" stroke="{color}" stroke-width="{r * 0.22}" stroke-linecap="round"/>'
+    if kind == "close":
+        return (f'<line x1="{cx - k}" y1="{cy - k}" x2="{cx + k}" y2="{cy + k}" stroke="{color}" stroke-width="{r * 0.22}" stroke-linecap="round"/>'
+                f'<line x1="{cx + k}" y1="{cy - k}" x2="{cx - k}" y2="{cy + k}" stroke="{color}" stroke-width="{r * 0.22}" stroke-linecap="round"/>')
+    if kind == "upload":
+        return (f'<polygon points="{cx},{cy - k} {cx - k},{cy} {cx + k},{cy}" {f}/><rect x="{cx - k * 0.35}" y="{cy}" width="{k * 0.7}" height="{k}" {f}/>'
+                f'<rect x="{cx - k}" y="{cy + k * 1.15}" width="{k * 2}" height="{k * 0.25}" {f}/>')
+    if kind == "warning":
+        return (f'<polygon points="{cx},{cy - k * 1.1} {cx - k * 1.2},{cy + k} {cx + k * 1.2},{cy + k}" {f}/>'
+                f'<rect x="{cx - k * 0.1}" y="{cy - k * 0.4}" width="{k * 0.2}" height="{k * 0.7}" fill="#c62828"/><circle cx="{cx}" cy="{cy + k * 0.62}" r="{k * 0.13}" fill="#c62828"/>')
+    if kind == "sd":
+        return (f'<polygon points="{cx - k * 0.8},{cy - k} {cx + k * 0.2},{cy - k} {cx + k * 0.8},{cy - k * 0.4} {cx + k * 0.8},{cy + k} {cx - k * 0.8},{cy + k}" {f}/>')
+    return ""
+
+
+def icon_button(x, y, w, h, kind, fill, axis="", dim=False, cut=12):
+    """A button with a symbol (and the letter of an axis) in place of a word."""
+    pts = f"{x},{y} {x + w - cut},{y} {x + w},{y + cut} {x + w},{y + h} {x + cut},{y + h} {x},{y + h - cut}"
+    op = ' opacity="0.35"' if dim else ""
+    r = min(w, h) * 0.34
+    cx, cy = x + w / 2, y + h / 2
+    inner = ""
+    if axis:
+        inner += f'<text x="{cx - r * 0.55}" y="{cy + r * 0.45}" font-size="{r * 1.3}" fill="#ffffff" text-anchor="middle">{axis}</text>'
+        inner += glyph(cx + r * 0.75, cy, r * 0.8, kind)
+    else:
+        inner += glyph(cx, cy, r, kind)
+    return f'<polygon points="{pts}" fill="{fill}"{op}/><g{op}>{inner}</g>'
+
+
+
 def board_2d(x, y, w, h):
     """The plan view: a grid, a table outline, and the boards with their holes."""
     g = [f'<rect x="{x}" y="{y}" width="{w}" height="{h}" fill="#100d09" stroke="{LINE}"/>']
@@ -141,10 +197,10 @@ def screen(lang: str, state: str, portrait: bool = False, page: str = "machine")
             g.append(board_2d(34, mid_y + 246, cw - 32, 322))
             jy = mid_y + 598
             g.append(card(18, jy, cw, bar_y - jy - 14, t["Jog"]))
-            jog = [(f"{t['JogX']} -", 0, 0), (f"{t['JogX']} +", 1, 0), (f"{t['JogY']} -", 2, 0), (f"{t['JogY']} +", 3, 0),
-                   (f"{t['JogZ']} -", 0, 1), (f"{t['JogZ']} +", 1, 1), (t["Home"], 2, 1), (t["Spindle"], 3, 1)]
-            for label, cx, cy in jog:
-                g.append(cut_button(34 + cx * 190, jy + 42 + cy * 76, 178, 64, label, "#37474f", size=16, dim=stopped))
+            jog = [("X", "left", 0, 0), ("X", "right", 1, 0), ("Y", "down", 2, 0), ("Y", "up", 3, 0),
+                   ("Z", "down", 0, 1), ("Z", "up", 1, 1), ("", "home", 2, 1), ("", "spindle", 3, 1)]
+            for axis, kind, cx, cy in jog:
+                g.append(icon_button(34 + cx * 190, jy + 42 + cy * 76, 178, 64, kind, "#37474f", axis, dim=stopped))
         else:
             g.append(card(18, 80, 240, 470, t["Job"]))
             g.append(f'<text x="34" y="128" font-size="20" fill="{TEXT}">05_SMALL_BOARD.NCD</text>')
@@ -160,12 +216,12 @@ def screen(lang: str, state: str, portrait: bool = False, page: str = "machine")
             g.append(board_2d(290, 112, 524, 390))
             g.append(f'<text x="290" y="532" font-size="11" fill="{DIM}">495 x 325 mm</text>')
             g.append(card(846, 80, 416, 470, t["Jog"]))
-            jog = [(f"{t['JogX']} -", 0, 0), (f"{t['JogY']} +", 1, 0), (f"{t['JogX']} +", 2, 0), (f"{t['JogZ']} +", 3, 0),
-                   (f"{t['JogY']} -", 1, 1), (f"{t['JogZ']} -", 3, 1)]
-            for label, cx, cy in jog:
-                g.append(cut_button(862 + cx * 96, 120 + cy * 84, 88, 72, label, "#37474f", size=15, dim=stopped))
-            g.append(cut_button(862, 300, 184, 72, t["Home"], "#37474f", size=17, dim=stopped))
-            g.append(cut_button(1058, 300, 184, 72, t["Spindle"], "#37474f", size=17, dim=stopped))
+            jog = [("X", "left", 0, 0), ("Y", "up", 1, 0), ("X", "right", 2, 0), ("Z", "up", 3, 0),
+                   ("Y", "down", 1, 1), ("Z", "down", 3, 1)]
+            for axis, kind, cx, cy in jog:
+                g.append(icon_button(862 + cx * 96, 120 + cy * 84, 88, 72, kind, "#37474f", axis, dim=stopped))
+            g.append(icon_button(862, 300, 184, 72, "home", "#37474f", dim=stopped))
+            g.append(icon_button(1058, 300, 184, 72, "spindle", "#37474f", dim=stopped))
             for i, (lab, val) in enumerate([(t["Feed"], "2400"), (t["Spindle"], "60000"), (t["Tool"], "T06")]):
                 g.append(f'<text x="{862 + i * 148}" y="410" font-size="13" fill="{DIM}">{esc(lab.upper())}</text><text x="{862 + i * 148}" y="440" font-size="26" fill="{TEXT}">{val}</text>')
     elif page == "card":
@@ -183,8 +239,8 @@ def screen(lang: str, state: str, portrait: bool = False, page: str = "machine")
             g.append(card(814, mid_y, 448, mid_h, t["Job"]))
             g.append(f'<text x="834" y="{mid_y + 70}" font-size="20" fill="{TEXT}">05_small_board.ncd</text>')
             g.append(f'<text x="834" y="{mid_y + 98}" font-size="14" fill="{DIM}">machine: m1   station: bench</text>')
-            g.append(cut_button(834, mid_y + 130, 200, 70, "microSD", "#37474f", size=18))
-            g.append(cut_button(1046, mid_y + 130, 200, 70, t["Start"].upper(), "#2e5d1e", size=18, dim=stopped))
+            g.append(icon_button(834, mid_y + 130, 200, 70, "sd", "#37474f"))
+            g.append(icon_button(1046, mid_y + 130, 200, 70, "upload", GO, dim=stopped))
             g.append(f'<text x="834" y="{mid_y + 250}" font-size="13" fill="{AMBER}">ready: j42  (05_small_board-job.txt)</text>')
     elif page == "fleet":
         rows = [("BENCH", None), ("Bungard CCD 1", ("busy", "power-board.ncd", 59)), ("Bungard CCD 2", ("waiting", "sensor.ncd", 82)), ("Bungard CCD 3", ("idle", "", -1)),
@@ -221,16 +277,16 @@ def screen(lang: str, state: str, portrait: bool = False, page: str = "machine")
     if portrait:
         sy = bar_y + 168
         g.append(f'<circle cx="86" cy="{sy + 34}" r="44" fill="#1d1812" stroke="{AMBER}" stroke-width="5"/><circle cx="86" cy="{sy + 34}" r="34" fill="#c62828"/>'
-                 f'<text x="86" y="{sy + 40}" font-size="15" fill="#ffffff" text-anchor="middle">{esc(t["Stop"].upper())}</text>')
-        g.append(cut_button(160, sy, 190, 68, t["Pause"].upper(), "#ff5a1f", size=17, dim=stopped))
-        g.append(cut_button(366, sy, 190, 68, t["Start"].upper(), "#2e5d1e", size=17, dim=stopped))
-        g.append(cut_button(572, sy, 190, 68, t["Stop"].upper(), "#ff4d6d", size=17))
+                 + glyph(86, sy + 34, 34, "warning"))
+        g.append(icon_button(160, sy, 190, 68, "pause", HOLD, dim=stopped))
+        g.append(icon_button(366, sy, 190, 68, "play", GO, dim=stopped))
+        g.append(icon_button(572, sy, 190, 68, "stop", HALT))
     else:
         g.append(f'<circle cx="790" cy="{bar_y + 84}" r="52" fill="#1d1812" stroke="{AMBER}" stroke-width="5"/><circle cx="790" cy="{bar_y + 84}" r="40" fill="#c62828"/>'
-                 f'<text x="790" y="{bar_y + 91}" font-size="18" fill="#ffffff" text-anchor="middle">{esc(t["Stop"].upper())}</text>')
-        g.append(cut_button(870, bar_y + 52, 124, 64, t["Pause"].upper(), "#ff5a1f", size=17, dim=stopped))
-        g.append(cut_button(1006, bar_y + 52, 124, 64, t["Start"].upper(), "#2e5d1e", size=17, dim=stopped))
-        g.append(cut_button(1142, bar_y + 52, 104, 64, t["Stop"].upper(), "#ff4d6d", size=17))
+                 + glyph(790, bar_y + 84, 40, "warning"))
+        g.append(icon_button(870, bar_y + 52, 124, 64, "pause", HOLD, dim=stopped))
+        g.append(icon_button(1006, bar_y + 52, 124, 64, "play", GO, dim=stopped))
+        g.append(icon_button(1142, bar_y + 52, 104, 64, "stop", HALT))
     if stopped:
         bx, by, bw2 = (870, bar_y + 134, 376) if not portrait else (44, bar_y + 18 + 150, w - 88)
         g.append(f'<rect x="{bx}" y="{by}" width="{bw2}" height="62" rx="9" fill="#2a0e0e" stroke="#ff5252"/>')
@@ -243,8 +299,8 @@ def screen(lang: str, state: str, portrait: bool = False, page: str = "machine")
         g.append(card(cx0, cy0, 520, 290, None, cut=20))
         g.append(f'<text x="{w / 2}" y="{cy0 + 66}" font-size="26" fill="{TEXT}" text-anchor="middle">{esc(t["AskMove"])}</text>')
         g.append(f'<text x="{w / 2}" y="{cy0 + 108}" font-size="20" fill="{AMBER}" text-anchor="middle">{esc(t["JogX"])} +</text>')
-        g.append(cut_button(cx0 + 32, cy0 + 160, 210, 78, t["Confirm"].upper(), "#2e5d1e", size=21))
-        g.append(cut_button(cx0 + 278, cy0 + 160, 210, 78, t["Cancel"].upper(), "#546e7a", size=21))
+        g.append(icon_button(cx0 + 32, cy0 + 160, 210, 78, "ok", GO))
+        g.append(icon_button(cx0 + 278, cy0 + 160, 210, 78, "close", "#546e7a"))
     g.append("</svg>")
     return "\n".join(g)
 
