@@ -30,7 +30,7 @@
 |---|---|
 | 版本 | `0.0.1` |
 | 成熟度 | 脚手架 |
-| 测试 | 4 个主机测试程序（共 946 项检查） |
+| 测试 | 4 个主机测试程序（共 956 项检查） |
 | 技术栈 | C++17, ESP-IDF 5.5, LVGL 9, ESP32-P4 |
 | 真实硬件 | 否：固件尚未编译或烧录，也未连接任何机床 |
 
@@ -45,7 +45,7 @@
 | 领域 | 状态 | 在这里的含义 |
 |---|---|---|
 | 软件 | 🟠 | ESP-IDF 工程（ESP32-P4、LVGL 9、独立分区中的设置文件）已编写；尚未编译或烧录。 |
-| 测试 | 🟢 | 4 个主机测试程序通过（`ctest`）：共 946 项检查，涵盖设置文件、闸门、语音指令和提示、键盘、录制的提示音、服务器客户端，以及八种语言的界面文本。 |
+| 测试 | 🟢 | 4 个主机测试程序通过（`ctest`）：共 956 项检查，涵盖设置文件、闸门、语音指令和提示、键盘、录制的提示音、服务器客户端，以及八种语言的界面文本。 |
 | 安全规则 | 🟡 | 每次移动和每条主轴指令都经过闸门：屏幕确认、硬件急停锁存（按钮松开后只能由屏幕上的确认解除）、连接未就绪时不得移动。有测试覆盖；从未配合真实急停按钮试过。 |
 | 语音 | 🟡 | 语音指令和提示以八种语言识别和表述，并作为文本测试；未使用任何麦克风或扬声器。 |
 | 界面 | 🟠 | 机床、作业（microSD）、机床和工位以及设置界面已编写，支持横屏和竖屏，外观与桌面程序一致；查看标签页仍是空卡片。目前只有布局示意图，没有模块上的截图。 |
@@ -122,6 +122,7 @@ EH3D-NODE-BUNGARD-HMI 是 Bungard CCD 机床操作员自己的屏幕：它取代
 * **每项设置用合适的键盘：** 数字在了解该设置范围和小数位的数字键盘上输入（箭头每次移动一个单位，超出范围的值不被接受）；文本，如服务器地址或令牌，在带有当前语言按键（变音符、重音、波浪号、软音符）的完整键盘上输入，带单字母大写和符号层；开关和列表不需要键盘。
 * **带符号的按钮：** 点动键盘、回零、主轴、暂停、开始、停止以及对问题的回答，都用符号和轴字母代替文字，颜色与桌面程序一致（绿色开始、蓝色暂停、红色停止）。
 * **录制的提示：** 作业结束和请求刀具可以由录制的语音说出，语言和性别按设置（`sound_finish = voice:es:f`），来自存储卡的 `voices` 文件夹；录音与 EH3D-BUNGARD-GUI 相同。固件中尚未接上扬声器。
+* **重启后继续跟踪作业：** 从操作员启动作业起，屏幕会把作业的标识（作业编号、机床、名称）保存在闪存中；断电或重启后继续跟踪同一个作业，服务器的下一次读数会说明它是否仍在运行、是否在换刀处等待或已结束，取消按钮可放弃跟踪。作业本身保存在服务器中。已在电脑上编写并测试；固件从未在模块上运行过。
 
 ## 🔒 安全与防护
 
@@ -178,7 +179,7 @@ python -I tools/ci_validate.py
 
 ## 🧪 测试
 
-主机测试（`build.bat` 或 `./build.sh`，然后 `ctest`）是两个程序，全部通过：`test_hmi`（638 项检查）涵盖设置文件、闸门（停止始终放行、硬件急停锁存、确认、超时与时钟回绕、语音规则、开关）、八种语言的语音指令和提示以及界面文本；`test_workflow`（105 项检查）涵盖方向与触摸、卡上的文件（类型、安全文件名、排序）、JSON 读取器、服务器的请求与应答，以及作业从卡到结束的流程。 另外两个程序覆盖键盘（`test_keyboard`，137 项检查：每项设置都有自己的键盘、数字键盘的范围与设置文件一致、小数位、符号、箭头、每种语言的完整键盘、大写、符号层和长度）以及录制的提示（`test_notices`，66 项检查：设置、每种语言和性别的文件）。
+主机测试（`build.bat` 或 `./build.sh`，然后 `ctest`）是两个程序，全部通过：`test_hmi`（638 项检查）涵盖设置文件、闸门（停止始终放行、硬件急停锁存、确认、超时与时钟回绕、语音规则、开关）、八种语言的语音指令和提示以及界面文本；`test_workflow`（115 项检查）涵盖方向与触摸、卡上的文件（类型、安全文件名、排序）、JSON 读取器、服务器的请求与应答，以及作业从卡到结束的流程。 另外两个程序覆盖键盘（`test_keyboard`，137 项检查：每项设置都有自己的键盘、数字键盘的范围与设置文件一致、小数位、符号、箭头、每种语言的完整键盘、大写、符号层和长度）以及录制的提示（`test_notices`，66 项检查：设置、每种语言和性别的文件）。
 
 ## 🏗️ 构建与发布
 
@@ -205,33 +206,33 @@ python -I tools/ci_validate.py
 ```text
 EH3D-NODE-BUNGARD-HMI/
 ├── core/
-│   ├── hmi_config.hpp lang.hpp                  设置文件及其安全默认值
-│   ├── gate.hpp                                 闸门：确认、急停锁存
-│   ├── voice.hpp                                八种语言的语音指令和提示
-│   ├── orientation.hpp sdfiles.hpp              竖屏和横屏布局、卡上的文件
-│   ├── server_link.hpp workflow.hpp             服务器客户端和作业流程
-│   └── ui_text.hpp keyboard.hpp notices.hpp     文本、键盘与提示
+│   ├── hmi_config.hpp lang.hpp                       设置文件及其安全默认值
+│   ├── gate.hpp                                      闸门：确认、急停锁存
+│   ├── voice.hpp                                     八种语言的语音指令和提示
+│   ├── orientation.hpp sdfiles.hpp                   竖屏和横屏布局、卡上的文件
+│   ├── server_link.hpp workflow.hpp job_memory.hpp   服务器客户端和作业流程
+│   └── ui_text.hpp keyboard.hpp notices.hpp          文本、键盘与提示
 ├── main/
-│   ├── app_main.cpp                             启动、设置、闸门循环
-│   ├── ui.cpp ui.hpp                            LVGL 界面和停止按钮
-│   ├── board_p4.cpp board.hpp                   模块：显示、声音、急停输入
-│   ├── server_link.cpp server_link.hpp          服务器客户端的套接字
-│   └── idf_component.yml Kconfig.projbuild      组件列表和 menuconfig 引脚
-├── tests/                                       设置、闸门、语音和界面文本的主机测试
-├── docs/                                        硬件说明和两幅图的源文件
-├── tools/                                       CI 检查、README 检查和绘图工具
-├── CMakeLists.txt                               ESP-IDF 工程
-├── partitions.csv                               带两个槽位的闪存布局
-├── hmi.cfg.example                              每个设置及其默认值和范围
-├── sdkconfig.defaults                           ESP32-P4 模块的 ESP-IDF 设置
-├── images/                                      横幅图以及架构和仓库结构图片
-├── .github/                                     CI 与发布工作流、Issue 和 PR 模板
-├── build.sh build.bat                           在实时面板中编译并运行主机测试
-├── eh3d.project.json                            清单：版本、角色、成熟度和构建命令
-├── CHANGELOG.md                                 每个版本的变更
-├── SECURITY.md SUPPORT.md                       如何报告漏洞及在哪里提问
-├── CONTRIBUTING.md CODE_OF_CONDUCT.md LICENSE   参与贡献、行为准则和许可证
-└── bump_manifest_version.py                     清单的版本工具
+│   ├── app_main.cpp                                  启动、设置、闸门循环
+│   ├── ui.cpp ui.hpp                                 LVGL 界面和停止按钮
+│   ├── board_p4.cpp board.hpp                        模块：显示、声音、急停输入
+│   ├── server_link.cpp server_link.hpp               服务器客户端的套接字
+│   └── idf_component.yml Kconfig.projbuild           组件列表和 menuconfig 引脚
+├── tests/                                            设置、闸门、语音和界面文本的主机测试
+├── docs/                                             硬件说明和两幅图的源文件
+├── tools/                                            CI 检查、README 检查和绘图工具
+├── CMakeLists.txt                                    ESP-IDF 工程
+├── partitions.csv                                    带两个槽位的闪存布局
+├── hmi.cfg.example                                   每个设置及其默认值和范围
+├── sdkconfig.defaults                                ESP32-P4 模块的 ESP-IDF 设置
+├── images/                                           横幅图以及架构和仓库结构图片
+├── .github/                                          CI 与发布工作流、Issue 和 PR 模板
+├── build.sh build.bat                                在实时面板中编译并运行主机测试
+├── eh3d.project.json                                 清单：版本、角色、成熟度和构建命令
+├── CHANGELOG.md                                      每个版本的变更
+├── SECURITY.md SUPPORT.md                            如何报告漏洞及在哪里提问
+├── CONTRIBUTING.md CODE_OF_CONDUCT.md LICENSE        参与贡献、行为准则和许可证
+└── bump_manifest_version.py                          清单的版本工具
 ```
 
 </details>

@@ -74,6 +74,20 @@ public:
         return true;
     }
 
+    /// After a reset: follow the job that this screen had (its id and name come from `job_memory.hpp`). It counts as running until the next reading of the fleet says
+    /// what it is: still running or waiting, or over (the server no longer shows it on the machine). False when there is no id.
+    bool adopt(const std::string& job_id, const std::string& name) {
+        if (job_id.empty()) return false;
+        job_id_ = job_id;
+        name_ = name;
+        text_.clear();
+        tools_.clear();
+        pause_.clear();
+        percent_ = 0;
+        stage_ = Stage::Running;
+        return true;
+    }
+
     /// A reading of the fleet: where the job of this screen is, as the server says (the job may have been started or cancelled from another
     /// program; the screen follows what the server says).
     void on_fleet(const FleetView& f, const std::string& machine) {

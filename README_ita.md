@@ -30,7 +30,7 @@
 |---|---|
 | Versione | `0.0.1` |
 | Maturità | Impalcatura |
-| Test | 4 programmi di test sul computer (946 controlli contati) |
+| Test | 4 programmi di test sul computer (956 controlli contati) |
 | Stack tecnologico | C++17, ESP-IDF 5.5, LVGL 9, ESP32-P4 |
 | Su hardware reale | No: il firmware non è stato compilato né scritto e nulla è stato collegato a una macchina |
 
@@ -45,7 +45,7 @@ Ogni riga è una parte di questo repository e il semaforo dice a che punto è og
 | Area | Stato | Cosa significa qui |
 |---|---|---|
 | Software | 🟠 | Il progetto ESP-IDF (ESP32-P4, LVGL 9, il file delle impostazioni in una partizione propria) è scritto; non è stato compilato né scritto sul chip. |
-| Test | 🟢 | 4 programmi di test sul computer passano (`ctest`): 946 controlli sul file delle impostazioni, il varco, gli ordini e gli avvisi vocali, le tastiere, gli avvisi registrati, il client del server e i testi delle schermate in otto lingue. |
+| Test | 🟢 | 4 programmi di test sul computer passano (`ctest`): 956 controlli sul file delle impostazioni, il varco, gli ordini e gli avvisi vocali, le tastiere, gli avvisi registrati, il client del server e i testi delle schermate in otto lingue. |
 | Regole di sicurezza | 🟡 | Ogni movimento e ogni ordine al mandrino passa dal varco: conferma sullo schermo, blocco dell'arresto hardware che solo una conferma sullo schermo toglie a pulsante rilasciato, nessun movimento con il collegamento non armato. Coperto da test; mai provato con un vero pulsante di arresto. |
 | Voce | 🟡 | Ordini e avvisi vocali sono riconosciuti e formulati in otto lingue e provati come testo; nessun microfono o altoparlante è stato usato. |
 | Schermate | 🟠 | Le schermate macchina, lavoro (microSD), macchine e stazioni e impostazioni sono scritte, in orizzontale e in verticale, con l'aspetto del programma desktop; la scheda della vista è ancora una scheda vuota. Esiste solo un disegno del layout, non una cattura di un modulo. |
@@ -122,6 +122,7 @@ Come si incastrano le parti di questo repository: chi parla con esso, cosa conti
 * **La tastiera giusta per ogni impostazione:** un numero si scrive su un tastierino numerico che conosce l'intervallo e i decimali di quell'impostazione (le frecce lo spostano di un'unità, un valore fuori intervallo non è accettato); un testo, come l'indirizzo del server o il token, su una tastiera completa con i tasti della lingua in uso (dieresi, accenti, tilde, cediglia), con un maiuscolo di una lettera e un livello di simboli; interruttori ed elenchi non hanno bisogno di tastiera.
 * **Pulsanti con simbolo:** il pad di movimento, l'origine, il mandrino, pausa, avvio, arresto e le risposte a una domanda usano simboli e la lettera dell'asse al posto delle parole, con i colori del programma desktop (verde per avviare, blu per la pausa, rosso per fermare).
 * **Avvisi registrati:** la fine di un lavoro e la richiesta di utensile possono essere dette da una voce registrata, nella lingua e nel genere impostati (`sound_finish = voice:es:f`), dalla cartella `voices` della scheda; le registrazioni sono quelle di EH3D-BUNGARD-GUI. L'altoparlante non è ancora collegato nel firmware.
+* **Il lavoro viene seguito di nuovo dopo un riavvio:** da quando l'operatore avvia un lavoro, lo schermo conserva nella flash quale è (il suo id, la macchina, il suo nome); dopo un'interruzione di corrente o un riavvio segue lo stesso lavoro, la lettura successiva del server dice se è ancora in corso, aspetta a un cambio utensile o è finito, e il pulsante annulla lo lascia. Il lavoro vive nel server. Scritto e testato su un computer; il firmware non è mai stato eseguito su un modulo.
 
 ## 🔒 Sicurezza e protezione
 
@@ -178,7 +179,7 @@ Il firmware non è ancora stato compilato: quando lo sarà, `idf.py set-target e
 
 ## 🧪 Test
 
-I test sul computer (`build.bat` o `./build.sh`, poi `ctest`) sono due programmi e passa tutto: `test_hmi` (638 controlli) su file delle impostazioni, varco (l'arresto passa sempre, blocco dell'arresto hardware, conferma, tempo limite e giro dell'orologio, regole vocali, interruttori), ordini e avvisi vocali e testi delle schermate in otto lingue; e `test_workflow` (105 controlli) su orientamento e tocco, file della scheda (tipi, nomi sicuri, ordinamento), lettore JSON, richieste e risposte del server e flusso di un lavoro dalla scheda alla fine. Gli altri due programmi coprono le tastiere (`test_keyboard`, 137 controlli: ogni impostazione ha la sua tastiera, gli intervalli del tastierino sono quelli del file delle impostazioni, i decimali, il segno, le frecce, la tastiera completa di ogni lingua, il maiuscolo, i simboli e la lunghezza) e gli avvisi registrati (`test_notices`, 66 controlli: l'impostazione, il file di ogni lingua e genere).
+I test sul computer (`build.bat` o `./build.sh`, poi `ctest`) sono due programmi e passa tutto: `test_hmi` (638 controlli) su file delle impostazioni, varco (l'arresto passa sempre, blocco dell'arresto hardware, conferma, tempo limite e giro dell'orologio, regole vocali, interruttori), ordini e avvisi vocali e testi delle schermate in otto lingue; e `test_workflow` (115 controlli) su orientamento e tocco, file della scheda (tipi, nomi sicuri, ordinamento), lettore JSON, richieste e risposte del server e flusso di un lavoro dalla scheda alla fine. Gli altri due programmi coprono le tastiere (`test_keyboard`, 137 controlli: ogni impostazione ha la sua tastiera, gli intervalli del tastierino sono quelli del file delle impostazioni, i decimali, il segno, le frecce, la tastiera completa di ogni lingua, il maiuscolo, i simboli e la lunghezza) e gli avvisi registrati (`test_notices`, 66 controlli: l'impostazione, il file di ogni lingua e genere).
 
 ## 🏗️ Compilazione e rilascio
 
@@ -205,33 +206,33 @@ La versione vive in `eh3d.project.json` e ogni versione ha la sua voce in [CHANG
 ```text
 EH3D-NODE-BUNGARD-HMI/
 ├── core/
-│   ├── hmi_config.hpp lang.hpp                  il file delle impostazioni e i suoi valori sicuri
-│   ├── gate.hpp                                 il varco: conferma, blocco dell'arresto
-│   ├── voice.hpp                                ordini e avvisi vocali in otto lingue
-│   ├── orientation.hpp sdfiles.hpp              layout verticale e orizzontale, file della scheda
-│   ├── server_link.hpp workflow.hpp             client del server e flusso di un lavoro
-│   └── ui_text.hpp keyboard.hpp notices.hpp     testi, tastiere e avvisi
+│   ├── hmi_config.hpp lang.hpp                       il file delle impostazioni e i suoi valori sicuri
+│   ├── gate.hpp                                      il varco: conferma, blocco dell'arresto
+│   ├── voice.hpp                                     ordini e avvisi vocali in otto lingue
+│   ├── orientation.hpp sdfiles.hpp                   layout verticale e orizzontale, file della scheda
+│   ├── server_link.hpp workflow.hpp job_memory.hpp   client del server e flusso di un lavoro
+│   └── ui_text.hpp keyboard.hpp notices.hpp          testi, tastiere e avvisi
 ├── main/
-│   ├── app_main.cpp                             avvio, impostazioni, il ciclo del varco
-│   ├── ui.cpp ui.hpp                            le schermate LVGL e il pulsante di arresto
-│   ├── board_p4.cpp board.hpp                   il modulo: display, suono, ingresso di arresto
-│   ├── server_link.cpp server_link.hpp          i socket del client del server
-│   └── idf_component.yml Kconfig.projbuild      elenco dei componenti e pin di menuconfig
-├── tests/                                       test su computer di impostazioni, varco, voce e testi delle schermate
-├── docs/                                        le note hardware e le fonti dei due disegni
-├── tools/                                       controllo CI, README e strumenti dei disegni
-├── CMakeLists.txt                               il progetto ESP-IDF
-├── partitions.csv                               la mappa della flash con due slot
-├── hmi.cfg.example                              ogni impostazione con il suo default e intervallo
-├── sdkconfig.defaults                           impostazioni ESP-IDF per il modulo ESP32-P4
-├── images/                                      banner e le immagini di Architettura e Struttura del repository
-├── .github/                                     workflow di CI e di rilascio, modelli di issue e pull request
-├── build.sh build.bat                           compila ed esegue i test su computer in un pannello dal vivo
-├── eh3d.project.json                            manifesto: versione, ruolo, maturità e comando di compilazione
-├── CHANGELOG.md                                 cosa è cambiato in ogni versione
-├── SECURITY.md SUPPORT.md                       come segnalare una vulnerabilità e dove chiedere
-├── CONTRIBUTING.md CODE_OF_CONDUCT.md LICENSE   come contribuire, codice di condotta e licenza
-└── bump_manifest_version.py                     utilità di versione del manifesto
+│   ├── app_main.cpp                                  avvio, impostazioni, il ciclo del varco
+│   ├── ui.cpp ui.hpp                                 le schermate LVGL e il pulsante di arresto
+│   ├── board_p4.cpp board.hpp                        il modulo: display, suono, ingresso di arresto
+│   ├── server_link.cpp server_link.hpp               i socket del client del server
+│   └── idf_component.yml Kconfig.projbuild           elenco dei componenti e pin di menuconfig
+├── tests/                                            test su computer di impostazioni, varco, voce e testi delle schermate
+├── docs/                                             le note hardware e le fonti dei due disegni
+├── tools/                                            controllo CI, README e strumenti dei disegni
+├── CMakeLists.txt                                    il progetto ESP-IDF
+├── partitions.csv                                    la mappa della flash con due slot
+├── hmi.cfg.example                                   ogni impostazione con il suo default e intervallo
+├── sdkconfig.defaults                                impostazioni ESP-IDF per il modulo ESP32-P4
+├── images/                                           banner e le immagini di Architettura e Struttura del repository
+├── .github/                                          workflow di CI e di rilascio, modelli di issue e pull request
+├── build.sh build.bat                                compila ed esegue i test su computer in un pannello dal vivo
+├── eh3d.project.json                                 manifesto: versione, ruolo, maturità e comando di compilazione
+├── CHANGELOG.md                                      cosa è cambiato in ogni versione
+├── SECURITY.md SUPPORT.md                            come segnalare una vulnerabilità e dove chiedere
+├── CONTRIBUTING.md CODE_OF_CONDUCT.md LICENSE        come contribuire, codice di condotta e licenza
+└── bump_manifest_version.py                          utilità di versione del manifesto
 ```
 
 </details>

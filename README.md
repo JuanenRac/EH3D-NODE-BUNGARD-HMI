@@ -30,7 +30,7 @@
 |---|---|
 | Version | `0.0.1` |
 | Maturity | Scaffolding |
-| Tests | 4 host test programs (946 checks counted) |
+| Tests | 4 host test programs (956 checks counted) |
 | Stack | C++17, ESP-IDF 5.5, LVGL 9, ESP32-P4 |
 | On real hardware | No: the firmware has not been built or flashed, and nothing has been connected to a machine |
 
@@ -45,7 +45,7 @@ Each line is one part of this repository and the light says how far it is today.
 | Area | State | What it means here |
 |---|---|---|
 | Software | 🟠 | The ESP-IDF project (ESP32-P4, LVGL 9, the settings file in its own partition) is written; it has not been built or flashed. |
-| Tests | 🟢 | 4 host test programs pass (`ctest`): 946 checks in the settings file, the gate, the spoken orders and alerts, the keyboards, the recorded notices, the server client and the texts of the screens in eight languages. |
+| Tests | 🟢 | 4 host test programs pass (`ctest`): 956 checks in the settings file, the gate, the spoken orders and alerts, the keyboards, the recorded notices, the server client and the texts of the screens in eight languages. |
 | Safety rules | 🟡 | Every move and spindle order goes through the gate: confirmation on the screen, hardware-stop latch that only an acknowledgement on the screen clears once the button is up, no move while the link is not armed. Covered by tests; never run with a real stop button. |
 | Voice | 🟡 | Spoken orders and alerts are recognised and phrased in eight languages and tested as text; no microphone or speaker has been used. |
 | Screens | 🟠 | The machine, job (microSD), machines-and-stations and settings screens are written, lying down and standing up, in the look of the desktop program; the viewer tab is still an empty card. Only a drawing of the layout exists, not a capture of a module. |
@@ -122,6 +122,7 @@ How the parts of this repository fit together: who talks to it, what it holds an
 * **The right keyboard for each setting:** a number is typed on a numeric pad that knows the range and the decimals of that setting (the arrows move it by one unit, a value outside the range is not accepted); a text, such as the address of the server or the token, on a full keyboard with the keys of the language in use (the umlauts, the accents, the tilde, the cedilla), with a one-letter shift and a layer of symbols; switches and lists need no keyboard.
 * **Buttons with a symbol:** the jog pad, home, the spindle, pause, start, stop and the answers of a question use symbols and the letter of the axis instead of words, in the colours of the desktop program (green to start, blue to pause, red to stop).
 * **Recorded notices:** the end of a job and the request for a tool can be said by a recorded voice, in the language and the gender that are set (`sound_finish = voice:es:f`), from the folder `voices` of the card; the recordings are those of EH3D-BUNGARD-GUI. The speaker is not wired in the firmware yet.
+* **The job is followed again after a reset:** from the moment the operator starts a job, the screen keeps in its flash which job it is (its id, the machine, its name); after a power cut or a reset it follows the same job again, the next reading of the server says whether it still runs, waits at a tool change or is over, and the cancel button leaves it. The job itself lives in the server. Written and tested on a computer; the firmware has never run on a module.
 
 ## 🔒 Security & Safety
 
@@ -178,7 +179,7 @@ The firmware has not been built yet: when it is, `idf.py set-target esp32p4 && i
 
 ## 🧪 Testing
 
-The host tests (`build.bat` or `./build.sh`, then `ctest`) are two programs and all of it passes: `test_hmi` (638 checks) on the settings file, the gate (stop always goes, hardware-stop latch, confirmation, timeout and clock wrap-around, voice rules, switches), the spoken orders and alerts and the screen texts in eight languages; and `test_workflow` (105 checks) on the orientation and the touch, the files of the card (kinds, safe names, sorting), the JSON reader, the requests and answers of the server, and the flow of a job from the card to its end. The other two programs cover the keyboards (`test_keyboard`, 137 checks: every setting has its keyboard, the ranges of the pad are the ones of the settings file, the decimals, the sign, the arrows, the full keyboard of each language, the shift, the symbols and the length) and the recorded notices (`test_notices`, 66 checks: the setting, the file of each language and gender).
+The host tests (`build.bat` or `./build.sh`, then `ctest`) are two programs and all of it passes: `test_hmi` (638 checks) on the settings file, the gate (stop always goes, hardware-stop latch, confirmation, timeout and clock wrap-around, voice rules, switches), the spoken orders and alerts and the screen texts in eight languages; and `test_workflow` (115 checks) on the orientation and the touch, the files of the card (kinds, safe names, sorting), the JSON reader, the requests and answers of the server, and the flow of a job from the card to its end. The other two programs cover the keyboards (`test_keyboard`, 137 checks: every setting has its keyboard, the ranges of the pad are the ones of the settings file, the decimals, the sign, the arrows, the full keyboard of each language, the shift, the symbols and the length) and the recorded notices (`test_notices`, 66 checks: the setting, the file of each language and gender).
 
 ## 🏗️ Build & Release
 
@@ -205,33 +206,33 @@ The version lives in `eh3d.project.json`, and each version has its entry in [CHA
 ```text
 EH3D-NODE-BUNGARD-HMI/
 ├── core/
-│   ├── hmi_config.hpp lang.hpp                  the settings file and its safe defaults
-│   ├── gate.hpp                                 the gate: confirmation, hardware-stop latch
-│   ├── voice.hpp                                spoken orders and alerts in eight languages
-│   ├── orientation.hpp sdfiles.hpp              standing and lying layouts, files of the card
-│   ├── server_link.hpp workflow.hpp             client of the server and the flow of a job
-│   └── ui_text.hpp keyboard.hpp notices.hpp     texts, keyboards and notices
+│   ├── hmi_config.hpp lang.hpp                       the settings file and its safe defaults
+│   ├── gate.hpp                                      the gate: confirmation, hardware-stop latch
+│   ├── voice.hpp                                     spoken orders and alerts in eight languages
+│   ├── orientation.hpp sdfiles.hpp                   standing and lying layouts, files of the card
+│   ├── server_link.hpp workflow.hpp job_memory.hpp   client of the server and the flow of a job
+│   └── ui_text.hpp keyboard.hpp notices.hpp          texts, keyboards and notices
 ├── main/
-│   ├── app_main.cpp                             start, settings, the loop of the gate
-│   ├── ui.cpp ui.hpp                            the LVGL screens and the stop button
-│   ├── board_p4.cpp board.hpp                   the module: display, sound, stop input
-│   ├── server_link.cpp server_link.hpp          the sockets of the client of the server
-│   └── idf_component.yml Kconfig.projbuild      component list and menuconfig pins
-├── tests/                                       host tests of the settings, the gate, the voice and the screen texts
-├── docs/                                        the hardware notes and the two pictures' sources
-├── tools/                                       CI check, README check and the picture tools
-├── CMakeLists.txt                               the ESP-IDF project
-├── partitions.csv                               the flash layout with two slots
-├── hmi.cfg.example                              every setting with its default and range
-├── sdkconfig.defaults                           ESP-IDF settings for the ESP32-P4 module
-├── images/                                      banner and the Architecture and Repository Structure pictures
-├── .github/                                     CI and release workflows, issue and pull-request templates
-├── build.sh build.bat                           build and run the host tests in a live panel
-├── eh3d.project.json                            manifest: version, role, maturity and build command
-├── CHANGELOG.md                                 what changed in each version
-├── SECURITY.md SUPPORT.md                       how to report a vulnerability and where to ask
-├── CONTRIBUTING.md CODE_OF_CONDUCT.md LICENSE   how to contribute, the code of conduct and the licence
-└── bump_manifest_version.py                     version utility of the manifest
+│   ├── app_main.cpp                                  start, settings, the loop of the gate
+│   ├── ui.cpp ui.hpp                                 the LVGL screens and the stop button
+│   ├── board_p4.cpp board.hpp                        the module: display, sound, stop input
+│   ├── server_link.cpp server_link.hpp               the sockets of the client of the server
+│   └── idf_component.yml Kconfig.projbuild           component list and menuconfig pins
+├── tests/                                            host tests of the settings, the gate, the voice and the screen texts
+├── docs/                                             the hardware notes and the two pictures' sources
+├── tools/                                            CI check, README check and the picture tools
+├── CMakeLists.txt                                    the ESP-IDF project
+├── partitions.csv                                    the flash layout with two slots
+├── hmi.cfg.example                                   every setting with its default and range
+├── sdkconfig.defaults                                ESP-IDF settings for the ESP32-P4 module
+├── images/                                           banner and the Architecture and Repository Structure pictures
+├── .github/                                          CI and release workflows, issue and pull-request templates
+├── build.sh build.bat                                build and run the host tests in a live panel
+├── eh3d.project.json                                 manifest: version, role, maturity and build command
+├── CHANGELOG.md                                      what changed in each version
+├── SECURITY.md SUPPORT.md                            how to report a vulnerability and where to ask
+├── CONTRIBUTING.md CODE_OF_CONDUCT.md LICENSE        how to contribute, the code of conduct and the licence
+└── bump_manifest_version.py                          version utility of the manifest
 ```
 
 </details>

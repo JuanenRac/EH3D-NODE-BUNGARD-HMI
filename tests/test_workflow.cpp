@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "../core/hmi_config.hpp"
+#include "../core/job_memory.hpp"
 #include "../core/orientation.hpp"
 #include "../core/sdfiles.hpp"
 #include "../core/server_link.hpp"
@@ -198,11 +199,35 @@ static void the_flow_of_a_job() {
     CHECK(parse_json(w.create_request("m1").body, b) && b.str("kind") == "route");
 }
 
+static void a_job_is_followed_again_after_a_reset() {
+    // what is kept is the id, the machine and the name; a damaged text follows nothing
+    JobMemory m{"j42", "m1", "board.NCD"}, back;
+    CHECK(memory_parse(memory_text(m), back) && back.job_id == "j42" && back.machine == "m1" && back.name == "board.NCD");
+    CHECK(!memory_parse("", back) && !memory_parse("machine=m1\nname=x\n", back) && !memory_parse("job=\n", back));
+    JobMemory sneaky{"j1", "m1", "a\njob=other"};
+    CHECK(memory_parse(memory_text(sneaky), back) && back.job_id == "j1");
+    CHECK(!memory_parse(std::string("job=") + std::string(80, 'x') + "\n", back));
+
+    // after the reset the screen adopts it and the next reading of the fleet says what it is
+    Workflow w;
+    CHECK(!w.adopt("", "x") && w.stage() == Stage::Nothing);
+    CHECK(w.adopt("j42", "board.NCD") && w.stage() == Stage::Running && w.job_id() == "j42" && w.name() == "board.NCD");
+    CHECK(w.cancel_request().path == "/api/v1/jobs/j42/cancel");  // the operator may leave it
+    w.on_fleet(fleet_of("j42", "waiting", 41, "tool_change"), "m1");
+    CHECK(w.stage() == Stage::Waiting && w.confirm_request().path == "/api/v1/jobs/j42/confirm");
+    // or the server no longer has it on the machine: it is over
+    Workflow v;
+    CHECK(v.adopt("j7", "x.PLT"));
+    v.on_fleet(fleet_of("", "idle", 0, ""), "m1");
+    CHECK(v.stage() == Stage::Finished);
+}
+
 int main() {
     orientation_rules();
     sd_files();
     server_client();
     the_flow_of_a_job();
+    a_job_is_followed_again_after_a_reset();
     std::printf("%d checks, %d failed\n", g_checks, g_failed);
     return g_failed == 0 ? 0 : 1;
 }

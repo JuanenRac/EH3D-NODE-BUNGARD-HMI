@@ -87,8 +87,8 @@
             "zh": "服务器客户端和作业流程",
             "ja": "サーバーのクライアントとジョブの流れ"
           },
-          "name": "server_link.hpp  workflow.hpp",
-          "tree_name": "server_link.hpp workflow.hpp"
+          "name": "server_link.hpp  workflow.hpp  job_memory.hpp",
+          "tree_name": "server_link.hpp workflow.hpp job_memory.hpp"
         },
         {
           "desc": {

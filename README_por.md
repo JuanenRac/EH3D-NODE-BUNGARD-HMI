@@ -30,7 +30,7 @@
 |---|---|
 | Versão | `0.0.1` |
 | Maturidade | Estrutura inicial |
-| Testes | 4 programas de teste no computador (946 verificações contadas) |
+| Testes | 4 programas de teste no computador (956 verificações contadas) |
 | Tecnologias | C++17, ESP-IDF 5.5, LVGL 9, ESP32-P4 |
 | Em hardware real | Não: o firmware não foi compilado nem gravado e nada foi ligado a uma máquina |
 
@@ -45,7 +45,7 @@ Cada linha é uma parte deste repositório e a luz diz até onde chega hoje. É 
 | Área | Estado | O que significa aqui |
 |---|---|---|
 | Software | 🟠 | O projeto ESP-IDF (ESP32-P4, LVGL 9, o ficheiro de definições na sua própria partição) está escrito; não foi compilado nem gravado. |
-| Testes | 🟢 | Passam 4 programas de teste no computador (`ctest`): 946 verificações do ficheiro de definições, da comporta, das ordens e avisos por voz, dos teclados, dos avisos gravados, do cliente do servidor e dos textos dos ecrãs em oito idiomas. |
+| Testes | 🟢 | Passam 4 programas de teste no computador (`ctest`): 956 verificações do ficheiro de definições, da comporta, das ordens e avisos por voz, dos teclados, dos avisos gravados, do cliente do servidor e dos textos dos ecrãs em oito idiomas. |
 | Regras de segurança | 🟡 | Todo o movimento e toda a ordem do fuso passam pela comporta: confirmação no ecrã, trinco da paragem por hardware que só um reconhecimento no ecrã levanta com o botão solto, nenhum movimento com a ligação por armar. Coberto por testes; nunca experimentado com um botão de paragem real. |
 | Voz | 🟡 | As ordens e avisos por voz são reconhecidos e formulados em oito idiomas e testados como texto; não se usou nenhum microfone nem altifalante. |
 | Ecrãs | 🟠 | Os ecrãs máquina, trabalho (microSD), máquinas e estações e definições estão escritos, na horizontal e na vertical, com o aspeto do programa de secretária; o separador visor ainda é um cartão vazio. Só existe um desenho do esquema, não uma captura de um módulo. |
@@ -122,6 +122,7 @@ Como as partes deste repositório se encaixam: quem fala com ele, o que contém 
 * **O teclado certo para cada definição:** um número escreve-se num teclado numérico que conhece o intervalo e as casas decimais dessa definição (as setas movem-no uma unidade, um valor fora do intervalo não é aceite); um texto, como o endereço do servidor ou o token, num teclado completo com as teclas do idioma em uso (tremas, acentos, til, cedilha), com uma maiúscula de uma letra e uma camada de símbolos; os interruptores e as listas não precisam de teclado.
 * **Botões com símbolo:** o pad de movimento, a origem, o fuso, pausa, início, paragem e as respostas a uma pergunta usam símbolos e a letra do eixo em vez de palavras, com as cores do programa de secretária (verde para iniciar, azul para pausar, vermelho para parar).
 * **Avisos gravados:** o fim de um trabalho e o pedido de ferramenta podem ser ditos por uma voz gravada, no idioma e no género definidos (`sound_finish = voice:es:f`), a partir da pasta `voices` do cartão; as gravações são as do EH3D-BUNGARD-GUI. O altifalante ainda não está ligado no firmware.
+* **O trabalho volta a ser seguido após um reinício:** desde que o operador inicia um trabalho, o ecrã guarda na sua flash qual é (o seu id, a máquina, o seu nome); após um corte de energia ou um reinício segue o mesmo trabalho, a leitura seguinte do servidor diz se ainda corre, espera numa troca de ferramenta ou já terminou, e o botão cancelar deixa-o. O trabalho vive no servidor. Escrito e testado num computador; o firmware nunca correu num módulo.
 
 ## 🔒 Segurança e proteção
 
@@ -178,7 +179,7 @@ O firmware ainda não foi compilado: quando for, `idf.py set-target esp32p4 && i
 
 ## 🧪 Testes
 
-Os testes no computador (`build.bat` ou `./build.sh`, e depois `ctest`) são dois programas e passa tudo: `test_hmi` (638 verificações) do ficheiro de definições, da comporta (a paragem passa sempre, trinco da paragem por hardware, confirmação, tempo limite e volta do relógio, regras de voz, interruptores), das ordens e avisos por voz e dos textos de ecrã em oito idiomas; e `test_workflow` (105 verificações) da orientação e do toque, dos ficheiros do cartão (tipos, nomes seguros, ordenação), do leitor de JSON, dos pedidos e respostas do servidor e do fluxo de um trabalho desde o cartão até ao fim. Os outros dois programas cobrem os teclados (`test_keyboard`, 137 verificações: cada definição tem o seu teclado, os intervalos do teclado numérico são os do ficheiro de definições, as casas decimais, o sinal, as setas, o teclado completo de cada idioma, a maiúscula, os símbolos e o comprimento) e os avisos gravados (`test_notices`, 66 verificações: a definição, o ficheiro de cada idioma e género).
+Os testes no computador (`build.bat` ou `./build.sh`, e depois `ctest`) são dois programas e passa tudo: `test_hmi` (638 verificações) do ficheiro de definições, da comporta (a paragem passa sempre, trinco da paragem por hardware, confirmação, tempo limite e volta do relógio, regras de voz, interruptores), das ordens e avisos por voz e dos textos de ecrã em oito idiomas; e `test_workflow` (115 verificações) da orientação e do toque, dos ficheiros do cartão (tipos, nomes seguros, ordenação), do leitor de JSON, dos pedidos e respostas do servidor e do fluxo de um trabalho desde o cartão até ao fim. Os outros dois programas cobrem os teclados (`test_keyboard`, 137 verificações: cada definição tem o seu teclado, os intervalos do teclado numérico são os do ficheiro de definições, as casas decimais, o sinal, as setas, o teclado completo de cada idioma, a maiúscula, os símbolos e o comprimento) e os avisos gravados (`test_notices`, 66 verificações: a definição, o ficheiro de cada idioma e género).
 
 ## 🏗️ Compilação e publicação
 
@@ -205,33 +206,33 @@ A versão vive em `eh3d.project.json` e cada versão tem a sua entrada em [CHANG
 ```text
 EH3D-NODE-BUNGARD-HMI/
 ├── core/
-│   ├── hmi_config.hpp lang.hpp                  o ficheiro de definições e os seus valores seguros
-│   ├── gate.hpp                                 a comporta: confirmação, trinco da paragem
-│   ├── voice.hpp                                ordens e avisos por voz em oito idiomas
-│   ├── orientation.hpp sdfiles.hpp              vertical e horizontal, ficheiros do cartão
-│   ├── server_link.hpp workflow.hpp             cliente do servidor e fluxo de um trabalho
-│   └── ui_text.hpp keyboard.hpp notices.hpp     textos, teclados e avisos
+│   ├── hmi_config.hpp lang.hpp                       o ficheiro de definições e os seus valores seguros
+│   ├── gate.hpp                                      a comporta: confirmação, trinco da paragem
+│   ├── voice.hpp                                     ordens e avisos por voz em oito idiomas
+│   ├── orientation.hpp sdfiles.hpp                   vertical e horizontal, ficheiros do cartão
+│   ├── server_link.hpp workflow.hpp job_memory.hpp   cliente do servidor e fluxo de um trabalho
+│   └── ui_text.hpp keyboard.hpp notices.hpp          textos, teclados e avisos
 ├── main/
-│   ├── app_main.cpp                             arranque, definições, o ciclo da comporta
-│   ├── ui.cpp ui.hpp                            os ecrãs LVGL e o botão de paragem
-│   ├── board_p4.cpp board.hpp                   o módulo: ecrã, som, entrada de paragem
-│   ├── server_link.cpp server_link.hpp          os sockets do cliente do servidor
-│   └── idf_component.yml Kconfig.projbuild      lista de componentes e pinos do menuconfig
-├── tests/                                       testes no computador das definições, da comporta, da voz e dos textos de ecrã
-├── docs/                                        as notas de hardware e as fontes dos dois desenhos
-├── tools/                                       verificação de CI, de README e ferramentas dos desenhos
-├── CMakeLists.txt                               o projeto ESP-IDF
-├── partitions.csv                               a divisão da flash com duas ranhuras
-├── hmi.cfg.example                              cada definição com o seu valor por omissão e intervalo
-├── sdkconfig.defaults                           definições do ESP-IDF para o módulo ESP32-P4
-├── images/                                      banner e as imagens de Arquitetura e Estrutura do repositório
-├── .github/                                     fluxos de CI e de publicação, modelos de issues e pull requests
-├── build.sh build.bat                           compila e executa os testes no computador num painel em direto
-├── eh3d.project.json                            manifesto: versão, papel, maturidade e comando de compilação
-├── CHANGELOG.md                                 o que mudou em cada versão
-├── SECURITY.md SUPPORT.md                       como comunicar uma vulnerabilidade e onde perguntar
-├── CONTRIBUTING.md CODE_OF_CONDUCT.md LICENSE   como contribuir, o código de conduta e a licença
-└── bump_manifest_version.py                     utilitário de versão do manifesto
+│   ├── app_main.cpp                                  arranque, definições, o ciclo da comporta
+│   ├── ui.cpp ui.hpp                                 os ecrãs LVGL e o botão de paragem
+│   ├── board_p4.cpp board.hpp                        o módulo: ecrã, som, entrada de paragem
+│   ├── server_link.cpp server_link.hpp               os sockets do cliente do servidor
+│   └── idf_component.yml Kconfig.projbuild           lista de componentes e pinos do menuconfig
+├── tests/                                            testes no computador das definições, da comporta, da voz e dos textos de ecrã
+├── docs/                                             as notas de hardware e as fontes dos dois desenhos
+├── tools/                                            verificação de CI, de README e ferramentas dos desenhos
+├── CMakeLists.txt                                    o projeto ESP-IDF
+├── partitions.csv                                    a divisão da flash com duas ranhuras
+├── hmi.cfg.example                                   cada definição com o seu valor por omissão e intervalo
+├── sdkconfig.defaults                                definições do ESP-IDF para o módulo ESP32-P4
+├── images/                                           banner e as imagens de Arquitetura e Estrutura do repositório
+├── .github/                                          fluxos de CI e de publicação, modelos de issues e pull requests
+├── build.sh build.bat                                compila e executa os testes no computador num painel em direto
+├── eh3d.project.json                                 manifesto: versão, papel, maturidade e comando de compilação
+├── CHANGELOG.md                                      o que mudou em cada versão
+├── SECURITY.md SUPPORT.md                            como comunicar uma vulnerabilidade e onde perguntar
+├── CONTRIBUTING.md CODE_OF_CONDUCT.md LICENSE        como contribuir, o código de conduta e a licença
+└── bump_manifest_version.py                          utilitário de versão do manifesto
 ```
 
 </details>

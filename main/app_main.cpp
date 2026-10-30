@@ -3,11 +3,14 @@
 // sends what the operator asked (a job made of a file of the microSD card, its start, its confirmation), so the desktop programs and the
 // node see the same jobs at the same time. This has not been built or run on a module yet. GPL-3.0-or-later.
 #include <cstdio>
+#include <cstring>
 #include <string>
 #include <vector>
 
 #include "esp_log.h"
 #include "esp_spiffs.h"
+#include "nvs.h"
+#include "nvs_flash.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include "freertos/semphr.h"
@@ -15,6 +18,7 @@
 #include "sdkconfig.h"
 
 #include "../core/hmi_config.hpp"
+#include "../core/job_memory.hpp"
 #include "../core/orientation.hpp"
 #include "../core/sdfiles.hpp"
 #include "../core/ui_text.hpp"
@@ -40,6 +44,48 @@ static bool g_fleet_new = false;
 static bool g_server_ok = false;
 static std::string g_note;
 static hmi::Workflow g_flow;
+
+
+// ------------------------------------------------------------------------------------------------------------------------------ the job that this screen follows
+// The job lives in the server. The screen keeps only which one is its own (its id, the machine, its name) in the flash, from the moment the operator starts it until it
+// is over, so that after a power cut or a reset it follows the same job again: the next reading of the fleet says if it still runs, waits for the operator or is over.
+
+static const char* kMemoryKey = "job";
+static bool g_remembered = false;
+
+static void memory_save(const hmi::JobMemory& m) {
+    nvs_handle_t h;
+    if (nvs_open("eh3d_hmi", NVS_READWRITE, &h) != ESP_OK) return;
+    if (nvs_set_str(h, kMemoryKey, hmi::memory_text(m).c_str()) == ESP_OK) nvs_commit(h);
+    nvs_close(h);
+    g_remembered = true;
+}
+
+static void memory_clear() {
+    nvs_handle_t h;
+    if (nvs_open("eh3d_hmi", NVS_READWRITE, &h) == ESP_OK) {
+        nvs_erase_key(h, kMemoryKey);
+        nvs_commit(h);
+        nvs_close(h);
+    }
+    g_remembered = false;
+}
+
+static bool memory_load(hmi::JobMemory& m) {
+    nvs_handle_t h;
+    if (nvs_open("eh3d_hmi", NVS_READONLY, &h) != ESP_OK) return false;
+    std::size_t n = 0;
+    bool ok = false;
+    if (nvs_get_str(h, kMemoryKey, nullptr, &n) == ESP_OK && n > 1 && n < 512) {
+        std::string text(n, '\0');
+        if (nvs_get_str(h, kMemoryKey, &text[0], &n) == ESP_OK) {
+            text.resize(std::strlen(text.c_str()));
+            ok = hmi::memory_parse(text, m);
+        }
+    }
+    nvs_close(h);
+    return ok;
+}
 
 // called by the screens in the LVGL task: the request is only queued
 static void post(const ui::Request& r) {
@@ -94,7 +140,9 @@ static void link_task(void*) {
                 else if (r.status != 200 && r.status != 202) { ok = false; why = hmi::error_line(r); }
                 const std::string base = g_flow.report_base();
                 const std::string name = g_flow.name();
+                const std::string job_id = g_flow.job_id();
                 xSemaphoreGive(g_lock);
+                if (ok && job.what == ServerJob::Do::Start) memory_save({job_id, g_settings.server_machine, name});
                 set_note(ok ? "ok" : why);
                 if (ok && job.what == ServerJob::Do::Create) {
                     // the answer of the server is kept on the card, without replacing an older report
@@ -136,6 +184,13 @@ static void rebuild(bool mounted_portrait) {
 }
 
 extern "C" void app_main() {
+    {
+        const esp_err_t e = nvs_flash_init();
+        if (e == ESP_ERR_NVS_NO_FREE_PAGES || e == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+            nvs_flash_erase();
+            nvs_flash_init();
+        }
+    }
     esp_vfs_spiffs_conf_t fs = {"/config", "config", 4, false};
     if (esp_vfs_spiffs_register(&fs) != ESP_OK) ESP_LOGW(TAG, "no config partition: the defaults are used");
     std::vector<hmi::Problem> problems;
@@ -153,6 +208,16 @@ extern "C" void app_main() {
     g_requests = xQueueCreate(8, sizeof(ui::Request));
     g_to_server = xQueueCreate(4, sizeof(ServerJob));
     g_lock = xSemaphoreCreateMutex();
+    // a job that was running when the screen went down: follow it again; the operator can leave it with the cancel button
+    {
+        hmi::JobMemory m;
+        if (memory_load(m) && m.machine == g_settings.server_machine && g_flow.adopt(m.job_id, m.name)) {
+            g_remembered = true;
+            set_note("following the job that was left running: " + m.name);
+        } else {
+            memory_clear();  // what was kept is not for this machine, or it is damaged
+        }
+    }
     xTaskCreate(link_task, "link", 8192, nullptr, 4, nullptr);
     rebuild(false);
 
@@ -245,7 +310,9 @@ extern "C" void app_main() {
         state.percent = g_flow.percent();
         // the machine counts as armed while the job of this screen runs or waits for the operator
         state.armed = g_flow.stage() == hmi::Stage::Running || g_flow.stage() == hmi::Stage::Waiting;
+        const bool over = g_flow.stage() == hmi::Stage::Finished || g_flow.stage() == hmi::Stage::Failed;
         xSemaphoreGive(g_lock);
+        if (over && g_remembered) memory_clear();
         state.stop_wired = wired;
         state.stop_pressed = pressed;
         state.stop_latched = gate.latched();

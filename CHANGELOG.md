@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The job is followed again after a reset:** `core/job_memory.hpp` keeps the id, the machine and the name of the job that the operator started (in the flash, until it is over), and `Workflow::adopt` follows it again after a power cut or a reset; the next reading of the server says whether it runs, waits or is over. 10 more checks.
+
 - **The right keyboard for each setting:** a numeric pad that knows the range and the decimals of the setting, and a full keyboard with the keys of each of the eight languages (a one-letter shift, a layer of symbols, the length of the setting); every setting that the screen edits is described once.
 - **Buttons with a symbol:** the jog pad, home, the spindle, pause, start, stop and the answers of a question use symbols and the letter of the axis, in the colours of the desktop program.
 - **Recorded notices:** `sound_finish` and `sound_tool_change` (`off`, `default` or `voice:LANG:f|m`) and the file that each one names in the folder `voices`; the speaker is not wired yet.
