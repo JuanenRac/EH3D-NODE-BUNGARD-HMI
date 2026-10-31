@@ -341,6 +341,34 @@
           "name": "sdkconfig.defaults"
         },
         {
+          "desc": {
+            "en": "settings of the board",
+            "es": "ajustes de la placa",
+            "it": "impostazioni della scheda",
+            "de": "Einstellungen der Platine",
+            "fr": "réglages de la carte",
+            "pt": "definições da placa",
+            "zh": "开发板设置",
+            "ja": "ボードの設定"
+          },
+          "name": "sdkconfig.board.p4",
+          "tree_name": "sdkconfig.board.p4"
+        },
+        {
+          "desc": {
+            "en": "the exact versions of the components",
+            "es": "las versiones exactas de los componentes",
+            "it": "le versioni esatte dei componenti",
+            "de": "die genauen Versionen der Komponenten",
+            "fr": "les versions exactes des composants",
+            "pt": "as versões exatas dos componentes",
+            "zh": "组件的确切版本",
+            "ja": "コンポーネントの正確なバージョン"
+          },
+          "name": "dependencies.lock",
+          "tree_name": "dependencies.lock"
+        },
+        {
           "name": "images/",
           "desc": {
             "en": "banner and the Architecture and Repository Structure pictures",

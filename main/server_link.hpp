@@ -5,10 +5,10 @@
 #include "../core/hmi_config.hpp"
 #include "../core/server_link.hpp"
 
-namespace link {
+namespace srvlink {
 
 /// Sends a request to the server of the settings and waits for the answer (blocking: call it from the task of the link, never from the one
 /// of the screen). False with `error` when the server cannot be reached or the answer is not whole.
 bool call(const hmi::Settings& settings, const hmi::Request& request, hmi::Response& response, std::string& error);
 
-}  // namespace link
+}  // namespace srvlink

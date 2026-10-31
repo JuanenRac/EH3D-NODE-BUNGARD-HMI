@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
   <img src="https://img.shields.io/badge/Stack-C%2B%2B17%20%2B%20ESP--IDF-00599C.svg" alt="C++17 and ESP-IDF">
   <img src="https://img.shields.io/badge/Languages-8-00E5FF.svg" alt="Languages">
-  <img src="https://img.shields.io/badge/Version-0.0.1-0f6cbd.svg" alt="Version">
+  <img src="https://img.shields.io/badge/Version-0.0.2-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-scaffolding-FFB020.svg" alt="Maturity">
 </p>
 
@@ -28,7 +28,7 @@
 
 | | |
 |---|---|
-| Versione | `0.0.1` |
+| Versione | `0.0.2` |
 | Maturità | Impalcatura |
 | Test | 4 programmi di test sul computer (956 controlli contati) |
 | Stack tecnologico | C++17, ESP-IDF 5.5, LVGL 9, ESP32-P4 |
@@ -225,6 +225,8 @@ EH3D-NODE-BUNGARD-HMI/
 ├── partitions.csv                                    la mappa della flash con due slot
 ├── hmi.cfg.example                                   ogni impostazione con il suo default e intervallo
 ├── sdkconfig.defaults                                impostazioni ESP-IDF per il modulo ESP32-P4
+├── sdkconfig.board.p4                                impostazioni della scheda
+├── dependencies.lock                                 le versioni esatte dei componenti
 ├── images/                                           banner e le immagini di Architettura e Struttura del repository
 ├── .github/                                          workflow di CI e di rilascio, modelli di issue e pull request
 ├── build.sh build.bat                                compila ed esegue i test su computer in un pannello dal vivo

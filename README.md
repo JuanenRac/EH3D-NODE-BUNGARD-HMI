@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
   <img src="https://img.shields.io/badge/Stack-C%2B%2B17%20%2B%20ESP--IDF-00599C.svg" alt="C++17 and ESP-IDF">
   <img src="https://img.shields.io/badge/Languages-8-00E5FF.svg" alt="Languages">
-  <img src="https://img.shields.io/badge/Version-0.0.1-0f6cbd.svg" alt="Version">
+  <img src="https://img.shields.io/badge/Version-0.0.2-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-scaffolding-FFB020.svg" alt="Maturity">
 </p>
 
@@ -28,7 +28,7 @@
 
 | | |
 |---|---|
-| Version | `0.0.1` |
+| Version | `0.0.2` |
 | Maturity | Scaffolding |
 | Tests | 4 host test programs (956 checks counted) |
 | Stack | C++17, ESP-IDF 5.5, LVGL 9, ESP32-P4 |
@@ -225,6 +225,8 @@ EH3D-NODE-BUNGARD-HMI/
 ├── partitions.csv                                    the flash layout with two slots
 ├── hmi.cfg.example                                   every setting with its default and range
 ├── sdkconfig.defaults                                ESP-IDF settings for the ESP32-P4 module
+├── sdkconfig.board.p4                                settings of the board
+├── dependencies.lock                                 the exact versions of the components
 ├── images/                                           banner and the Architecture and Repository Structure pictures
 ├── .github/                                          CI and release workflows, issue and pull-request templates
 ├── build.sh build.bat                                build and run the host tests in a live panel

@@ -129,7 +129,7 @@ static void link_task(void*) {
             xSemaphoreGive(g_lock);
             if (req.path.empty()) {
                 set_note("nothing to send: choose a file and set the machine of the server");
-            } else if (!link::call(g_settings, req, r, error)) {
+            } else if (!srvlink::call(g_settings, req, r, error)) {
                 set_note(error);
             } else {
                 std::string why;
@@ -158,7 +158,7 @@ static void link_task(void*) {
             next_poll = xTaskGetTickCount() + pdMS_TO_TICKS(g_settings.poll_s * 1000);
             hmi::Response fr;
             hmi::FleetView view;
-            if (link::call(g_settings, hmi::fleet_request(), fr, error) && fr.status == 200 && hmi::parse_fleet(fr.body, view)) {
+            if (srvlink::call(g_settings, hmi::fleet_request(), fr, error) && fr.status == 200 && hmi::parse_fleet(fr.body, view)) {
                 xSemaphoreTake(g_lock, portMAX_DELAY);
                 g_fleet = view;
                 g_fleet_new = true;

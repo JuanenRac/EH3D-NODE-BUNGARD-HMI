@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
   <img src="https://img.shields.io/badge/Stack-C%2B%2B17%20%2B%20ESP--IDF-00599C.svg" alt="C++17 and ESP-IDF">
   <img src="https://img.shields.io/badge/Languages-8-00E5FF.svg" alt="Languages">
-  <img src="https://img.shields.io/badge/Version-0.0.1-0f6cbd.svg" alt="Version">
+  <img src="https://img.shields.io/badge/Version-0.0.2-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-scaffolding-FFB020.svg" alt="Maturity">
 </p>
 
@@ -28,7 +28,7 @@
 
 | | |
 |---|---|
-| Version | `0.0.1` |
+| Version | `0.0.2` |
 | Maturité | Échafaudage |
 | Tests | 4 programmes de test sur ordinateur (956 vérifications comptées) |
 | Pile technique | C++17, ESP-IDF 5.5, LVGL 9, ESP32-P4 |
@@ -225,6 +225,8 @@ EH3D-NODE-BUNGARD-HMI/
 ├── partitions.csv                                    la répartition de la flash à deux emplacements
 ├── hmi.cfg.example                                   chaque réglage avec sa valeur par défaut et sa plage
 ├── sdkconfig.defaults                                réglages ESP-IDF pour le module ESP32-P4
+├── sdkconfig.board.p4                                réglages de la carte
+├── dependencies.lock                                 les versions exactes des composants
 ├── images/                                           bannière et images d'Architecture et de Structure du dépôt
 ├── .github/                                          workflows de CI et de publication, modèles d'issues et de pull requests
 ├── build.sh build.bat                                compile et exécute les tests sur ordinateur dans un panneau en direct

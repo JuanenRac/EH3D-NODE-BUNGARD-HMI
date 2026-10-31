@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
   <img src="https://img.shields.io/badge/Stack-C%2B%2B17%20%2B%20ESP--IDF-00599C.svg" alt="C++17 and ESP-IDF">
   <img src="https://img.shields.io/badge/Languages-8-00E5FF.svg" alt="Languages">
-  <img src="https://img.shields.io/badge/Version-0.0.1-0f6cbd.svg" alt="Version">
+  <img src="https://img.shields.io/badge/Version-0.0.2-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-scaffolding-FFB020.svg" alt="Maturity">
 </p>
 
@@ -28,7 +28,7 @@
 
 | | |
 |---|---|
-| バージョン | `0.0.1` |
+| バージョン | `0.0.2` |
 | 成熟度 | 足場 |
 | テスト | ホストテスト 4 本（956 件のチェックを集計） |
 | 技術スタック | C++17, ESP-IDF 5.5, LVGL 9, ESP32-P4 |
@@ -225,6 +225,8 @@ EH3D-NODE-BUNGARD-HMI/
 ├── partitions.csv                                    2 スロットのフラッシュ配置
 ├── hmi.cfg.example                                   各設定の既定値と範囲
 ├── sdkconfig.defaults                                ESP32-P4 モジュール向けの ESP-IDF 設定
+├── sdkconfig.board.p4                                ボードの設定
+├── dependencies.lock                                 コンポーネントの正確なバージョン
 ├── images/                                           バナーとアーキテクチャ・リポジトリ構成の図
 ├── .github/                                          CI とリリースのワークフロー、Issue と PR のテンプレート
 ├── build.sh build.bat                                ホスト テストをライブ パネルでビルドして実行

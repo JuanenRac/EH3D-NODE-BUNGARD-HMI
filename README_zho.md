@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
   <img src="https://img.shields.io/badge/Stack-C%2B%2B17%20%2B%20ESP--IDF-00599C.svg" alt="C++17 and ESP-IDF">
   <img src="https://img.shields.io/badge/Languages-8-00E5FF.svg" alt="Languages">
-  <img src="https://img.shields.io/badge/Version-0.0.1-0f6cbd.svg" alt="Version">
+  <img src="https://img.shields.io/badge/Version-0.0.2-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-scaffolding-FFB020.svg" alt="Maturity">
 </p>
 
@@ -28,7 +28,7 @@
 
 | | |
 |---|---|
-| 版本 | `0.0.1` |
+| 版本 | `0.0.2` |
 | 成熟度 | 脚手架 |
 | 测试 | 4 个主机测试程序（共 956 项检查） |
 | 技术栈 | C++17, ESP-IDF 5.5, LVGL 9, ESP32-P4 |
@@ -225,6 +225,8 @@ EH3D-NODE-BUNGARD-HMI/
 ├── partitions.csv                                    带两个槽位的闪存布局
 ├── hmi.cfg.example                                   每个设置及其默认值和范围
 ├── sdkconfig.defaults                                ESP32-P4 模块的 ESP-IDF 设置
+├── sdkconfig.board.p4                                开发板设置
+├── dependencies.lock                                 组件的确切版本
 ├── images/                                           横幅图以及架构和仓库结构图片
 ├── .github/                                          CI 与发布工作流、Issue 和 PR 模板
 ├── build.sh build.bat                                在实时面板中编译并运行主机测试

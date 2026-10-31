@@ -4,7 +4,7 @@
 
 #include "esp_http_client.h"
 
-namespace link {
+namespace srvlink {
 
 namespace {
 constexpr std::size_t kMaxAnswer = 256 * 1024;  // a fleet of a big workshop is far smaller
@@ -64,4 +64,4 @@ bool call(const hmi::Settings& s, const hmi::Request& r, hmi::Response& out, std
     return ok;
 }
 
-}  // namespace link
+}  // namespace srvlink

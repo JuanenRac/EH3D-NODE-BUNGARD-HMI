@@ -4,6 +4,9 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.0.2] - Following the job after a reset, keyboards for each setting and a firmware that builds
+
+- **The firmware builds with the compiler of the EH3D nodes:** the link with the server (`main/server_link.cpp`) and the components of the screen (LVGL 9.3 and `esp_lvgl_port`, the versions that go together) build for the ESP32-P4 with ESP-IDF 5.5.5, and `dependencies.lock` is regenerated; it has not been flashed or run on a board.
 - **The job is followed again after a reset:** `core/job_memory.hpp` keeps the id, the machine and the name of the job that the operator started (in the flash, until it is over), and `Workflow::adopt` follows it again after a power cut or a reset; the next reading of the server says whether it runs, waits or is over. 10 more checks.
 
 - **The right keyboard for each setting:** a numeric pad that knows the range and the decimals of the setting, and a full keyboard with the keys of each of the eight languages (a one-letter shift, a layer of symbols, the length of the setting); every setting that the screen edits is described once.
