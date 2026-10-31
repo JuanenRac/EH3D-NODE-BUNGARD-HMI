@@ -30,7 +30,7 @@
 |---|---|
 | Version | `0.0.4` |
 | Maturity | Scaffolding |
-| Tests | 6 host test programs (75426 checks counted) |
+| Tests | 6 host test programs (84140 checks counted) |
 | Stack | C++17, ESP-IDF 5.5, LVGL 9, ESP32-P4 |
 | On real hardware | No: the firmware has not been built or flashed, and nothing has been connected to a machine |
 
@@ -45,7 +45,7 @@ Each line is one part of this repository and the light says how far it is today.
 | Area | State | What it means here |
 |---|---|---|
 | Software | 🟠 | The ESP-IDF project (ESP32-P4, LVGL 9, the settings file in its own partition) is written; it has not been built or flashed. |
-| Tests | 🟢 | 6 host test programs pass (`ctest`): 75426 checks in the settings file, the gate, the spoken orders and alerts, the keyboards, the recorded notices, the server client and the texts of the screens in eight languages. |
+| Tests | 🟢 | 6 host test programs pass (`ctest`): 84140 checks in the settings file, the gate, the spoken orders and alerts, the keyboards, the recorded notices, the server client and the texts of the screens in eight languages. |
 | Safety rules | 🟡 | Every move and spindle order goes through the gate: confirmation on the screen, hardware-stop latch that only an acknowledgement on the screen clears once the button is up, no move while the link is not armed. Covered by tests; never run with a real stop button. |
 | Voice | 🟡 | Spoken orders and alerts are recognised and phrased in eight languages and tested as text; no microphone or speaker has been used. |
 | Screens | 🟠 | The machine, job (microSD), machines-and-stations and settings screens are written, lying down and standing up, in the look of the desktop program; the viewer tab is still an empty card. Only a drawing of the layout exists, not a capture of a module. |
@@ -63,6 +63,9 @@ Each line is one part of this repository and the light says how far it is today.
 * **Standing up or lying down:** the setting `orientation` (`auto`, `landscape`, `portrait`) turns the picture of the panel: lying down (1280 x 800) the job, the plan view and the jog pad sit in three columns above the bar of the position, standing up (800 x 1280) they stack; a touch lands where the screen is touched in both.
 * **The microSD card and the server, as one flow:** the card lists the drilling and routing files; the screen sends the chosen file to EH3D-SERVER as a job that waits ready, the operator starts it through the gate, and the progress, the stops for a tool change and the end come back from the fleet in real time, the same as on the desktop programs and the node. The answer of the server for each job is saved on the card.
 * **The tools of the file, and the spindle:** when a file is chosen the job page shows what it holds (the tools, their diameter and how many holes or cuts each one has) and a chip for each tool: a tap switches it off or on, and the job is sent to the server without it (`skip_tools`); with every tool off nothing is sent. It also shows the spindle the machine carries (`original` or `vfd`) with its turns, as the server says. Written and tested on a computer (`core/job_tools.hpp`); not seen on a module.
+* **The gate keeps to the spindle:** a spindle order carries the turns it asks for (`spindle_rpm`, what the spindle button asks), and the gate never lets it pass the lower of `spindle_max_rpm` and the top speed of the spindle the machine carries, as the server says it. With `spindle_over = clip` (the default) an order for more is cut to that speed and the screen says so; with `refuse` it is refused with a reason. The confirmation shows the turns the spindle will really get. Written and tested on a computer; not seen on a module.
+* **A stopped job goes on:** when a job leaves the machine the screen asks the server how it ended; a job that was cancelled or failed is shown as stopped, with the holes (cuts) it did, and a button sends the same file again with `skip` set to those already done, so only the rest is drilled or routed. The tools switched off stay off and the start goes through the gate like any other. Written and tested on a computer; not seen on a module.
+* **Drilling and then routing:** a drilling file and a routing file chosen one after the other are two programs of one job: when the server says the drilling is done, the routing is made and waits for the operator to start it, after the change of tool, and the job page names the program that comes next. Written and tested on a computer; not seen on a module.
 
 ## 🧩 Role in EH3D
 
@@ -161,6 +164,8 @@ Everything tuned is a line of `hmi.cfg` (copy `hmi.cfg.example` to the `config` 
 | `confirm_timeout_ms` | 8000 | 1000 - 60000 | how long a confirmation waits |
 | `jog_max_mm` | 20 | 1 - 200 | the longest single jog the screen sends |
 | `spindle_max_rpm` | 24000 | 0 - 65535 | the highest spindle speed it asks for (0: it never starts the spindle) |
+| `spindle_rpm` | 12000 | 0 - 65535 | the turns the spindle button asks for (0: the speed the job says); the gate cuts it to what the spindle gives |
+| `spindle_over` | clip | clip / refuse | an order for more turns than the spindle gives: cut to its top speed and say so, or refuse it |
 | `hw_stop_required` | on | on / off | control the machine only while the hardware stop input is wired and released |
 | `voice_orders` | off | on / off | accept spoken orders |
 | `voice_confirm` | off | on / off | accept a spoken yes as the confirmation of a move |
@@ -181,7 +186,7 @@ The firmware has not been built yet: when it is, `idf.py set-target esp32p4 && i
 
 ## 🧪 Testing
 
-The host tests (`build.bat` or `./build.sh`, then `ctest`) are two programs and all of it passes: `test_hmi` (638 checks) on the settings file, the gate (stop always goes, hardware-stop latch, confirmation, timeout and clock wrap-around, voice rules, switches), the spoken orders and alerts and the screen texts in eight languages; and `test_workflow` (140 checks) on the orientation and the touch, the files of the card (kinds, safe names, sorting), the JSON reader, the requests and answers of the server, and the flow of a job from the card to its end. The other two programs cover the keyboards (`test_keyboard`, 137 checks: every setting has its keyboard, the ranges of the pad are the ones of the settings file, the decimals, the sign, the arrows, the full keyboard of each language, the shift, the symbols and the length) and the recorded notices (`test_notices`, 66 checks: the setting, the file of each language and gender). The last two programs are `test_quality` (911 checks: the requests, the reading of the report, every finding) and `test_locales` (73945 checks: every key has a text in each of the 29 other languages, nothing is empty or too long, the script of each language is the right one, what must stay stays, and every character that any text can draw is in the range of the generated fonts).
+The host tests (`build.bat` or `./build.sh`, then `ctest`) are two programs and all of it passes: `test_hmi` (945 checks) on the settings file, the gate (stop always goes, hardware-stop latch, confirmation, timeout and clock wrap-around, voice rules, switches), the spoken orders and alerts and the screen texts in eight languages; and `test_workflow` (185 checks) on the orientation and the touch, the files of the card (kinds, safe names, sorting), the JSON reader, the requests and answers of the server, and the flow of a job from the card to its end. The other two programs cover the keyboards (`test_keyboard`, 231 checks: every setting has its keyboard, the ranges of the pad are the ones of the settings file, the decimals, the sign, the arrows, the full keyboard of each language, the shift, the symbols and the length) and the recorded notices (`test_notices`, 266 checks: the setting, the file of each language and gender). The last two programs are `test_quality` (911 checks: the requests, the reading of the report, every finding) and `test_locales` (81602 checks: every key has a text in each of the 29 other languages, nothing is empty or too long, the script of each language is the right one, what must stay stays, and every character that any text can draw is in the range of the generated fonts).
 
 ## 🏗️ Build & Release
 

@@ -236,6 +236,7 @@ inline std::string error_line(const Response& r) {
 }
 
 inline Request fleet_request() { return {"GET", "/api/v1/fleet", ""}; }
+inline Request job_report_request(const std::string& id) { return {"GET", "/api/v1/jobs/" + id, ""}; }
 inline Request job_start_request(const std::string& id) { return {"POST", "/api/v1/jobs/" + id + "/start", "{}"}; }
 inline Request job_cancel_request(const std::string& id) { return {"POST", "/api/v1/jobs/" + id + "/cancel", "{}"}; }
 inline Request job_confirm_request(const std::string& id) { return {"POST", "/api/v1/jobs/" + id + "/confirm", "{}"}; }
@@ -243,7 +244,7 @@ inline Request job_confirm_request(const std::string& id) { return {"POST", "/ap
 /// A drilling or routing job made of the text of the file of the card (and its tool table when there is one); the server plans it and keeps
 /// it ready: nothing starts until `job_start_request` is sent, and that goes through the gate of the screen.
 inline Request job_request(const std::string& machine, bool route, const std::string& name, const std::string& file_text, const std::string& tools_text,
-                           const std::vector<int>& skip_tools = {}) {
+                           const std::vector<int>& skip_tools = {}, int skip = 0) {
     std::string files = std::string("{") + json_quote(route ? "plt" : "ncd") + ":" + json_quote(file_text);
     if (!tools_text.empty()) files += std::string(",") + json_quote(route ? "rtd" : "dtd") + ":" + json_quote(tools_text);
     files += "}";
@@ -254,8 +255,31 @@ inline Request job_request(const std::string& machine, bool route, const std::st
         for (std::size_t i = 0; i < skip_tools.size(); ++i) body += (i ? "," : "") + std::to_string(skip_tools[i]);
         body += "]";
     }
+    // how many holes (or paths) are already done: a job that goes on after a stop does only the rest
+    if (skip > 0) body += ",\"skip\":" + std::to_string(skip);
     body += "}";
     return {"POST", "/api/v1/machines/" + machine + "/jobs", body};
+}
+
+/// How a job ended, as `GET /jobs/:id` says it: its state (`done`, `cancelled`, `failed`, ...), why, and the holes (the paths of a routing job) it did of the ones it had.
+struct JobReport {
+    std::string state, message;
+    int holes_done = 0;
+    int holes_total = 0;
+};
+
+inline bool parse_job_report(const std::string& body, JobReport& out) {
+    Json j;
+    if (!parse_json(body, j) || j.type != Json::Type::Object || j.str("state").empty()) return false;
+    JobReport r;
+    r.state = j.str("state");
+    r.message = j.str("message");
+    r.holes_done = static_cast<int>(j.num("holes_done"));
+    r.holes_total = static_cast<int>(j.num("holes_total"));
+    if (r.holes_done < 0) r.holes_done = 0;
+    if (r.holes_total < r.holes_done) r.holes_total = r.holes_done;
+    out = std::move(r);
+    return true;
 }
 
 /// The spindle of the machine and its limits (`GET /machines/:id/spindle`): which one it carries (`original` or `vfd`; empty when none is said), the slowest and

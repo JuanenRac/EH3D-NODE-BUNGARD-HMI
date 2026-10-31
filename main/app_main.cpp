@@ -275,7 +275,25 @@ static void link_task(void*) {
                 g_fleet_new = true;
                 g_server_ok = true;
                 g_flow.on_fleet(view, g_settings.server_machine);
+                const hmi::Request ended = g_flow.report_request();
                 xSemaphoreGive(g_lock);
+                // a job that left the machine: the server says if it was done or stopped (a stopped one can go on from the holes it did)
+                if (!ended.path.empty()) {
+                    hmi::Response rr;
+                    const bool got = srvlink::call(g_settings, ended, rr, error);
+                    xSemaphoreTake(g_lock, portMAX_DELAY);
+                    if (got) g_flow.on_report(rr);
+                    // the drilling is done and the routing comes after it (or the other way round for the files chosen): its job is made and waits for the operator
+                    const bool next = got && g_flow.advance();
+                    const std::string next_name = g_flow.name();
+                    xSemaphoreGive(g_lock);
+                    if (next) {
+                        ServerJob again;
+                        again.what = ServerJob::Do::Create;
+                        xQueueSend(g_to_server, &again, 0);
+                        set_note("next: " + next_name);
+                    }
+                }
                 // the spindle of the machine: asked at the first reading and then every tenth
                 if (!g_settings.server_machine.empty() && (polls++ % 10) == 0) {
                     hmi::Response sr;
@@ -301,8 +319,18 @@ static void refresh_job() {
     xSemaphoreTake(g_lock, portMAX_DELAY);
     const hmi::ToolSwitch tools = g_flow.tool_switch();
     const hmi::SpindleView spindle = g_spindle;
+    ui::FlowState flow;
+    flow.stopped = g_flow.stage() == hmi::Stage::Stopped;
+    flow.can_resume = g_flow.can_resume();
+    flow.route = g_flow.route();
+    flow.done = g_flow.done();
+    flow.total = g_flow.total();
+    flow.skipped = g_flow.skipped();
+    flow.next = g_flow.next_name();
+    flow.message = g_flow.message();
     xSemaphoreGive(g_lock);
     ui::show_job(tools, spindle, g_settings);
+    ui::show_flow(flow, g_settings);
 }
 
 static void rebuild(bool mounted_portrait) {
@@ -370,6 +398,12 @@ extern "C" void app_main() {
         gate.hardware_stop(wired, pressed);
         gate.link(state.armed);  // `armed` follows the job of the server; until a job runs the gate refuses every move
         gate.tick(board::now_ms());
+        {
+            // the top speed of the spindle the machine carries (the server says it): an order for more turns is cut to it or refused
+            xSemaphoreTake(g_lock, portMAX_DELAY);
+            gate.machine_spindle_max(g_spindle.known ? g_spindle.max_rpm : 0);
+            xSemaphoreGive(g_lock);
+        }
 
         ui::Request r;
         while (xQueueReceive(g_requests, &r, 0) == pdTRUE) {
@@ -402,10 +436,37 @@ extern "C" void app_main() {
                     }
                     {
                         hmi::Decision d = gate.request(r.action, hmi::Origin::Touch, board::now_ms());
-                        if (d.verdict == hmi::Verdict::NeedConfirm) ui::ask(&r.action, g_settings);
-                        else if (d.verdict == hmi::Verdict::Refused) ui::refused(d.why, g_settings);
+                        if (d.verdict == hmi::Verdict::NeedConfirm) {
+                            // the confirmation shows the turns the spindle will really get; when they were cut the screen says so
+                            ui::ask(&gate.pending_action(), g_settings);
+                            if (d.clipped) set_note(std::string(hmi::text(hmi::T::SpindleCut, g_settings.language)) + ": " + std::to_string(d.asked_rpm) + " > " + std::to_string(d.rpm) + " rpm");
+                        } else if (d.verdict == hmi::Verdict::Refused) {
+                            ui::refused(d.why, g_settings);
+                        } else if (d.clipped) {
+                            set_note(std::string(hmi::text(hmi::T::SpindleCut, g_settings.language)) + ": " + std::to_string(d.asked_rpm) + " > " + std::to_string(d.rpm) + " rpm");
+                        }
                     }
                     break;
+                case ui::What::SetSpindleOver:
+                    g_settings.spindle_over = r.refuse ? hmi::SpindleOver::Refuse : hmi::SpindleOver::Clip;  // kept until the next start: hmi.cfg (spindle_over = ...) holds the lasting choice
+                    break;
+                case ui::What::Resume: {
+                    std::string why;
+                    xSemaphoreTake(g_lock, portMAX_DELAY);
+                    const bool ok = g_flow.resume(why);
+                    xSemaphoreGive(g_lock);
+                    if (ok) {
+                        // the same file is sent again leaving out the holes (paths) already done; the start goes through the gate as any other
+                        ServerJob job;
+                        job.what = ServerJob::Do::Create;
+                        xQueueSend(g_to_server, &job, 0);
+                        set_note("going on from the holes already done");
+                        refresh_job();
+                    } else {
+                        set_note(why);
+                    }
+                    break;
+                }
                 case ui::What::SetOrientation:
                     g_settings.orientation = r.orientation;  // kept until the next start: hmi.cfg holds the lasting choice
                     board::lvgl_unlock();
@@ -461,8 +522,15 @@ extern "C" void app_main() {
                 }
                 case ui::What::SendJob: {
                     xSemaphoreTake(g_lock, portMAX_DELAY);
+                    // a drilling file with every tool off while a routing file waits: the routing is the job
+                    const bool moved_on = g_flow.nothing_to_do() && g_flow.skip_empty();
+                    const std::string moved_to = g_flow.name();
                     const bool nothing = g_flow.nothing_to_do();
                     xSemaphoreGive(g_lock);
+                    if (moved_on) {
+                        set_note("next: " + moved_to);
+                        refresh_job();
+                    }
                     if (nothing) {
                         set_note("every tool of the file is switched off: nothing to send");
                         break;
@@ -493,15 +561,17 @@ extern "C" void app_main() {
         state.percent = g_flow.percent();
         // the machine counts as armed while the job of this screen runs or waits for the operator
         state.armed = g_flow.stage() == hmi::Stage::Running || g_flow.stage() == hmi::Stage::Waiting;
-        const bool over = g_flow.stage() == hmi::Stage::Finished || g_flow.stage() == hmi::Stage::Failed;
+        const bool over = g_flow.stage() == hmi::Stage::Finished || g_flow.stage() == hmi::Stage::Failed || g_flow.stage() == hmi::Stage::Stopped;
         const hmi::Stage stage_now = g_flow.stage();
         xSemaphoreGive(g_lock);
         if (over && g_remembered) memory_clear();
         // the notices of the job, once each time the stage changes into them
+        bool stage_changed = false;
         if (stage_now != last_stage) {
             if (stage_now == hmi::Stage::Finished) say(hmi::Cue::Finished);
             if (stage_now == hmi::Stage::Waiting) say(hmi::Cue::ToolChange);
             last_stage = stage_now;
+            stage_changed = true;
         }
         state.stop_wired = wired;
         state.stop_pressed = pressed;
@@ -509,7 +579,7 @@ extern "C" void app_main() {
         board::lvgl_lock();
         ui::show(state, g_settings);
         if (fleet_new) ui::show_fleet(fleet, g_settings);
-        if (spindle_new) refresh_job();
+        if (spindle_new || stage_changed) refresh_job();
         if (quality_new) ui::show_quality(quality, light, quality_running, g_settings);
         if (!gate.pending()) ui::ask(nullptr, g_settings);
         board::lvgl_unlock();

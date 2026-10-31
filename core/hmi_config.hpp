@@ -14,6 +14,9 @@
 
 namespace hmi {
 
+/// What the gate does with a spindle order that asks for more turns than the spindle gives: cut it to the top speed and say so (the default), or refuse it.
+enum class SpindleOver { Clip, Refuse };
+
 struct Settings {
     // the screen
     Lang language = Lang::En;
@@ -34,6 +37,8 @@ struct Settings {
     std::uint32_t confirm_timeout_ms = 8000;  // 1000..60000
     std::uint32_t jog_max_mm = 20;          // the longest single jog the screen sends, 1..200
     std::uint32_t spindle_max_rpm = 24000;  // the highest speed the screen asks for, 0..65535 (0: the screen never starts the spindle)
+    std::uint32_t spindle_rpm = 12000;     // the turns the spindle button asks for, 0..65535 (0: the speed the job says); the gate cuts it to what the spindle gives
+    SpindleOver spindle_over = SpindleOver::Clip;  // clip: an order for more turns than the spindle gives is cut to its top speed and the screen says so; refuse: it is refused
     bool hw_stop_required = true;           // the screen controls the machine only while the hardware stop input is wired and released
     std::uint32_t link_idle_ms = 3000;      // the link is lost when the machine stays quiet this long, 200..60000
 
@@ -146,6 +151,12 @@ inline Settings parse_settings(const std::string& text, std::vector<Problem>& pr
             if (num(1, 200)) s.jog_max_mm = n;
         } else if (key == "spindle_max_rpm") {
             if (num(0, 65535)) s.spindle_max_rpm = n;
+        } else if (key == "spindle_rpm") {
+            if (num(0, 65535)) s.spindle_rpm = n;
+        } else if (key == "spindle_over") {
+            if (val == "clip") s.spindle_over = SpindleOver::Clip;
+            else if (val == "refuse") s.spindle_over = SpindleOver::Refuse;
+            else bad("not clip or refuse");
         } else if (key == "hw_stop_required") {
             if (flag()) s.hw_stop_required = b;
         } else if (key == "link_idle_ms") {

@@ -72,3 +72,8 @@ f.nothing_to_check	жодну перевірку не ввімкнено
 f.no_expected_holes	отворів завдання в кадрі немає
 ui.Holes	отвори
 ui.Cuts	різи
+ui.SpindleCut	Команду обмежено максимальною швидкістю шпинделя
+ui.WhySpindleFast	Команда вимагає більше обертів, ніж дає шпиндель.
+ui.Resume	Продовжити
+ui.Stopped	Зупинено
+ui.Next	Далі

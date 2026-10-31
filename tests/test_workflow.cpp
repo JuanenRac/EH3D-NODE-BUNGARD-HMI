@@ -270,6 +270,94 @@ static void tools_of_a_file_and_the_spindle() {
     CHECK(!parse_spindle("[]", v) && !parse_spindle("nope", v));
 }
 
+static void a_stopped_job_goes_on_and_two_programs_follow_each_other() {
+    const std::string drl = "M48\nMETRIC,TZ\nT1C0.8\nT2C1.0\n%\nT1\nX1Y1\nX2Y1\nT2\nX3Y3\nX4Y4\nT0\nM30\n";
+    const std::string plt = "IN;SP1;PU0,0;PD10,0,10,10;PU;SP2;PU5,5;PD6,6;PU;";
+    std::string why;
+
+    // the report of the server about a job: how it ended and what it did
+    JobReport jr;
+    CHECK(job_report_request("j1").path == "/api/v1/jobs/j1" && job_report_request("j1").method == "GET");
+    CHECK(parse_job_report("{\"state\":\"cancelled\",\"message\":\"\",\"holes_done\":2,\"holes_total\":4,\"items_done\":9}", jr) && jr.state == "cancelled" && jr.holes_done == 2 && jr.holes_total == 4);
+    CHECK(parse_job_report("{\"state\":\"done\",\"holes_done\":5,\"holes_total\":3}", jr) && jr.holes_total == 5);
+    CHECK(!parse_job_report("{\"id\":\"x\"}", jr) && !parse_job_report("[]", jr));
+    // the job carries the holes that are already done
+    Json b;
+    CHECK(parse_json(job_request("m1", false, "a.ncd", "M48\n", "", {}, 0).body, b) && b.get("skip") == nullptr);
+    CHECK(parse_json(job_request("m1", false, "a.ncd", "M48\n", "", {2}, 3).body, b) && b.get("skip") && b.get("skip")->n == 3 && b.get("skip_tools")->a.size() == 1);
+
+    // a drilling job is started, the operator stops it after two holes: it ends as stopped, with the holes it did
+    Workflow w;
+    CHECK(w.choose("board.NCD", drl, why) && w.on_created(ok(201, "{\"id\":\"j1\"}"), why) && w.on_started(ok(200, "{}"), why));
+    CHECK(!w.want_report());
+    w.on_fleet(fleet_of("j1", "busy", 50, ""), "m1");
+    w.on_fleet(fleet_of("", "idle", 0, ""), "m1");
+    CHECK(w.stage() == Stage::Finished && w.want_report() && w.report_request().path == "/api/v1/jobs/j1");
+    CHECK(w.on_report(ok(200, "{\"state\":\"cancelled\",\"message\":\"stopped\",\"holes_done\":2,\"holes_total\":4}")));
+    CHECK(w.stage() == Stage::Stopped && !w.want_report() && w.done() == 2 && w.total() == 4 && w.can_resume() && w.message() == "stopped");
+    CHECK(w.cancel_request().path.empty() && !w.advance());
+    // go on: the same file is sent again leaving out the two holes that are done, and once more after a second stop
+    CHECK(w.resume(why) && w.stage() == Stage::FileChosen && w.skipped() == 2);
+    CHECK(parse_json(w.create_request("m1").body, b) && b.get("skip") && b.get("skip")->n == 2 && b.str("kind") == "drill");
+    CHECK(w.on_created(ok(201, "{\"id\":\"j2\"}"), why) && w.on_started(ok(200, "{}"), why));
+    w.on_fleet(fleet_of("", "idle", 0, ""), "m1");
+    CHECK(w.on_report(ok(200, "{\"state\":\"failed\",\"message\":\"alarm\",\"holes_done\":1,\"holes_total\":2}")) && w.stage() == Stage::Stopped);
+    CHECK(w.resume(why) && w.skipped() == 3 && parse_json(w.create_request("m1").body, b) && b.get("skip")->n == 3);
+    // the tools switched off stay off when the job goes on
+    CHECK(w.stage() == Stage::FileChosen);
+
+    // a job stopped before any hole cannot go on (it is sent again from the start), and one that was not stopped cannot either
+    Workflow z;
+    CHECK(z.choose("board.NCD", drl, why) && z.on_created(ok(201, "{\"id\":\"j3\"}"), why) && z.on_started(ok(200, "{}"), why));
+    CHECK(!z.can_resume() && !z.resume(why) && !why.empty());
+    z.on_fleet(fleet_of("", "idle", 0, ""), "m1");
+    CHECK(z.on_report(ok(200, "{\"state\":\"cancelled\",\"holes_done\":0,\"holes_total\":4}")) && z.stage() == Stage::Stopped && !z.can_resume());
+    // a report that cannot be read or comes late leaves the job finished and stops the asking
+    Workflow y;
+    CHECK(y.choose("board.NCD", drl, why) && y.on_created(ok(201, "{\"id\":\"j4\"}"), why) && y.on_started(ok(200, "{}"), why));
+    y.on_fleet(fleet_of("", "idle", 0, ""), "m1");
+    CHECK(!y.on_report(ok(502, "")) && y.stage() == Stage::Finished && !y.want_report() && !y.can_resume());
+    // a job followed again after a reset has no file: it cannot go on from here
+    Workflow a;
+    CHECK(a.adopt("j9", "board.NCD"));
+    a.on_fleet(fleet_of("", "idle", 0, ""), "m1");
+    CHECK(a.on_report(ok(200, "{\"state\":\"cancelled\",\"holes_done\":3,\"holes_total\":4}")) && a.stage() == Stage::Stopped && !a.can_resume());
+
+    // two programs: the drilling first whatever the order the files were chosen in, then the routing
+    Workflow c;
+    CHECK(c.choose("outline.plt", plt, why) && c.route() && c.next_name().empty());
+    CHECK(c.choose("board.NCD", drl, why) && !c.route() && c.name() == "board.NCD" && c.next_name() == "outline.plt");
+    c.set_tools("T1C0.8\n");  // the table goes with the drilling file just chosen
+    CHECK(parse_json(c.create_request("m1").body, b) && b.str("kind") == "drill" && b.get("files")->str("dtd") == "T1C0.8\n");
+    CHECK(!c.advance());  // nothing has run yet
+    CHECK(c.on_created(ok(201, "{\"id\":\"d1\"}"), why) && c.on_started(ok(200, "{}"), why));
+    c.on_fleet(fleet_of("", "idle", 0, ""), "m1");
+    CHECK(!c.advance());  // it ended, but the server has not said it ended well
+    CHECK(c.on_report(ok(200, "{\"state\":\"done\",\"holes_done\":4,\"holes_total\":4}")) && c.stage() == Stage::Finished);
+    CHECK(c.advance() && c.stage() == Stage::FileChosen && c.route() && c.name() == "outline.plt" && c.job_id().empty() && c.next_name().empty() && c.percent() == 0);
+    CHECK(parse_json(c.create_request("m1").body, b) && b.str("kind") == "route" && b.get("skip") == nullptr);
+    CHECK(c.on_created(ok(201, "{\"id\":\"r1\"}"), why) && c.start_request().path == "/api/v1/jobs/r1/start");  // started by the operator through the gate
+    CHECK(c.on_started(ok(200, "{}"), why));
+    c.on_fleet(fleet_of("", "idle", 0, ""), "m1");
+    CHECK(c.on_report(ok(200, "{\"state\":\"done\",\"holes_done\":3,\"holes_total\":3}")) && !c.advance());  // the end of the job
+    // the routing can be stopped and go on too
+    Workflow r;
+    CHECK(r.choose("outline.plt", plt, why) && r.on_created(ok(201, "{\"id\":\"r2\"}"), why) && r.on_started(ok(200, "{}"), why));
+    r.on_fleet(fleet_of("", "idle", 0, ""), "m1");
+    CHECK(r.on_report(ok(200, "{\"state\":\"cancelled\",\"holes_done\":1,\"holes_total\":3}")) && r.resume(why));
+    CHECK(parse_json(r.create_request("m1").body, b) && b.str("kind") == "route" && b.get("skip")->n == 1);
+
+    // a drilling file whose tools are all off: the routing is next
+    Workflow e;
+    CHECK(e.choose("board.NCD", drl, why) && e.choose("outline.plt", plt, why));
+    CHECK(e.toggle_tool(1) && e.toggle_tool(2) && e.nothing_to_do() && e.create_request("m1").path.empty());
+    CHECK(e.skip_empty() && e.route() && !e.nothing_to_do() && !e.create_request("m1").path.empty());
+    Workflow f;
+    CHECK(f.choose("board.NCD", drl, why) && f.toggle_tool(1) && f.toggle_tool(2) && !f.skip_empty());  // no program after it
+    // choosing a file once a job was sent starts all over again
+    CHECK(c.choose("another.NCD", drl, why) && c.next_name().empty() && !c.route() && c.skipped() == 0);
+}
+
 int main() {
     orientation_rules();
     sd_files();
@@ -277,6 +365,7 @@ int main() {
     the_flow_of_a_job();
     a_job_is_followed_again_after_a_reset();
     tools_of_a_file_and_the_spindle();
+    a_stopped_job_goes_on_and_two_programs_follow_each_other();
     std::printf("%d checks, %d failed\n", g_checks, g_failed);
     return g_failed == 0 ? 0 : 1;
 }
