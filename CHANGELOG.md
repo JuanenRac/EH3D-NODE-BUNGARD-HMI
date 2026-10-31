@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.0.4] - Tools of the file on the screen, the spindle of the server and 37 languages
+
 - **The tools of the chosen file, and tools that can be switched off:** the job page reads the drilling file (Excellon: the tools declared, their diameter, inches turned into millimetres, and the holes of each) or the routing file (HP-GL: the pens and their cuts) when it is chosen, shows how many holes or cuts it has, and gives one chip for each tool (`core/job_tools.hpp`). A tap on a chip switches that tool off or on; the job is sent to EH3D-SERVER with `skip_tools` (the server leaves their holes or paths out and they need not be in the tool table), the file on the card is never changed, a new file starts with every tool on, and when every tool is off nothing is sent and the screen says so. The same chips are in the desktop program.
 - **The spindle of the machine on the job page:** the screen asks the server for the spindle the machine carries (`original` or `vfd`) at the first reading and then every tenth, and shows it with its slowest and fastest turns; a job beyond what the spindle gives is refused by the server and the screen shows the reason. `spindle_ceiling` gives the most the screen may ask (the setting `spindle_max_rpm` and the spindle, whichever is lower).
 - **Texts:** two new words (holes, cuts) in the 37 languages, and the fonts built again for the characters they need. The 29 added languages are translations that wait for a review by native speakers; Brazilian Portuguese and Canadian French take the word of European Portuguese and French of France.
