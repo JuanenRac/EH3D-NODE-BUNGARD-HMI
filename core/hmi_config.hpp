@@ -118,7 +118,7 @@ inline Settings parse_settings(const std::string& text, std::vector<Problem>& pr
         };
         if (key == "language") {
             Lang l;
-            if (lang_from_code(val, l)) s.language = l; else bad("not one of en, es, it, de, fr, pt, zh, ja");
+            if (lang_from_code(val, l)) s.language = l; else bad("not one of the language codes of the screen (en, es, it, de, fr, pt, zh, ja, pl, ru, ...)");
         } else if (key == "theme") {
             s.theme = val;
         } else if (key == "orientation") {

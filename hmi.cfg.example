@@ -1,5 +1,5 @@
 # EH3D-NODE-BUNGARD-HMI settings: copy to hmi.cfg in the config partition. Every value is optional; the defaults are the safe ones.
-language = en              # en es it de fr pt zh ja
+language = en              # en es it de fr pt zh ja bg hr cs da nl et fi el hu ga lv lt mt pl ro sk sl sv no is uk ru sr sq ca gl eu pt-br fr-ca
 theme = forge
 orientation = auto         # auto, landscape (1280 x 800) or portrait (800 x 1280)
 brightness_percent = 80    # 10..100

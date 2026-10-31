@@ -30,7 +30,7 @@
 |---|---|
 | Versione | `0.0.3` |
 | Maturità | Impalcatura |
-| Test | 4 programmi di test sul computer (1373 controlli contati) |
+| Test | 6 programmi di test sul computer (75426 controlli contati) |
 | Stack tecnologico | C++17, ESP-IDF 5.5, LVGL 9, ESP32-P4 |
 | Su hardware reale | No: il firmware non è stato compilato né scritto e nulla è stato collegato a una macchina |
 
@@ -45,7 +45,7 @@ Ogni riga è una parte di questo repository e il semaforo dice a che punto è og
 | Area | Stato | Cosa significa qui |
 |---|---|---|
 | Software | 🟠 | Il progetto ESP-IDF (ESP32-P4, LVGL 9, il file delle impostazioni in una partizione propria) è scritto; non è stato compilato né scritto sul chip. |
-| Test | 🟢 | 4 programmi di test sul computer passano (`ctest`): 1373 controlli sul file delle impostazioni, il varco, gli ordini e gli avvisi vocali, le tastiere, gli avvisi registrati, il client del server e i testi delle schermate in otto lingue. |
+| Test | 🟢 | 6 programmi di test sul computer passano (`ctest`): 75426 controlli sul file delle impostazioni, il varco, gli ordini e gli avvisi vocali, le tastiere, gli avvisi registrati, il client del server e i testi delle schermate in otto lingue. |
 | Regole di sicurezza | 🟡 | Ogni movimento e ogni ordine al mandrino passa dal varco: conferma sullo schermo, blocco dell'arresto hardware che solo una conferma sullo schermo toglie a pulsante rilasciato, nessun movimento con il collegamento non armato. Coperto da test; mai provato con un vero pulsante di arresto. |
 | Voce | 🟡 | Ordini e avvisi vocali sono riconosciuti e formulati in otto lingue e provati come testo; nessun microfono o altoparlante è stato usato. |
 | Schermate | 🟠 | Le schermate macchina, lavoro (microSD), macchine e stazioni e impostazioni sono scritte, in orizzontale e in verticale, con l'aspetto del programma desktop; la scheda della vista è ancora una scheda vuota. Esiste solo un disegno del layout, non una cattura di un modulo. |
@@ -117,7 +117,7 @@ Come si incastrano le parti di questo repository: chi parla con esso, cosa conti
 
 * **Un arresto che non si può dimenticare:** il pulsante di arresto è sempre in alto e funziona sempre; l'arresto hardware si blocca e solo una conferma sullo schermo, a pulsante rilasciato, lo toglie.
 * **Conferma prima del movimento:** un movimento o un ordine al mandrino mostra cosa farà e aspetta un tocco, con un limite di tempo; una nuova richiesta o un collegamento perso la scarta.
-* **Otto lingue, anche a voce:** inglese, spagnolo, italiano, tedesco, francese, portoghese europeo, cinese e giapponese nelle schermate, negli avvisi parlati e negli ordini vocali.
+* **Otto lingue, anche a voce:** inglese, spagnolo, italiano, tedesco, francese, portoghese europeo, cinese e giapponese nelle schermate, negli avvisi parlati e negli ordini vocali. I testi delle schermate sono scritti anche nelle altre 29 lingue della famiglia (bulgaro, croato, ceco, danese, olandese, estone, finlandese, greco, ungherese, irlandese, lettone, lituano, maltese, polacco, rumeno, slovacco, sloveno, svedese, norvegese, islandese, ucraino, russo, serbo, albanese, catalano, galiziano, basco, portoghese del Brasile e francese del Canada), un file ciascuna in `locales/`, con i font dello schermo fatti per loro; la lingua si sceglie in un elenco scorrevole nelle impostazioni. Gli avvisi e gli ordini vocali restano nelle prime otto (le altre sono dette in inglese). Un testo che manca in una lingua appare in inglese. Questi font e testi sono stati provati solo sul computer, non sullo schermo reale.
 * **Sicuro di default:** ogni interruttore di sicurezza ha la sua impostazione e parte nella posizione prudente: ordini vocali spenti, conferma vocale spenta, conferma attiva, arresto hardware richiesto.
 * **La tastiera giusta per ogni impostazione:** un numero si scrive su un tastierino numerico che conosce l'intervallo e i decimali di quell'impostazione (le frecce lo spostano di un'unità, un valore fuori intervallo non è accettato); un testo, come l'indirizzo del server o il token, su una tastiera completa con i tasti della lingua in uso (dieresi, accenti, tilde, cediglia), con un maiuscolo di una lettera e un livello di simboli; interruttori ed elenchi non hanno bisogno di tastiera.
 * **Pulsanti con simbolo:** il pad di movimento, l'origine, il mandrino, pausa, avvio, arresto e le risposte a una domanda usano simboli e la lettera dell'asse al posto delle parole, con i colori del programma desktop (verde per avviare, blu per la pausa, rosso per fermare).
@@ -180,7 +180,7 @@ Il firmware non è ancora stato compilato: quando lo sarà, `idf.py set-target e
 
 ## 🧪 Test
 
-I test sul computer (`build.bat` o `./build.sh`, poi `ctest`) sono due programmi e passa tutto: `test_hmi` (638 controlli) su file delle impostazioni, varco (l'arresto passa sempre, blocco dell'arresto hardware, conferma, tempo limite e giro dell'orologio, regole vocali, interruttori), ordini e avvisi vocali e testi delle schermate in otto lingue; e `test_workflow` (115 controlli) su orientamento e tocco, file della scheda (tipi, nomi sicuri, ordinamento), lettore JSON, richieste e risposte del server e flusso di un lavoro dalla scheda alla fine. Gli altri due programmi coprono le tastiere (`test_keyboard`, 137 controlli: ogni impostazione ha la sua tastiera, gli intervalli del tastierino sono quelli del file delle impostazioni, i decimali, il segno, le frecce, la tastiera completa di ogni lingua, il maiuscolo, i simboli e la lunghezza) e gli avvisi registrati (`test_notices`, 66 controlli: l'impostazione, il file di ogni lingua e genere).
+I test sul computer (`build.bat` o `./build.sh`, poi `ctest`) sono due programmi e passa tutto: `test_hmi` (638 controlli) su file delle impostazioni, varco (l'arresto passa sempre, blocco dell'arresto hardware, conferma, tempo limite e giro dell'orologio, regole vocali, interruttori), ordini e avvisi vocali e testi delle schermate in otto lingue; e `test_workflow` (115 controlli) su orientamento e tocco, file della scheda (tipi, nomi sicuri, ordinamento), lettore JSON, richieste e risposte del server e flusso di un lavoro dalla scheda alla fine. Gli altri due programmi coprono le tastiere (`test_keyboard`, 137 controlli: ogni impostazione ha la sua tastiera, gli intervalli del tastierino sono quelli del file delle impostazioni, i decimali, il segno, le frecce, la tastiera completa di ogni lingua, il maiuscolo, i simboli e la lunghezza) e gli avvisi registrati (`test_notices`, 66 controlli: l'impostazione, il file di ogni lingua e genere). Gli ultimi due programmi sono `test_quality` (911 controlli: le richieste, la lettura del rapporto, ogni rilievo) e `test_locales` (73093 controlli: ogni chiave ha un testo in ciascuna delle altre 29 lingue, nulla è vuoto o troppo lungo, la scrittura di ogni lingua è quella giusta, ciò che deve restare resta, e ogni carattere che un testo può disegnare è nell'intervallo dei font generati).
 
 ## 🏗️ Compilazione e rilascio
 
@@ -214,14 +214,17 @@ EH3D-NODE-BUNGARD-HMI/
 │   ├── server_link.hpp workflow.hpp job_memory.hpp   client del server e flusso di un lavoro
 │   ├── quality.hpp                                   il controllo qualità e l'anello di LED
 │   ├── ui_text.hpp keyboard.hpp notices.hpp          testi, tastiere e avvisi
+│   ├── locales.hpp locales_gen.hpp font_ranges.hpp   37 lingue e intervalli dei font
 │   └── wav.hpp                                       le registrazioni e i segnali acustici degli avvisi
 ├── main/
 │   ├── app_main.cpp                                  avvio, impostazioni, il ciclo del varco
 │   ├── ui.cpp ui.hpp                                 le schermate LVGL e il pulsante di arresto
+│   ├── fonts/                                        i font: dal latino al giapponese
 │   ├── board_p4.cpp board.hpp                        il modulo: display, suono, ingresso di arresto
 │   ├── server_link.cpp server_link.hpp               i socket del client del server
 │   └── idf_component.yml Kconfig.projbuild           elenco dei componenti e pin di menuconfig
 ├── tests/                                            test su computer di impostazioni, varco, voce e testi delle schermate
+├── locales/                                          i testi delle altre 29 lingue, un file ciascuna
 ├── docs/                                             le note hardware e le fonti dei due disegni
 ├── tools/                                            controllo CI, README e strumenti dei disegni
 ├── CMakeLists.txt                                    il progetto ESP-IDF

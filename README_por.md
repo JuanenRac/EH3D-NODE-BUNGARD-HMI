@@ -30,7 +30,7 @@
 |---|---|
 | Versão | `0.0.3` |
 | Maturidade | Estrutura inicial |
-| Testes | 4 programas de teste no computador (1373 verificações contadas) |
+| Testes | 6 programas de teste no computador (75426 verificações contadas) |
 | Tecnologias | C++17, ESP-IDF 5.5, LVGL 9, ESP32-P4 |
 | Em hardware real | Não: o firmware não foi compilado nem gravado e nada foi ligado a uma máquina |
 
@@ -45,7 +45,7 @@ Cada linha é uma parte deste repositório e a luz diz até onde chega hoje. É 
 | Área | Estado | O que significa aqui |
 |---|---|---|
 | Software | 🟠 | O projeto ESP-IDF (ESP32-P4, LVGL 9, o ficheiro de definições na sua própria partição) está escrito; não foi compilado nem gravado. |
-| Testes | 🟢 | Passam 4 programas de teste no computador (`ctest`): 1373 verificações do ficheiro de definições, da comporta, das ordens e avisos por voz, dos teclados, dos avisos gravados, do cliente do servidor e dos textos dos ecrãs em oito idiomas. |
+| Testes | 🟢 | Passam 6 programas de teste no computador (`ctest`): 75426 verificações do ficheiro de definições, da comporta, das ordens e avisos por voz, dos teclados, dos avisos gravados, do cliente do servidor e dos textos dos ecrãs em oito idiomas. |
 | Regras de segurança | 🟡 | Todo o movimento e toda a ordem do fuso passam pela comporta: confirmação no ecrã, trinco da paragem por hardware que só um reconhecimento no ecrã levanta com o botão solto, nenhum movimento com a ligação por armar. Coberto por testes; nunca experimentado com um botão de paragem real. |
 | Voz | 🟡 | As ordens e avisos por voz são reconhecidos e formulados em oito idiomas e testados como texto; não se usou nenhum microfone nem altifalante. |
 | Ecrãs | 🟠 | Os ecrãs máquina, trabalho (microSD), máquinas e estações e definições estão escritos, na horizontal e na vertical, com o aspeto do programa de secretária; o separador visor ainda é um cartão vazio. Só existe um desenho do esquema, não uma captura de um módulo. |
@@ -117,7 +117,7 @@ Como as partes deste repositório se encaixam: quem fala com ele, o que contém 
 
 * **Uma paragem que não se esquece:** o botão de paragem está sempre no topo e funciona sempre; a paragem por hardware fica trancada e só um reconhecimento no ecrã, com o botão solto, a levanta.
 * **Confirmação antes do movimento:** um movimento ou uma ordem do fuso mostra o que vai fazer e espera um toque, com tempo limite; um novo pedido ou uma ligação perdida descarta-o.
-* **Oito idiomas, também por voz:** inglês, espanhol, italiano, alemão, francês, português de Portugal, chinês e japonês nos ecrãs, nos avisos falados e nas ordens por voz.
+* **Oito idiomas, também por voz:** inglês, espanhol, italiano, alemão, francês, português de Portugal, chinês e japonês nos ecrãs, nos avisos falados e nas ordens por voz. Os textos dos ecrãs estão também escritos nas outras 29 línguas da família (búlgaro, croata, checo, dinamarquês, neerlandês, estónio, finlandês, grego, húngaro, irlandês, letão, lituano, maltês, polaco, romeno, eslovaco, esloveno, sueco, norueguês, islandês, ucraniano, russo, sérvio, albanês, catalão, galego, basco, português do Brasil e francês do Canadá), um ficheiro cada uma em `locales/`, com os tipos de letra do ecrã feitos para elas; a língua escolhe-se numa lista com deslocação nas definições. Os avisos e as ordens por voz continuam nas primeiras oito (as outras dizem-se em inglês). Um texto que falte numa língua aparece em inglês. Estes tipos de letra e textos só foram testados no computador, não no ecrã real.
 * **Seguro por omissão:** cada interruptor de segurança tem a sua definição e começa na posição prudente: ordens por voz desligadas, confirmação por voz desligada, confirmação ligada, paragem por hardware exigida.
 * **O teclado certo para cada definição:** um número escreve-se num teclado numérico que conhece o intervalo e as casas decimais dessa definição (as setas movem-no uma unidade, um valor fora do intervalo não é aceite); um texto, como o endereço do servidor ou o token, num teclado completo com as teclas do idioma em uso (tremas, acentos, til, cedilha), com uma maiúscula de uma letra e uma camada de símbolos; os interruptores e as listas não precisam de teclado.
 * **Botões com símbolo:** o pad de movimento, a origem, o fuso, pausa, início, paragem e as respostas a uma pergunta usam símbolos e a letra do eixo em vez de palavras, com as cores do programa de secretária (verde para iniciar, azul para pausar, vermelho para parar).
@@ -180,7 +180,7 @@ O firmware ainda não foi compilado: quando for, `idf.py set-target esp32p4 && i
 
 ## 🧪 Testes
 
-Os testes no computador (`build.bat` ou `./build.sh`, e depois `ctest`) são dois programas e passa tudo: `test_hmi` (638 verificações) do ficheiro de definições, da comporta (a paragem passa sempre, trinco da paragem por hardware, confirmação, tempo limite e volta do relógio, regras de voz, interruptores), das ordens e avisos por voz e dos textos de ecrã em oito idiomas; e `test_workflow` (115 verificações) da orientação e do toque, dos ficheiros do cartão (tipos, nomes seguros, ordenação), do leitor de JSON, dos pedidos e respostas do servidor e do fluxo de um trabalho desde o cartão até ao fim. Os outros dois programas cobrem os teclados (`test_keyboard`, 137 verificações: cada definição tem o seu teclado, os intervalos do teclado numérico são os do ficheiro de definições, as casas decimais, o sinal, as setas, o teclado completo de cada idioma, a maiúscula, os símbolos e o comprimento) e os avisos gravados (`test_notices`, 66 verificações: a definição, o ficheiro de cada idioma e género).
+Os testes no computador (`build.bat` ou `./build.sh`, e depois `ctest`) são dois programas e passa tudo: `test_hmi` (638 verificações) do ficheiro de definições, da comporta (a paragem passa sempre, trinco da paragem por hardware, confirmação, tempo limite e volta do relógio, regras de voz, interruptores), das ordens e avisos por voz e dos textos de ecrã em oito idiomas; e `test_workflow` (115 verificações) da orientação e do toque, dos ficheiros do cartão (tipos, nomes seguros, ordenação), do leitor de JSON, dos pedidos e respostas do servidor e do fluxo de um trabalho desde o cartão até ao fim. Os outros dois programas cobrem os teclados (`test_keyboard`, 137 verificações: cada definição tem o seu teclado, os intervalos do teclado numérico são os do ficheiro de definições, as casas decimais, o sinal, as setas, o teclado completo de cada idioma, a maiúscula, os símbolos e o comprimento) e os avisos gravados (`test_notices`, 66 verificações: a definição, o ficheiro de cada idioma e género). Os dois últimos programas são `test_quality` (911 verificações: os pedidos, a leitura do relatório, cada achado) e `test_locales` (73093 verificações: cada chave tem texto em cada uma das outras 29 línguas, nada está vazio nem é demasiado longo, a escrita de cada língua é a certa, o que deve ficar fica, e cada carácter que um texto possa desenhar está no intervalo dos tipos de letra gerados).
 
 ## 🏗️ Compilação e publicação
 
@@ -214,14 +214,17 @@ EH3D-NODE-BUNGARD-HMI/
 │   ├── server_link.hpp workflow.hpp job_memory.hpp   cliente do servidor e fluxo de um trabalho
 │   ├── quality.hpp                                   a verificação de qualidade e o anel de LEDs
 │   ├── ui_text.hpp keyboard.hpp notices.hpp          textos, teclados e avisos
+│   ├── locales.hpp locales_gen.hpp font_ranges.hpp   37 idiomas e intervalos de letra
 │   └── wav.hpp                                       as gravações e os apitos dos avisos
 ├── main/
 │   ├── app_main.cpp                                  arranque, definições, o ciclo da comporta
 │   ├── ui.cpp ui.hpp                                 os ecrãs LVGL e o botão de paragem
+│   ├── fonts/                                        os tipos: do latim ao japonês
 │   ├── board_p4.cpp board.hpp                        o módulo: ecrã, som, entrada de paragem
 │   ├── server_link.cpp server_link.hpp               os sockets do cliente do servidor
 │   └── idf_component.yml Kconfig.projbuild           lista de componentes e pinos do menuconfig
 ├── tests/                                            testes no computador das definições, da comporta, da voz e dos textos de ecrã
+├── locales/                                          os textos das outras 29 línguas, um ficheiro cada
 ├── docs/                                             as notas de hardware e as fontes dos dois desenhos
 ├── tools/                                            verificação de CI, de README e ferramentas dos desenhos
 ├── CMakeLists.txt                                    o projeto ESP-IDF

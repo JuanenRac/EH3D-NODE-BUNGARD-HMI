@@ -30,7 +30,7 @@
 |---|---|
 | Version | `0.0.3` |
 | Maturity | Scaffolding |
-| Tests | 5 host test programs (1373 checks counted) |
+| Tests | 6 host test programs (75426 checks counted) |
 | Stack | C++17, ESP-IDF 5.5, LVGL 9, ESP32-P4 |
 | On real hardware | No: the firmware has not been built or flashed, and nothing has been connected to a machine |
 
@@ -45,7 +45,7 @@ Each line is one part of this repository and the light says how far it is today.
 | Area | State | What it means here |
 |---|---|---|
 | Software | 🟠 | The ESP-IDF project (ESP32-P4, LVGL 9, the settings file in its own partition) is written; it has not been built or flashed. |
-| Tests | 🟢 | 5 host test programs pass (`ctest`): 1373 checks in the settings file, the gate, the spoken orders and alerts, the keyboards, the recorded notices, the server client and the texts of the screens in eight languages. |
+| Tests | 🟢 | 6 host test programs pass (`ctest`): 75426 checks in the settings file, the gate, the spoken orders and alerts, the keyboards, the recorded notices, the server client and the texts of the screens in eight languages. |
 | Safety rules | 🟡 | Every move and spindle order goes through the gate: confirmation on the screen, hardware-stop latch that only an acknowledgement on the screen clears once the button is up, no move while the link is not armed. Covered by tests; never run with a real stop button. |
 | Voice | 🟡 | Spoken orders and alerts are recognised and phrased in eight languages and tested as text; no microphone or speaker has been used. |
 | Screens | 🟠 | The machine, job (microSD), machines-and-stations and settings screens are written, lying down and standing up, in the look of the desktop program; the viewer tab is still an empty card. Only a drawing of the layout exists, not a capture of a module. |
@@ -117,7 +117,7 @@ How the parts of this repository fit together: who talks to it, what it holds an
 
 * **A stop that cannot be forgotten:** the stop button is always on top and always works; the hardware stop latches, and only an acknowledgement on the screen, with the button up, clears it.
 * **Confirmation before motion:** a move or a spindle order shows what it will do and waits for a touch, with a time limit; a new request or a lost link drops it.
-* **Eight languages, also by voice:** English, Spanish, Italian, German, French, European Portuguese, Chinese and Japanese on the screens, in the spoken alerts and in the spoken orders.
+* **Eight languages, also by voice:** English, Spanish, Italian, German, French, European Portuguese, Chinese and Japanese on the screens, in the spoken alerts and in the spoken orders. The texts of the screens are also written in the 29 other languages of the family (Bulgarian, Croatian, Czech, Danish, Dutch, Estonian, Finnish, Greek, Hungarian, Irish, Latvian, Lithuanian, Maltese, Polish, Romanian, Slovak, Slovenian, Swedish, Norwegian, Icelandic, Ukrainian, Russian, Serbian, Albanian, Catalan, Galician, Basque, Brazilian Portuguese and Canadian French), one file each in `locales/`, with the fonts of the screen made for them; the language is chosen in a scrolling list in the settings. The spoken alerts and orders stay in the first eight (the others are said in English). A text a language lacks is shown in English. These fonts and texts have been tested on a computer only, not on the real screen.
 * **Safe by default:** every safety switch has a switch in the settings and starts in its conservative position: spoken orders off, spoken confirmation off, confirmation on, hardware stop required.
 * **The right keyboard for each setting:** a number is typed on a numeric pad that knows the range and the decimals of that setting (the arrows move it by one unit, a value outside the range is not accepted); a text, such as the address of the server or the token, on a full keyboard with the keys of the language in use (the umlauts, the accents, the tilde, the cedilla), with a one-letter shift and a layer of symbols; switches and lists need no keyboard.
 * **Buttons with a symbol:** the jog pad, home, the spindle, pause, start, stop and the answers of a question use symbols and the letter of the axis instead of words, in the colours of the desktop program (green to start, blue to pause, red to stop).
@@ -180,7 +180,7 @@ The firmware has not been built yet: when it is, `idf.py set-target esp32p4 && i
 
 ## 🧪 Testing
 
-The host tests (`build.bat` or `./build.sh`, then `ctest`) are two programs and all of it passes: `test_hmi` (638 checks) on the settings file, the gate (stop always goes, hardware-stop latch, confirmation, timeout and clock wrap-around, voice rules, switches), the spoken orders and alerts and the screen texts in eight languages; and `test_workflow` (115 checks) on the orientation and the touch, the files of the card (kinds, safe names, sorting), the JSON reader, the requests and answers of the server, and the flow of a job from the card to its end. The other two programs cover the keyboards (`test_keyboard`, 137 checks: every setting has its keyboard, the ranges of the pad are the ones of the settings file, the decimals, the sign, the arrows, the full keyboard of each language, the shift, the symbols and the length) and the recorded notices (`test_notices`, 66 checks: the setting, the file of each language and gender).
+The host tests (`build.bat` or `./build.sh`, then `ctest`) are two programs and all of it passes: `test_hmi` (638 checks) on the settings file, the gate (stop always goes, hardware-stop latch, confirmation, timeout and clock wrap-around, voice rules, switches), the spoken orders and alerts and the screen texts in eight languages; and `test_workflow` (115 checks) on the orientation and the touch, the files of the card (kinds, safe names, sorting), the JSON reader, the requests and answers of the server, and the flow of a job from the card to its end. The other two programs cover the keyboards (`test_keyboard`, 137 checks: every setting has its keyboard, the ranges of the pad are the ones of the settings file, the decimals, the sign, the arrows, the full keyboard of each language, the shift, the symbols and the length) and the recorded notices (`test_notices`, 66 checks: the setting, the file of each language and gender). The last two programs are `test_quality` (911 checks: the requests, the reading of the report, every finding) and `test_locales` (73093 checks: every key has a text in each of the 29 other languages, nothing is empty or too long, the script of each language is the right one, what must stay stays, and every character that any text can draw is in the range of the generated fonts).
 
 ## 🏗️ Build & Release
 
@@ -214,14 +214,17 @@ EH3D-NODE-BUNGARD-HMI/
 │   ├── server_link.hpp workflow.hpp job_memory.hpp   client of the server and the flow of a job
 │   ├── quality.hpp                                   the quality check and the ring of LEDs
 │   ├── ui_text.hpp keyboard.hpp notices.hpp          texts, keyboards and notices
+│   ├── locales.hpp locales_gen.hpp font_ranges.hpp   37 languages and the font ranges
 │   └── wav.hpp                                       the recordings and the beeps of the notices
 ├── main/
 │   ├── app_main.cpp                                  start, settings, the loop of the gate
 │   ├── ui.cpp ui.hpp                                 the LVGL screens and the stop button
+│   ├── fonts/                                        the fonts: Latin to Japanese
 │   ├── board_p4.cpp board.hpp                        the module: display, sound, stop input
 │   ├── server_link.cpp server_link.hpp               the sockets of the client of the server
 │   └── idf_component.yml Kconfig.projbuild           component list and menuconfig pins
 ├── tests/                                            host tests of the settings, the gate, the voice and the screen texts
+├── locales/                                          the texts of the 29 other languages, one file each
 ├── docs/                                             the hardware notes and the two pictures' sources
 ├── tools/                                            CI check, README check and the picture tools
 ├── CMakeLists.txt                                    the ESP-IDF project

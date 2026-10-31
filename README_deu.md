@@ -30,7 +30,7 @@
 |---|---|
 | Version | `0.0.3` |
 | Reifegrad | Gerüst |
-| Tests | 4 Host-Testprogramme (1373 Prüfungen gezählt) |
+| Tests | 6 Host-Testprogramme (75426 Prüfungen gezählt) |
 | Technologie-Stack | C++17, ESP-IDF 5.5, LVGL 9, ESP32-P4 |
 | Auf echter Hardware | Nein: die Firmware wurde weder gebaut noch geflasht, und nichts wurde an eine Maschine angeschlossen |
 
@@ -45,7 +45,7 @@ Jede Zeile ist ein Teil dieses Repositorys, und die Ampel sagt, wie weit er heut
 | Bereich | Stand | Was das hier bedeutet |
 |---|---|---|
 | Software | 🟠 | Das ESP-IDF-Projekt (ESP32-P4, LVGL 9, die Einstellungsdatei in einer eigenen Partition) ist geschrieben; es wurde weder gebaut noch geflasht. |
-| Tests | 🟢 | 4 Host-Testprogramme bestehen (`ctest`): 1373 Prüfungen zu Einstellungsdatei, Tor, gesprochenen Befehlen und Hinweisen, den Tastaturen, den aufgenommenen Hinweisen, dem Server-Client und den Bildschirmtexten in acht Sprachen. |
+| Tests | 🟢 | 6 Host-Testprogramme bestehen (`ctest`): 75426 Prüfungen zu Einstellungsdatei, Tor, gesprochenen Befehlen und Hinweisen, den Tastaturen, den aufgenommenen Hinweisen, dem Server-Client und den Bildschirmtexten in acht Sprachen. |
 | Sicherheitsregeln | 🟡 | Jede Bewegung und jeder Spindelbefehl läuft durch das Tor: Bestätigung auf dem Bildschirm, Hardware-Stopp-Sperre, die bei losgelassenem Taster nur eine Quittung auf dem Bildschirm löst, keine Bewegung bei nicht scharfer Verbindung. Durch Tests gedeckt; nie mit einem echten Stopp-Taster erprobt. |
 | Sprache | 🟡 | Gesprochene Befehle und Hinweise werden in acht Sprachen erkannt und formuliert und als Text getestet; es wurde kein Mikrofon und kein Lautsprecher benutzt. |
 | Bildschirme | 🟠 | Die Bildschirme Maschine, Auftrag (microSD), Maschinen und Stationen und Einstellungen sind geschrieben, im Quer- und im Hochformat, im Aussehen des Desktop-Programms; der Reiter Ansicht ist noch eine leere Karte. Es gibt nur eine Zeichnung des Layouts, keine Aufnahme eines Moduls. |
@@ -117,7 +117,7 @@ Wie die Teile dieses Repositorys zusammenpassen: wer mit ihm spricht, was es ent
 
 * **Ein Stopp, den man nicht vergessen kann:** Der Stopp-Knopf ist immer oben und funktioniert immer; der Hardware-Stopp rastet ein, und nur eine Quittung auf dem Bildschirm bei losgelassenem Taster löst ihn.
 * **Bestätigung vor der Bewegung:** Eine Bewegung oder ein Spindelbefehl zeigt, was sie tun wird, und wartet mit Zeitlimit auf eine Berührung; eine neue Anfrage oder eine verlorene Verbindung verwirft sie.
-* **Acht Sprachen, auch per Sprache:** Englisch, Spanisch, Italienisch, Deutsch, Französisch, europäisches Portugiesisch, Chinesisch und Japanisch auf den Bildschirmen, in den gesprochenen Hinweisen und in den gesprochenen Befehlen.
+* **Acht Sprachen, auch per Sprache:** Englisch, Spanisch, Italienisch, Deutsch, Französisch, europäisches Portugiesisch, Chinesisch und Japanisch auf den Bildschirmen, in den gesprochenen Hinweisen und in den gesprochenen Befehlen. Die Texte der Bildschirme gibt es auch in den 29 weiteren Sprachen der Familie (Bulgarisch, Kroatisch, Tschechisch, Dänisch, Niederländisch, Estnisch, Finnisch, Griechisch, Ungarisch, Irisch, Lettisch, Litauisch, Maltesisch, Polnisch, Rumänisch, Slowakisch, Slowenisch, Schwedisch, Norwegisch, Isländisch, Ukrainisch, Russisch, Serbisch, Albanisch, Katalanisch, Galicisch, Baskisch, brasilianisches Portugiesisch und kanadisches Französisch), je eine Datei in `locales/`, mit dafür erzeugten Schriften; die Sprache wird in den Einstellungen in einer scrollbaren Liste gewählt. Die gesprochenen Hinweise und Befehle bleiben bei den ersten acht (die anderen werden auf Englisch gesprochen). Fehlt einer Sprache ein Text, erscheint er auf Englisch. Diese Schriften und Texte sind nur auf dem Computer geprüft, nicht auf dem echten Bildschirm.
 * **Standardmäßig sicher:** Jeder Sicherheitsschalter hat seine Einstellung und beginnt in der vorsichtigen Stellung: gesprochene Befehle aus, gesprochene Bestätigung aus, Bestätigung an, Hardware-Stopp erforderlich.
 * **Die passende Tastatur für jede Einstellung:** eine Zahl wird auf einem Zahlenblock getippt, der Bereich und Nachkommastellen dieser Einstellung kennt (die Pfeile verschieben um eine Einheit, ein Wert außerhalb des Bereichs wird nicht angenommen); ein Text, etwa die Adresse des Servers oder das Token, auf einer vollen Tastatur mit den Tasten der gewählten Sprache (Umlaute, Akzente, Tilde, Cedille), mit Umschalten für einen Buchstaben und einer Symbolebene; Schalter und Listen brauchen keine Tastatur.
 * **Tasten mit Symbol:** das Jog-Feld, Referenzfahrt, Spindel, Pause, Start, Stopp und die Antworten auf eine Frage nutzen Symbole und den Buchstaben der Achse statt Wörter, in den Farben des Desktop-Programms (grün zum Starten, blau für Pause, rot zum Stoppen).
@@ -180,7 +180,7 @@ Die Firmware wurde noch nicht gebaut: wenn es so weit ist, erzeugt `idf.py set-t
 
 ## 🧪 Tests
 
-Die Host-Tests (`build.bat` oder `./build.sh`, dann `ctest`) sind zwei Programme und alles besteht: `test_hmi` (638 Prüfungen) zu Einstellungsdatei, Tor (Stopp geht immer, Hardware-Stopp-Sperre, Bestätigung, Zeitlimit und Uhrenüberlauf, Sprachregeln, Schalter), gesprochenen Befehlen und Hinweisen und Bildschirmtexten in acht Sprachen; und `test_workflow` (115 Prüfungen) zu Ausrichtung und Berührung, Dateien der Karte (Arten, sichere Namen, Sortierung), JSON-Leser, Anfragen und Antworten des Servers und dem Ablauf eines Auftrags von der Karte bis zum Ende. Die beiden anderen Programme decken die Tastaturen ab (`test_keyboard`, 137 Prüfungen: jede Einstellung hat ihre Tastatur, die Bereiche des Zahlenblocks sind die der Einstellungsdatei, die Nachkommastellen, das Vorzeichen, die Pfeile, die volle Tastatur jeder Sprache, die Umschaltung, die Symbole und die Länge) und die aufgenommenen Hinweise (`test_notices`, 66 Prüfungen: die Einstellung, die Datei jeder Sprache und jedes Geschlechts).
+Die Host-Tests (`build.bat` oder `./build.sh`, dann `ctest`) sind zwei Programme und alles besteht: `test_hmi` (638 Prüfungen) zu Einstellungsdatei, Tor (Stopp geht immer, Hardware-Stopp-Sperre, Bestätigung, Zeitlimit und Uhrenüberlauf, Sprachregeln, Schalter), gesprochenen Befehlen und Hinweisen und Bildschirmtexten in acht Sprachen; und `test_workflow` (115 Prüfungen) zu Ausrichtung und Berührung, Dateien der Karte (Arten, sichere Namen, Sortierung), JSON-Leser, Anfragen und Antworten des Servers und dem Ablauf eines Auftrags von der Karte bis zum Ende. Die beiden anderen Programme decken die Tastaturen ab (`test_keyboard`, 137 Prüfungen: jede Einstellung hat ihre Tastatur, die Bereiche des Zahlenblocks sind die der Einstellungsdatei, die Nachkommastellen, das Vorzeichen, die Pfeile, die volle Tastatur jeder Sprache, die Umschaltung, die Symbole und die Länge) und die aufgenommenen Hinweise (`test_notices`, 66 Prüfungen: die Einstellung, die Datei jeder Sprache und jedes Geschlechts). Die letzten beiden Programme sind `test_quality` (911 Prüfungen: die Anfragen, das Lesen des Berichts, jeder Befund) und `test_locales` (73093 Prüfungen: jeder Schlüssel hat in jeder der 29 weiteren Sprachen einen Text, nichts ist leer oder zu lang, die Schrift jeder Sprache stimmt, was bleiben muss, bleibt, und jedes Zeichen, das ein Text zeichnen kann, liegt im Bereich der erzeugten Schriften).
 
 ## 🏗️ Build und Veröffentlichung
 
@@ -214,14 +214,17 @@ EH3D-NODE-BUNGARD-HMI/
 │   ├── server_link.hpp workflow.hpp job_memory.hpp   Client des Servers und Ablauf eines Auftrags
 │   ├── quality.hpp                                   die Qualitätsprüfung und der LED-Ring
 │   ├── ui_text.hpp keyboard.hpp notices.hpp          Texte, Tastaturen und Hinweise
+│   ├── locales.hpp locales_gen.hpp font_ranges.hpp   37 Sprachen, Schriftbereiche
 │   └── wav.hpp                                       die Aufnahmen und die Pieptöne der Hinweise
 ├── main/
 │   ├── app_main.cpp                                  Start, Einstellungen, die Schleife des Tors
 │   ├── ui.cpp ui.hpp                                 die LVGL-Bildschirme und der Stopp-Knopf
+│   ├── fonts/                                        die Schriften: Latein bis Japanisch
 │   ├── board_p4.cpp board.hpp                        das Modul: Display, Ton, Stopp-Eingang
 │   ├── server_link.cpp server_link.hpp               die Sockets des Server-Clients
 │   └── idf_component.yml Kconfig.projbuild           Komponentenliste und menuconfig-Pins
 ├── tests/                                            Host-Tests von Einstellungen, Tor, Sprache und Bildschirmtexten
+├── locales/                                          die Texte der übrigen 29 Sprachen, je eine Datei
 ├── docs/                                             die Hardware-Hinweise und die Quellen der beiden Bilder
 ├── tools/                                            CI-Prüfung, README-Prüfung und Bildwerkzeuge
 ├── CMakeLists.txt                                    das ESP-IDF-Projekt

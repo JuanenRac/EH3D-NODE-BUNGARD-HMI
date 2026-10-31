@@ -10,6 +10,12 @@
 
 #include "../core/ui_text.hpp"
 
+// the fonts of the screen (tools/make_fonts.py): the characters of the thirty-seven languages, with the symbols of LVGL as fallback
+extern "C" {
+LV_FONT_DECLARE(eh3d_font_16)
+LV_FONT_DECLARE(eh3d_font_24)
+}
+
 namespace ui {
 
 namespace {
@@ -94,7 +100,7 @@ lv_obj_t* button(lv_obj_t* parent, const char* label, lv_event_cb_t cb, void* us
 // A button with a symbol in place of a word: the symbols are the ones of LVGL (the same meaning in every language), drawn in the larger font.
 lv_obj_t* icon_button(lv_obj_t* parent, const char* symbol, lv_event_cb_t cb, void* user, lv_color_t colour, int w, int h) {
     lv_obj_t* b = button(parent, symbol, cb, user, colour, w, h);
-    lv_obj_set_style_text_font(lv_obj_get_child(b, 0), &lv_font_montserrat_24, 0);
+    lv_obj_set_style_text_font(lv_obj_get_child(b, 0), &eh3d_font_24, 0);
     return b;
 }
 
@@ -121,6 +127,13 @@ void on_orientation(lv_event_t* e) {
     Request r;
     r.what = What::SetOrientation;
     r.orientation = static_cast<hmi::Orientation>(reinterpret_cast<intptr_t>(lv_event_get_user_data(e)));
+    send(r);
+}
+
+void on_language(lv_event_t* e) {
+    Request r;
+    r.what = What::SetLanguage;
+    r.language = static_cast<hmi::Lang>(reinterpret_cast<intptr_t>(lv_event_get_user_data(e)));
     send(r);
 }
 
@@ -200,6 +213,7 @@ void build(const hmi::Settings& s, const hmi::Layout& layout, void (*post)(const
     lv_obj_clean(scr);
     lv_obj_set_style_bg_color(scr, kBg, 0);
     lv_obj_set_style_text_color(scr, kText, 0);
+    lv_obj_set_style_text_font(scr, &eh3d_font_16, 0);
     lv_obj_set_flex_flow(scr, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_style_pad_all(scr, 8, 0);
 
@@ -285,6 +299,19 @@ void build(const hmi::Settings& s, const hmi::Layout& layout, void (*post)(const
         button(set, o_names[i], on_orientation, reinterpret_cast<void*>(static_cast<intptr_t>(i)), kSlate, 220, 80);
     }
 
+    // the language: the thirty-seven languages, each named in itself, in a list that scrolls; the one in use is outlined
+    lv_obj_t* langs = card(set, hmi::text(T::Language, s.language));
+    lv_obj_set_size(langs, LV_PCT(100), 300);
+    lv_obj_set_flex_flow(langs, LV_FLEX_FLOW_ROW_WRAP);
+    lv_obj_set_scroll_dir(langs, LV_DIR_VER);
+    for (std::size_t i = 0; i < hmi::kLangCount; ++i) {
+        lv_obj_t* b = button(langs, hmi::lang_name(static_cast<hmi::Lang>(i)), on_language, reinterpret_cast<void*>(static_cast<intptr_t>(i)), kSlate, 220, 64);
+        if (static_cast<hmi::Lang>(i) == s.language) {
+            lv_obj_set_style_border_color(b, kAmber, 0);
+            lv_obj_set_style_border_width(b, 3, 0);
+        }
+    }
+
     // quality check: the verdict, big enough to read from across the room, what was found, and the controls of the ring of LEDs and of the check
     {
         using hmi::Q;
@@ -297,7 +324,7 @@ void build(const hmi::Settings& s, const hmi::Layout& layout, void (*post)(const
         lv_obj_set_style_bg_color(g_q_badge, kSlate, 0);
         lv_obj_set_style_border_width(g_q_badge, 0, 0);
         g_q_badge_text = lv_label_create(g_q_badge);
-        lv_obj_set_style_text_font(g_q_badge_text, &lv_font_montserrat_24, 0);
+        lv_obj_set_style_text_font(g_q_badge_text, &eh3d_font_24, 0);
         lv_obj_set_style_text_color(g_q_badge_text, lv_color_white(), 0);
         lv_label_set_text(g_q_badge_text, hmi::quality_text(Q::NotChecked, lang));
         lv_obj_center(g_q_badge_text);
@@ -338,7 +365,7 @@ void build(const hmi::Settings& s, const hmi::Layout& layout, void (*post)(const
         for (int i = 0; i < 3; ++i) button(controls, hmi::quality_text(presets[i], lang), on_preset, reinterpret_cast<void*>(static_cast<intptr_t>(i)), kSlate, 150, 60);
         button(controls, hmi::quality_text(Q::Calibrate, lang), on_calibrate, nullptr, kSlate, LV_PCT(100), 60);
         g_q_run = button(controls, hmi::quality_text(Q::CheckNow, lang), on_inspect, nullptr, kGo, LV_PCT(100), 90);
-        lv_obj_set_style_text_font(lv_obj_get_child(g_q_run, 0), &lv_font_montserrat_24, 0);
+        lv_obj_set_style_text_font(lv_obj_get_child(g_q_run, 0), &eh3d_font_24, 0);
     }
 
     g_note = lv_label_create(scr);

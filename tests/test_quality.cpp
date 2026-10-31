@@ -87,7 +87,7 @@ static void the_words() {
     for (unsigned i = 0; i < count; ++i) {
         const Row& row = quality_row(static_cast<Q>(i));
         int same_as_english = 0;
-        for (std::size_t l = 0; l < kLangCount; ++l) {
+        for (std::size_t l = 0; l < kBaseLangCount; ++l) {
             CHECK(row[l] != nullptr && row[l][0] != '\0');
             if (l > 0 && std::strcmp(row[l], row[0]) == 0) ++same_as_english;
         }

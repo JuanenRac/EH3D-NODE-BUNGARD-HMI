@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "lang.hpp"
+#include "locales.hpp"
 #include "server_link.hpp"
 
 namespace hmi {
@@ -158,15 +159,19 @@ inline const Row& quality_row(Q q) {
     return rows[static_cast<std::size_t>(q)];
 }
 
-inline const char* quality_text(Q q, Lang l) { return pick(quality_row(q), l); }
+static_assert(static_cast<std::size_t>(Q::Count) == kQualityKeyCount, "the keys of locales.hpp follow the enum Q");
 
-/// What a finding of the analyser says, in a language; the code itself when it is a word this version does not know.
-inline const char* finding_text(const std::string& code, Lang l) {
-    struct Entry {
-        const char* code;
-        Row row;
-    };
-    static const Entry table[] = {
+inline const char* quality_text(Q q, Lang l) { return translated(l, kUiKeyCount + static_cast<std::size_t>(q), quality_row(q)); }
+
+struct FindingEntry {
+    const char* code;
+    Row row;
+};
+
+/// The words of the findings of the analyser, in the order of the keys `f.` of locales.hpp.
+inline const std::array<FindingEntry, kFindingKeyCount>& finding_table() {
+    using Entry = FindingEntry;
+    static const std::array<Entry, kFindingKeyCount> table = {{
         {"hole_missing", {"no hole there", "no hay agujero", "nessun foro", "keine Bohrung", "pas de trou", "não há furo", "此处无孔", "穴がありません"}},
         {"hole_wrong_size", {"wrong size", "tamaño incorrecto", "dimensione errata", "falsche Größe", "mauvaise taille", "tamanho errado", "孔径不符", "サイズ不良"}},
         {"hole_off_centre", {"off centre", "descentrado", "fuori centro", "außermittig", "décentré", "descentrado", "偏离中心", "中心ずれ"}},
@@ -185,9 +190,15 @@ inline const char* finding_text(const std::string& code, Lang l) {
         {"not_calibrated", {"set the scale first", "fija antes la escala", "imposta prima la scala", "zuerst den Maßstab festlegen", "réglez d'abord l'échelle", "define primeiro a escala", "请先设置比例", "先にスケールを設定してください"}},
         {"nothing_to_check", {"no check is switched on", "no hay ninguna comprobación activa", "nessun controllo attivo", "keine Prüfung aktiv", "aucun contrôle activé", "nenhuma verificação ativa", "未启用任何检查", "有効なチェックがありません"}},
         {"no_expected_holes", {"no hole of the job in view", "ningún agujero del trabajo a la vista", "nessun foro del lavoro in vista", "keine Bohrung des Auftrags im Bild", "aucun trou du travail en vue", "nenhum furo do trabalho à vista", "画面中没有作业孔", "視野にジョブの穴がありません"}},
-    };
-    for (const Entry& e : table) {
-        if (code == e.code) return pick(e.row, l);
+    }};
+    return table;
+}
+
+/// What a finding of the analyser says, in a language; the code itself when it is a word this version does not know.
+inline const char* finding_text(const std::string& code, Lang l) {
+    const auto& table = finding_table();
+    for (std::size_t i = 0; i < table.size(); ++i) {
+        if (code == table[i].code) return translated(l, kUiKeyCount + kQualityKeyCount + i, table[i].row);
     }
     return code.c_str();
 }

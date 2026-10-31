@@ -388,6 +388,12 @@ extern "C" void app_main() {
                     rebuild(false);
                     board::lvgl_lock();
                     break;
+                case ui::What::SetLanguage:
+                    g_settings.language = r.language;  // kept until the next start: hmi.cfg (language = ...) holds the lasting choice
+                    board::lvgl_unlock();
+                    rebuild(false);
+                    board::lvgl_lock();
+                    break;
                 case ui::What::RefreshCard:
                     ui::show_card(board::sd_list(), g_settings);
                     break;

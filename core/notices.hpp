@@ -20,7 +20,7 @@ struct NoticeSetting {
     bool female = true;
 };
 
-/// Reads `off`, `default` or `voice:LANG:f|m`. False for anything else (the setting then keeps its default).
+/// Reads `off`, `default` or `voice:LANG:f|m` (LANG: the code of a language, `es`, `pt-br`...). False for anything else (the setting then keeps its default).
 inline bool parse_notice(const std::string& text, NoticeSetting& out) {
     if (text == "off") {
         out = NoticeSetting{};
@@ -30,10 +30,11 @@ inline bool parse_notice(const std::string& text, NoticeSetting& out) {
         out = NoticeSetting{NoticeSetting::Kind::Tone, Lang::En, true};
         return true;
     }
-    if (text.compare(0, 6, "voice:") != 0 || text.size() != 10) return false;
+    // voice:LANG:f|m, where LANG is the code of any language of the screen (the folder of a language that has no recordings is simply not there)
+    if (text.compare(0, 6, "voice:") != 0 || text.size() < 10 || text[text.size() - 2] != ':' || (text.back() != 'f' && text.back() != 'm')) return false;
     Lang l;
-    if (!lang_from_code(text.substr(6, 2), l) || text[8] != ':' || (text[9] != 'f' && text[9] != 'm')) return false;
-    out = NoticeSetting{NoticeSetting::Kind::Voice, l, text[9] == 'f'};
+    if (!lang_from_code(text.substr(6, text.size() - 8), l)) return false;
+    out = NoticeSetting{NoticeSetting::Kind::Voice, l, text.back() == 'f'};
     return true;
 }
 

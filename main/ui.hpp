@@ -24,13 +24,14 @@ struct State {
     std::string note;  // the line under the buttons: why something was refused, what the server answered
 };
 
-enum class What { Action, AckRelease, Confirm, Cancel, SetOrientation, OpenCard, SendJob, RefreshCard, LightSet, InspectRun, InspectPreset, InspectCalibrate };
+enum class What { Action, AckRelease, Confirm, Cancel, SetOrientation, SetLanguage, OpenCard, SendJob, RefreshCard, LightSet, InspectRun, InspectPreset, InspectCalibrate };
 
 /// What the operator did on the screen; the application runs it through the gate.
 struct Request {
     What what = What::Action;
     hmi::Action action;
     hmi::Orientation orientation = hmi::Orientation::Auto;
+    hmi::Lang language = hmi::Lang::En;  // SetLanguage: the language the operator chose
     char file[64] = {0};  // the name of the file of the card for OpenCard
     int light = 0;        // LightSet and InspectRun: the index in hmi::kLightLevels
     int hole = 0;         // InspectRun: the index in hmi::kHoleWidths

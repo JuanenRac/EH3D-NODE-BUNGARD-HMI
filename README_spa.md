@@ -30,7 +30,7 @@
 |---|---|
 | Versión | `0.0.3` |
 | Madurez | Andamiaje |
-| Pruebas | 4 programas de prueba en el ordenador (1373 comprobaciones contadas) |
+| Pruebas | 6 programas de prueba en el ordenador (75426 comprobaciones contadas) |
 | Pila tecnológica | C++17, ESP-IDF 5.5, LVGL 9, ESP32-P4 |
 | En hardware real | No: el firmware no se ha compilado ni grabado y nada se ha conectado a una máquina |
 
@@ -45,7 +45,7 @@ Cada línea es una parte de este repositorio y la luz dice hasta dónde llega ho
 | Área | Estado | Qué significa aquí |
 |---|---|---|
 | Software | 🟠 | El proyecto ESP-IDF (ESP32-P4, LVGL 9, el fichero de ajustes en su propia partición) está escrito; no se ha compilado ni grabado. |
-| Pruebas | 🟢 | Pasan 4 programas de prueba en el ordenador (`ctest`): 1373 comprobaciones del fichero de ajustes, la compuerta, las órdenes y avisos por voz, los teclados, los avisos grabados, el cliente del servidor y los textos de las pantallas en ocho idiomas. |
+| Pruebas | 🟢 | Pasan 6 programas de prueba en el ordenador (`ctest`): 75426 comprobaciones del fichero de ajustes, la compuerta, las órdenes y avisos por voz, los teclados, los avisos grabados, el cliente del servidor y los textos de las pantallas en ocho idiomas. |
 | Reglas de seguridad | 🟡 | Todo movimiento y toda orden de husillo pasan por la compuerta: confirmación en la pantalla, pestillo de la parada por hardware que solo borra un reconocimiento en la pantalla cuando el pulsador está suelto, ningún movimiento con el enlace sin armar. Cubierto por pruebas; nunca probado con un pulsador de parada real. |
 | Voz | 🟡 | Las órdenes y avisos por voz se reconocen y se formulan en ocho idiomas y se prueban como texto; no se ha usado ningún micrófono ni altavoz. |
 | Pantallas | 🟠 | Las pantallas de máquina, trabajo (microSD), máquinas y estaciones y ajustes están escritas, en horizontal y en vertical, con el aspecto del programa de escritorio; la pestaña del visor sigue siendo una tarjeta vacía. Solo existe un dibujo del diseño, no una captura de un módulo. |
@@ -117,7 +117,7 @@ Cómo encajan las partes de este repositorio: quién habla con él, qué contien
 
 * **Una parada que no se puede olvidar:** el botón de parada está siempre arriba y siempre funciona; la parada por hardware se enclava y solo un reconocimiento en la pantalla, con el pulsador suelto, la borra.
 * **Confirmación antes de mover:** un movimiento o una orden de husillo muestra lo que hará y espera un toque, con tiempo límite; una petición nueva o un enlace perdido la descarta.
-* **Ocho idiomas, también por voz:** inglés, español, italiano, alemán, francés, portugués de Portugal, chino y japonés en las pantallas, en los avisos hablados y en las órdenes por voz.
+* **Ocho idiomas, también por voz:** inglés, español, italiano, alemán, francés, portugués de Portugal, chino y japonés en las pantallas, en los avisos hablados y en las órdenes por voz. Los textos de las pantallas también están escritos en los otros 29 idiomas de la familia (búlgaro, croata, checo, danés, neerlandés, estonio, finés, griego, húngaro, irlandés, letón, lituano, maltés, polaco, rumano, eslovaco, esloveno, sueco, noruego, islandés, ucraniano, ruso, serbio, albanés, catalán, gallego, euskera, portugués de Brasil y francés de Canadá), un fichero cada uno en `locales/`, con las fuentes de la pantalla hechas para ellos; el idioma se elige en una lista con desplazamiento en los ajustes. Los avisos y las órdenes por voz siguen en los ocho primeros (los demás se dicen en inglés). Un texto que falta en un idioma se muestra en inglés. Estas fuentes y textos se han probado solo en el ordenador, no en la pantalla real.
 * **Seguro por defecto:** cada interruptor de seguridad tiene su ajuste y empieza en su posición conservadora: órdenes por voz desactivadas, confirmación por voz desactivada, confirmación activada, parada por hardware exigida.
 * **El teclado adecuado para cada ajuste:** un número se escribe en un teclado numérico que conoce el rango y los decimales de ese ajuste (las flechas lo mueven una unidad, un valor fuera del rango no se acepta); un texto, como la dirección del servidor o el token, en un teclado completo con las teclas del idioma en uso (las diéresis, los acentos, la tilde, la cedilla), con una mayúscula de una letra y una capa de símbolos; los interruptores y las listas no necesitan teclado.
 * **Botones con símbolo:** el pad de movimiento, el origen, el husillo, pausa, inicio, parada y las respuestas de una pregunta usan símbolos y la letra del eje en lugar de palabras, con los colores del programa de escritorio (verde para iniciar, azul para pausar, rojo para parar).
@@ -180,7 +180,7 @@ El firmware todavía no se ha compilado: cuando se compile, `idf.py set-target e
 
 ## 🧪 Pruebas
 
-Las pruebas en el ordenador (`build.bat` o `./build.sh`, y luego `ctest`) son dos programas y pasa todo: `test_hmi` (638 comprobaciones) del fichero de ajustes, la compuerta (la parada siempre pasa, pestillo de la parada por hardware, confirmación, tiempo límite y vuelta del reloj, reglas de voz, interruptores), las órdenes y avisos por voz y los textos de pantalla en ocho idiomas; y `test_workflow` (115 comprobaciones) de la orientación y el toque, los ficheros de la tarjeta (tipos, nombres seguros, orden), el lector de JSON, las peticiones y respuestas del servidor y el flujo de un trabajo desde la tarjeta hasta su final. Los otros dos programas cubren los teclados (`test_keyboard`, 137 comprobaciones: cada ajuste tiene su teclado, los rangos del teclado numérico son los del fichero de ajustes, los decimales, el signo, las flechas, el teclado completo de cada idioma, la mayúscula, los símbolos y la longitud) y los avisos grabados (`test_notices`, 66 comprobaciones: el ajuste, el fichero de cada idioma y género).
+Las pruebas en el ordenador (`build.bat` o `./build.sh`, y luego `ctest`) son dos programas y pasa todo: `test_hmi` (638 comprobaciones) del fichero de ajustes, la compuerta (la parada siempre pasa, pestillo de la parada por hardware, confirmación, tiempo límite y vuelta del reloj, reglas de voz, interruptores), las órdenes y avisos por voz y los textos de pantalla en ocho idiomas; y `test_workflow` (115 comprobaciones) de la orientación y el toque, los ficheros de la tarjeta (tipos, nombres seguros, orden), el lector de JSON, las peticiones y respuestas del servidor y el flujo de un trabajo desde la tarjeta hasta su final. Los otros dos programas cubren los teclados (`test_keyboard`, 137 comprobaciones: cada ajuste tiene su teclado, los rangos del teclado numérico son los del fichero de ajustes, los decimales, el signo, las flechas, el teclado completo de cada idioma, la mayúscula, los símbolos y la longitud) y los avisos grabados (`test_notices`, 66 comprobaciones: el ajuste, el fichero de cada idioma y género). Los dos últimos programas son `test_quality` (911 comprobaciones: las peticiones, la lectura del informe, cada hallazgo) y `test_locales` (73093 comprobaciones: cada clave tiene texto en cada uno de los otros 29 idiomas, nada está vacío ni es demasiado largo, la escritura de cada idioma es la correcta, lo que debe quedar queda, y cada carácter que pueda dibujar un texto está en el rango de las fuentes generadas).
 
 ## 🏗️ Compilación y publicación
 
@@ -214,14 +214,17 @@ EH3D-NODE-BUNGARD-HMI/
 │   ├── server_link.hpp workflow.hpp job_memory.hpp   cliente del servidor y flujo de un trabajo
 │   ├── quality.hpp                                   la verificación de calidad y el aro de LEDs
 │   ├── ui_text.hpp keyboard.hpp notices.hpp          textos, teclados y avisos
+│   ├── locales.hpp locales_gen.hpp font_ranges.hpp   37 idiomas y rangos de fuente
 │   └── wav.hpp                                       las grabaciones y los pitidos de los avisos
 ├── main/
 │   ├── app_main.cpp                                  arranque, ajustes, el bucle de la compuerta
 │   ├── ui.cpp ui.hpp                                 las pantallas LVGL y el botón de parada
+│   ├── fonts/                                        las fuentes: del latín al japonés
 │   ├── board_p4.cpp board.hpp                        el módulo: pantalla, sonido, entrada de parada
 │   ├── server_link.cpp server_link.hpp               los sockets del cliente del servidor
 │   └── idf_component.yml Kconfig.projbuild           lista de componentes y pines de menuconfig
 ├── tests/                                            pruebas en el ordenador de los ajustes, la compuerta, la voz y los textos de pantalla
+├── locales/                                          los textos de los otros 29 idiomas, un fichero cada uno
 ├── docs/                                             las notas de hardware y las fuentes de los dos dibujos
 ├── tools/                                            comprobación de CI, de README y herramientas de dibujos
 ├── CMakeLists.txt                                    el proyecto ESP-IDF
