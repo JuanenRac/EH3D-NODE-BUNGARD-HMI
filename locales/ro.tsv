@@ -70,3 +70,5 @@ f.image_blurry	imagine neclară
 f.not_calibrated	setează mai întâi scara
 f.nothing_to_check	nicio verificare nu este activă
 f.no_expected_holes	nicio gaură a lucrării în câmp
+ui.Holes	găuri
+ui.Cuts	tăieturi

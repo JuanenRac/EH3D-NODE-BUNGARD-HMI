@@ -43,6 +43,8 @@ inline const char* const kText_bg[kKeyCount] = {
     "Напредък",  // ui.Progress
     "Инструмент",  // ui.Tool
     "Ръчно движение",  // ui.Jog
+    "отвори",  // ui.Holes
+    "срезове",  // ui.Cuts
     "Проверка на качеството на работата",  // q.Title
     "Светлинен пръстен",  // q.Light
     "Изкл.",  // q.LightOff
@@ -117,6 +119,8 @@ inline const char* const kText_hr[kKeyCount] = {
     "Napredak",  // ui.Progress
     "Alat",  // ui.Tool
     "Ručni pomak",  // ui.Jog
+    "rupe",  // ui.Holes
+    "rezovi",  // ui.Cuts
     "Provjera kvalitete rada",  // q.Title
     "Svjetlosni prsten",  // q.Light
     "Isklj.",  // q.LightOff
@@ -191,6 +195,8 @@ inline const char* const kText_cs[kKeyCount] = {
     "Průběh",  // ui.Progress
     "Nástroj",  // ui.Tool
     "Ruční pojezd",  // ui.Jog
+    "otvory",  // ui.Holes
+    "řezy",  // ui.Cuts
     "Kontrola kvality práce",  // q.Title
     "Světelný kruh",  // q.Light
     "Vyp.",  // q.LightOff
@@ -265,6 +271,8 @@ inline const char* const kText_da[kKeyCount] = {
     "Fremdrift",  // ui.Progress
     "Værktøj",  // ui.Tool
     "Jog",  // ui.Jog
+    "huller",  // ui.Holes
+    "snit",  // ui.Cuts
     "Kvalitetskontrol af arbejdet",  // q.Title
     "Lysring",  // q.Light
     "Fra",  // q.LightOff
@@ -339,6 +347,8 @@ inline const char* const kText_nl[kKeyCount] = {
     "Voortgang",  // ui.Progress
     "Gereedschap",  // ui.Tool
     "Handbediening",  // ui.Jog
+    "gaten",  // ui.Holes
+    "sneden",  // ui.Cuts
     "Kwaliteitscontrole van het werk",  // q.Title
     "Lichtring",  // q.Light
     "Uit",  // q.LightOff
@@ -413,6 +423,8 @@ inline const char* const kText_et[kKeyCount] = {
     "Edenemine",  // ui.Progress
     "Tööriist",  // ui.Tool
     "Käsiliigutus",  // ui.Jog
+    "augud",  // ui.Holes
+    "lõiked",  // ui.Cuts
     "Töö kvaliteedikontroll",  // q.Title
     "Valgusrõngas",  // q.Light
     "Väljas",  // q.LightOff
@@ -487,6 +499,8 @@ inline const char* const kText_fi[kKeyCount] = {
     "Eteneminen",  // ui.Progress
     "Työkalu",  // ui.Tool
     "Käsiajo",  // ui.Jog
+    "reiät",  // ui.Holes
+    "leikkaukset",  // ui.Cuts
     "Työn laatutarkastus",  // q.Title
     "Valorengas",  // q.Light
     "Pois",  // q.LightOff
@@ -561,6 +575,8 @@ inline const char* const kText_el[kKeyCount] = {
     "Πρόοδος",  // ui.Progress
     "Εργαλείο",  // ui.Tool
     "Χειροκίνηση",  // ui.Jog
+    "οπές",  // ui.Holes
+    "κοπές",  // ui.Cuts
     "Έλεγχος ποιότητας της εργασίας",  // q.Title
     "Δακτύλιος φωτός",  // q.Light
     "Κλειστό",  // q.LightOff
@@ -635,6 +651,8 @@ inline const char* const kText_hu[kKeyCount] = {
     "Előrehaladás",  // ui.Progress
     "Szerszám",  // ui.Tool
     "Léptetés",  // ui.Jog
+    "furatok",  // ui.Holes
+    "vágások",  // ui.Cuts
     "A munka minőségellenőrzése",  // q.Title
     "Fénygyűrű",  // q.Light
     "Ki",  // q.LightOff
@@ -709,6 +727,8 @@ inline const char* const kText_ga[kKeyCount] = {
     "Dul chun cinn",  // ui.Progress
     "Uirlis",  // ui.Tool
     "Jog",  // ui.Jog
+    "poill",  // ui.Holes
+    "gearrthaí",  // ui.Cuts
     "Seiceáil cáilíochta na hoibre",  // q.Title
     "Fáinne solais",  // q.Light
     "Múchta",  // q.LightOff
@@ -783,6 +803,8 @@ inline const char* const kText_lv[kKeyCount] = {
     "Progress",  // ui.Progress
     "Rīks",  // ui.Tool
     "Jog",  // ui.Jog
+    "caurumi",  // ui.Holes
+    "griezumi",  // ui.Cuts
     "Darba kvalitātes pārbaude",  // q.Title
     "Gaismas gredzens",  // q.Light
     "Izsl.",  // q.LightOff
@@ -857,6 +879,8 @@ inline const char* const kText_lt[kKeyCount] = {
     "Eiga",  // ui.Progress
     "Įrankis",  // ui.Tool
     "Jog",  // ui.Jog
+    "skylės",  // ui.Holes
+    "pjūviai",  // ui.Cuts
     "Darbo kokybės patikra",  // q.Title
     "Šviesos žiedas",  // q.Light
     "Išj.",  // q.LightOff
@@ -931,6 +955,8 @@ inline const char* const kText_mt[kKeyCount] = {
     "Progress",  // ui.Progress
     "Għodda",  // ui.Tool
     "Jog",  // ui.Jog
+    "toqob",  // ui.Holes
+    "qtugħ",  // ui.Cuts
     "Verifika tal-kwalità tax-xogħol",  // q.Title
     "Ċirku tad-dawl",  // q.Light
     "Mitfi",  // q.LightOff
@@ -1005,6 +1031,8 @@ inline const char* const kText_pl[kKeyCount] = {
     "Postęp",  // ui.Progress
     "Narzędzie",  // ui.Tool
     "Jog",  // ui.Jog
+    "otwory",  // ui.Holes
+    "cięcia",  // ui.Cuts
     "Kontrola jakości wykonania",  // q.Title
     "Pierścień świetlny",  // q.Light
     "Wył.",  // q.LightOff
@@ -1079,6 +1107,8 @@ inline const char* const kText_ro[kKeyCount] = {
     "Progres",  // ui.Progress
     "Sculă",  // ui.Tool
     "Jog",  // ui.Jog
+    "găuri",  // ui.Holes
+    "tăieturi",  // ui.Cuts
     "Verificarea calității lucrării",  // q.Title
     "Inel de lumină",  // q.Light
     "Oprit",  // q.LightOff
@@ -1153,6 +1183,8 @@ inline const char* const kText_sk[kKeyCount] = {
     "Priebeh",  // ui.Progress
     "Nástroj",  // ui.Tool
     "Jog",  // ui.Jog
+    "otvory",  // ui.Holes
+    "rezy",  // ui.Cuts
     "Kontrola kvality práce",  // q.Title
     "Svetelný kruh",  // q.Light
     "Vyp.",  // q.LightOff
@@ -1227,6 +1259,8 @@ inline const char* const kText_sl[kKeyCount] = {
     "Napredek",  // ui.Progress
     "Orodje",  // ui.Tool
     "Ročni pomik",  // ui.Jog
+    "luknje",  // ui.Holes
+    "rezi",  // ui.Cuts
     "Kontrola kakovosti izdelka",  // q.Title
     "Svetlobni obroč",  // q.Light
     "Izklj.",  // q.LightOff
@@ -1301,6 +1335,8 @@ inline const char* const kText_sv[kKeyCount] = {
     "Förlopp",  // ui.Progress
     "Verktyg",  // ui.Tool
     "Jogga",  // ui.Jog
+    "hål",  // ui.Holes
+    "skärningar",  // ui.Cuts
     "Kvalitetskontroll av arbetet",  // q.Title
     "Ljusring",  // q.Light
     "Av",  // q.LightOff
@@ -1375,6 +1411,8 @@ inline const char* const kText_no[kKeyCount] = {
     "Fremdrift",  // ui.Progress
     "Verktøy",  // ui.Tool
     "Jogg",  // ui.Jog
+    "hull",  // ui.Holes
+    "kutt",  // ui.Cuts
     "Kvalitetskontroll av arbeidet",  // q.Title
     "Lysring",  // q.Light
     "Av",  // q.LightOff
@@ -1449,6 +1487,8 @@ inline const char* const kText_is[kKeyCount] = {
     "Framvinda",  // ui.Progress
     "Verkfæri",  // ui.Tool
     "Handfærsla",  // ui.Jog
+    "göt",  // ui.Holes
+    "skurðir",  // ui.Cuts
     "Gæðaskoðun verksins",  // q.Title
     "Ljósahringur",  // q.Light
     "Af",  // q.LightOff
@@ -1523,6 +1563,8 @@ inline const char* const kText_uk[kKeyCount] = {
     "Хід виконання",  // ui.Progress
     "Інструмент",  // ui.Tool
     "Ручний рух",  // ui.Jog
+    "отвори",  // ui.Holes
+    "різи",  // ui.Cuts
     "Контроль якості виконаної роботи",  // q.Title
     "Світлове кільце",  // q.Light
     "Вимк.",  // q.LightOff
@@ -1597,6 +1639,8 @@ inline const char* const kText_ru[kKeyCount] = {
     "Ход выполнения",  // ui.Progress
     "Инструмент",  // ui.Tool
     "Ручное движение",  // ui.Jog
+    "отверстия",  // ui.Holes
+    "резы",  // ui.Cuts
     "Контроль качества выполненной работы",  // q.Title
     "Световое кольцо",  // q.Light
     "Выкл.",  // q.LightOff
@@ -1671,6 +1715,8 @@ inline const char* const kText_sr[kKeyCount] = {
     "Напредак",  // ui.Progress
     "Алат",  // ui.Tool
     "Ручно кретање",  // ui.Jog
+    "рупе",  // ui.Holes
+    "резови",  // ui.Cuts
     "Провера квалитета рада",  // q.Title
     "Светлосни прстен",  // q.Light
     "Искљ.",  // q.LightOff
@@ -1745,6 +1791,8 @@ inline const char* const kText_sq[kKeyCount] = {
     "Përparimi",  // ui.Progress
     "Mjeti",  // ui.Tool
     "Lëvizje manuale",  // ui.Jog
+    "vrima",  // ui.Holes
+    "prerje",  // ui.Cuts
     "Kontrolli i cilësisë së punës",  // q.Title
     "Unaza e dritës",  // q.Light
     "Fikur",  // q.LightOff
@@ -1819,6 +1867,8 @@ inline const char* const kText_ca[kKeyCount] = {
     "Progrés",  // ui.Progress
     "Eina",  // ui.Tool
     "Jog",  // ui.Jog
+    "forats",  // ui.Holes
+    "talls",  // ui.Cuts
     "Verificació de qualitat de la feina",  // q.Title
     "Aro de llum",  // q.Light
     "Apagat",  // q.LightOff
@@ -1893,6 +1943,8 @@ inline const char* const kText_gl[kKeyCount] = {
     "Progreso",  // ui.Progress
     "Ferramenta",  // ui.Tool
     "Jog",  // ui.Jog
+    "buratos",  // ui.Holes
+    "cortes",  // ui.Cuts
     "Verificación de calidade do traballo",  // q.Title
     "Aro de luz",  // q.Light
     "Apagado",  // q.LightOff
@@ -1967,6 +2019,8 @@ inline const char* const kText_eu[kKeyCount] = {
     "Aurrerapena",  // ui.Progress
     "Erreminta",  // ui.Tool
     "Jog",  // ui.Jog
+    "zuloak",  // ui.Holes
+    "mozketak",  // ui.Cuts
     "Lanaren kalitate-egiaztapena",  // q.Title
     "Argi-eraztuna",  // q.Light
     "Itzalita",  // q.LightOff
@@ -2041,6 +2095,8 @@ inline const char* const kText_pt_br[kKeyCount] = {
     nullptr,  // ui.Progress
     nullptr,  // ui.Tool
     nullptr,  // ui.Jog
+    nullptr,  // ui.Holes
+    nullptr,  // ui.Cuts
     nullptr,  // q.Title
     nullptr,  // q.Light
     nullptr,  // q.LightOff
@@ -2115,6 +2171,8 @@ inline const char* const kText_fr_ca[kKeyCount] = {
     nullptr,  // ui.Progress
     nullptr,  // ui.Tool
     nullptr,  // ui.Jog
+    nullptr,  // ui.Holes
+    nullptr,  // ui.Cuts
     nullptr,  // q.Title
     nullptr,  // q.Light
     nullptr,  // q.LightOff

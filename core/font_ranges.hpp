@@ -12,7 +12,7 @@ struct CodeRange {
     unsigned hi;
 };
 
-inline constexpr CodeRange kFontRanges[295] = {
+inline constexpr CodeRange kFontRanges[297] = {
     {0x20, 0x7E},
     {0xB7, 0xB7},
     {0xBF, 0xC5},
@@ -142,9 +142,11 @@ inline constexpr CodeRange kFontRanges[295] = {
     {0x5185, 0x5186},
     {0x51C6, 0x51C6},
     {0x5200, 0x5200},
+    {0x5207, 0x5207},
     {0x5224, 0x5224},
     {0x5230, 0x5230},
     {0x523A, 0x523A},
+    {0x524A, 0x524A},
     {0x529B, 0x529B},
     {0x52A1, 0x52A1},
     {0x52A8, 0x52A8},
@@ -310,6 +312,6 @@ inline constexpr CodeRange kFontRanges[295] = {
     {0xFF1F, 0xFF1F},
 };
 
-inline constexpr std::size_t kFontRangeCount = 295;
+inline constexpr std::size_t kFontRangeCount = 297;
 
 }  // namespace hmi

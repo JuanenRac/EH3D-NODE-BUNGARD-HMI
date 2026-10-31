@@ -70,3 +70,5 @@ f.image_blurry	φωτογραφία εκτός εστίασης
 f.not_calibrated	ορίστε πρώτα την κλίμακα
 f.nothing_to_check	κανένας έλεγχος δεν είναι ενεργός
 f.no_expected_holes	καμία τρύπα της εργασίας στην εικόνα
+ui.Holes	οπές
+ui.Cuts	κοπές

@@ -70,3 +70,5 @@ f.image_blurry	snimka nije u fokusu
 f.not_calibrated	najprije postavite mjerilo
 f.nothing_to_check	nijedna provjera nije uključena
 f.no_expected_holes	nijedna rupa posla nije u kadru
+ui.Holes	rupe
+ui.Cuts	rezovi

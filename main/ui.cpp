@@ -42,6 +42,8 @@ lv_obj_t* g_dialog_text = nullptr;
 lv_obj_t* g_fleet_list = nullptr;
 lv_obj_t* g_card_list = nullptr;
 lv_obj_t* g_selected_file = nullptr;
+lv_obj_t* g_job_summary = nullptr;
+lv_obj_t* g_tools_box = nullptr;
 lv_obj_t* g_move_buttons[10] = {nullptr};
 int g_move_count = 0;
 // the quality check
@@ -188,6 +190,13 @@ void on_calibrate(lv_event_t*) {
     send(r);
 }
 
+void on_tool(lv_event_t* e) {
+    Request r;
+    r.what = What::ToggleTool;
+    r.tool = static_cast<int>(reinterpret_cast<intptr_t>(lv_event_get_user_data(e)));
+    send(r);
+}
+
 void on_send_job(lv_event_t*) { Request r; r.what = What::SendJob; send(r); }
 void on_refresh_card(lv_event_t*) { Request r; r.what = What::RefreshCard; send(r); }
 
@@ -279,6 +288,16 @@ void build(const hmi::Settings& s, const hmi::Layout& layout, void (*post)(const
     lv_obj_set_size(side, layout.portrait ? LV_PCT(100) : LV_PCT(32), LV_PCT(100));
     icon_button(side, LV_SYMBOL_SD_CARD " " LV_SYMBOL_REFRESH, on_refresh_card, nullptr, kSlate, 180, 64);
     remember_move(icon_button(side, LV_SYMBOL_UPLOAD, on_send_job, nullptr, kGo, 180, 64));
+    // what the chosen file holds: the summary, and a chip for each tool that switches it off or on
+    g_job_summary = lv_label_create(side);
+    lv_obj_set_width(g_job_summary, LV_PCT(100));
+    lv_label_set_long_mode(g_job_summary, LV_LABEL_LONG_WRAP);
+    lv_label_set_text(g_job_summary, "");
+    g_tools_box = lv_obj_create(side);
+    lv_obj_remove_style_all(g_tools_box);
+    lv_obj_set_size(g_tools_box, LV_PCT(100), LV_SIZE_CONTENT);
+    lv_obj_set_flex_flow(g_tools_box, LV_FLEX_FLOW_ROW_WRAP);
+    lv_obj_set_style_pad_gap(g_tools_box, 6, 0);
 
     // viewer: the plan of the chosen job
     lv_obj_t* view = card(g_pages[2], hmi::text(T::Viewer, s.language));
@@ -488,6 +507,33 @@ void show_fleet(const hmi::FleetView& fleet, const hmi::Settings&) {
         else std::snprintf(row, sizeof row, "%s   %s   (%d)", m.name.c_str(), m.state.c_str(), m.ready);
         lv_list_add_button(g_fleet_list, nullptr, row);
     }
+}
+
+void show_job(const hmi::ToolSwitch& tools, const hmi::SpindleView& spindle, const hmi::Settings& s) {
+    using hmi::T;
+    if (g_tools_box == nullptr || g_job_summary == nullptr) return;
+    lv_obj_clean(g_tools_box);
+    const hmi::FileSummary& file = tools.summary();
+    std::string text;
+    if (!file.tools.empty()) {
+        // the chips: the number, the diameter when the file says it and how many holes or cuts; a tool that is off is dim, with a cross
+        for (const hmi::ToolInfo& t : file.tools) {
+            char label[64];
+            const bool off = tools.is_off(t.number);
+            if (t.diameter_mm > 0) std::snprintf(label, sizeof label, "%s %d  %.2f mm  (%d)", off ? LV_SYMBOL_CLOSE : LV_SYMBOL_OK, t.number, t.diameter_mm, t.count);
+            else std::snprintf(label, sizeof label, "%s %s %d  (%d)", off ? LV_SYMBOL_CLOSE : LV_SYMBOL_OK, hmi::text(T::Tool, s.language), t.number, t.count);
+            lv_obj_t* b = button(g_tools_box, label, on_tool, reinterpret_cast<void*>(static_cast<intptr_t>(t.number)), off ? kDim : kSlate, 200, 56);
+            if (off) lv_obj_set_style_text_opa(lv_obj_get_child(b, 0), LV_OPA_60, 0);
+        }
+        text = std::to_string(tools.remaining()) + "/" + std::to_string(file.total) + " " + hmi::text(file.route ? T::Cuts : T::Holes, s.language);
+        if (tools.nothing_left()) text += std::string("  ") + LV_SYMBOL_WARNING;
+    }
+    if (spindle.known) {
+        char line[96];
+        std::snprintf(line, sizeof line, "%s%s: %s %d-%d rpm", text.empty() ? "" : "\n", hmi::text(T::Spindle, s.language), spindle.kind.c_str(), spindle.min_rpm, spindle.max_rpm);
+        text += line;
+    }
+    lv_label_set_text(g_job_summary, text.c_str());
 }
 
 void show_card(const std::vector<hmi::Entry>& files, const hmi::Settings&) {

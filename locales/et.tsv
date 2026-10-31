@@ -70,3 +70,5 @@ f.image_blurry	pilt on fookusest väljas
 f.not_calibrated	määrake esmalt mõõtkava
 f.nothing_to_check	ühtegi kontrolli pole sisse lülitatud
 f.no_expected_holes	töö auke pole pildis
+ui.Holes	augud
+ui.Cuts	lõiked

@@ -47,6 +47,8 @@ static bool g_fleet_new = false;
 static bool g_server_ok = false;
 static std::string g_note;
 static hmi::Workflow g_flow;
+static hmi::SpindleView g_spindle;  // the spindle of the machine, as the server says it (asked now and then)
+static bool g_spindle_new = false;
 
 // the quality check: what the server last said, the ring of LEDs, and what the operator chose for the next request
 static hmi::QualityView g_quality;
@@ -212,6 +214,7 @@ static void quality_job(const ServerJob& job) {
 // The task of the link: asks for the fleet every `poll_s` seconds and does what the operator asked, one request at a time.
 static void link_task(void*) {
     TickType_t next_poll = 0;
+    unsigned polls = 0;
     for (;;) {
         ServerJob job;
         const bool asked = xQueueReceive(g_to_server, &job, pdMS_TO_TICKS(200)) == pdTRUE;
@@ -273,6 +276,17 @@ static void link_task(void*) {
                 g_server_ok = true;
                 g_flow.on_fleet(view, g_settings.server_machine);
                 xSemaphoreGive(g_lock);
+                // the spindle of the machine: asked at the first reading and then every tenth
+                if (!g_settings.server_machine.empty() && (polls++ % 10) == 0) {
+                    hmi::Response sr;
+                    hmi::SpindleView sv;
+                    if (srvlink::call(g_settings, hmi::spindle_request(g_settings.server_machine), sr, error) && sr.status == 200 && hmi::parse_spindle(sr.body, sv)) {
+                        xSemaphoreTake(g_lock, portMAX_DELAY);
+                        g_spindle = sv;
+                        g_spindle_new = true;
+                        xSemaphoreGive(g_lock);
+                    }
+                }
             } else {
                 xSemaphoreTake(g_lock, portMAX_DELAY);
                 g_server_ok = false;
@@ -282,12 +296,22 @@ static void link_task(void*) {
     }
 }
 
+// Shows the tools of the chosen file and the spindle of the machine (the LVGL lock is taken by the caller).
+static void refresh_job() {
+    xSemaphoreTake(g_lock, portMAX_DELAY);
+    const hmi::ToolSwitch tools = g_flow.tool_switch();
+    const hmi::SpindleView spindle = g_spindle;
+    xSemaphoreGive(g_lock);
+    ui::show_job(tools, spindle, g_settings);
+}
+
 static void rebuild(bool mounted_portrait) {
     const hmi::Layout layout = hmi::layout_for(g_settings.orientation, mounted_portrait);
     board::lvgl_lock();
     board::set_rotation(layout.rotation);
     ui::build(g_settings, layout, post);
     ui::show_card(board::sd_list(), g_settings);
+    refresh_job();
     board::lvgl_unlock();
 }
 
@@ -411,6 +435,14 @@ extern "C" void app_main() {
                     }
                     xSemaphoreGive(g_lock);
                     set_note(ok ? std::string("file: ") + r.file : (why.empty() ? "the file cannot be read" : why));
+                    if (ok) refresh_job();
+                    break;
+                }
+                case ui::What::ToggleTool: {
+                    xSemaphoreTake(g_lock, portMAX_DELAY);
+                    g_flow.toggle_tool(r.tool);
+                    xSemaphoreGive(g_lock);
+                    refresh_job();
                     break;
                 }
                 case ui::What::LightSet:
@@ -428,6 +460,13 @@ extern "C" void app_main() {
                     break;
                 }
                 case ui::What::SendJob: {
+                    xSemaphoreTake(g_lock, portMAX_DELAY);
+                    const bool nothing = g_flow.nothing_to_do();
+                    xSemaphoreGive(g_lock);
+                    if (nothing) {
+                        set_note("every tool of the file is switched off: nothing to send");
+                        break;
+                    }
                     ServerJob job;
                     job.what = ServerJob::Do::Create;
                     xQueueSend(g_to_server, &job, 0);
@@ -440,6 +479,8 @@ extern "C" void app_main() {
         // what the link task found out: the fleet, the note and the stage of the job
         xSemaphoreTake(g_lock, portMAX_DELAY);
         const bool fleet_new = g_fleet_new;
+        const bool spindle_new = g_spindle_new;
+        g_spindle_new = false;
         const hmi::FleetView fleet = g_fleet;
         g_fleet_new = false;
         const hmi::QualityView quality = g_quality;
@@ -468,6 +509,7 @@ extern "C" void app_main() {
         board::lvgl_lock();
         ui::show(state, g_settings);
         if (fleet_new) ui::show_fleet(fleet, g_settings);
+        if (spindle_new) refresh_job();
         if (quality_new) ui::show_quality(quality, light, quality_running, g_settings);
         if (!gate.pending()) ui::ask(nullptr, g_settings);
         board::lvgl_unlock();

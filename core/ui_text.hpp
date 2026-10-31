@@ -22,6 +22,7 @@ enum class T : unsigned {
     AskMove, AskSpindle,
     WhyHardwareStop, WhyNotArmed, WhyVoiceOff, WhyNoStop, WhySpindle,
     Feed, Progress, Tool, Jog,
+    Holes, Cuts,
     Count
 };
 
@@ -61,6 +62,8 @@ inline const Row& text_row(T t) {
         {"Progress", "Progreso", "Avanzamento lavoro", "Fortschritt", "Progression", "Progresso", "进度", "進行"},
         {"Tool", "Herramienta", "Utensile", "Werkzeug", "Outil", "Ferramenta", "刀具", "工具"},
         {"Jog", "Movimiento manual", "Spostamento manuale", "Tippbetrieb", "Jog", "Movimento manual", "点动", "ジョグ"},
+        {"holes", "taladros", "fori", "Bohrungen", "trous", "furos", "孔", "穴"},
+        {"cuts", "cortes", "tagli", "Fräsungen", "découpes", "cortes", "切削", "切削"},
     }};
     return rows[static_cast<std::size_t>(t)];
 }

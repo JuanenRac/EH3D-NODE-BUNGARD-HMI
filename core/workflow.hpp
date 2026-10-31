@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "job_tools.hpp"
 #include "sdfiles.hpp"
 #include "server_link.hpp"
 
@@ -31,6 +32,7 @@ public:
         name_ = name;
         text_ = text;
         route_ = k == FileKind::Route;
+        switch_.reset(route_ ? summarize_route(text) : summarize_drill(text));  // every tool starts on
         job_id_.clear();
         stage_ = Stage::FileChosen;
         return true;
@@ -39,11 +41,19 @@ public:
     /// The tool table that goes with the chosen file (the same name with the extension of the table, read by the application when it exists).
     void set_tools(const std::string& text) { tools_ = text; }
 
-    /// The request that sends the chosen file to the machine as a job; empty path when there is nothing to send or no machine is set.
+    /// What the chosen file holds (its tools and how many holes or cuts each has) and which tools the operator switched off; the screen shows both.
+    const ToolSwitch& tool_switch() const { return switch_; }
+    /// Switches a tool of the chosen file off or on (only before the job is sent); false when there is no such tool or the job is already made.
+    bool toggle_tool(int number) { return stage_ == Stage::FileChosen && switch_.toggle(number); }
+
+    /// The request that sends the chosen file to the machine as a job, without the tools that are switched off; empty path when there is nothing to send, no machine is
+    /// set, or every tool is off (`nothing_to_do`).
     Request create_request(const std::string& machine) const {
-        if (stage_ != Stage::FileChosen || machine.empty()) return {};
-        return job_request(machine, route_, name_, text_, tools_);
+        if (stage_ != Stage::FileChosen || machine.empty() || switch_.nothing_left()) return {};
+        return job_request(machine, route_, name_, text_, tools_, switch_.off());
     }
+    /// True when the operator switched off every tool the file has.
+    bool nothing_to_do() const { return stage_ == Stage::FileChosen && switch_.nothing_left(); }
 
     /// The answer of the server to the creation of the job.
     bool on_created(const Response& r, std::string& why) {
@@ -127,6 +137,7 @@ private:
     Stage stage_ = Stage::Nothing;
     std::string name_, text_, tools_, job_id_, pause_;
     bool route_ = false;
+    ToolSwitch switch_;
     int percent_ = 0;
 };
 

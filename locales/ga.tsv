@@ -70,3 +70,5 @@ f.image_blurry	pictiúr as fócas
 f.not_calibrated	socraigh an scála ar dtús
 f.nothing_to_check	níl aon seiceáil ar siúl
 f.no_expected_holes	níl poll den obair le feiceáil
+ui.Holes	poill
+ui.Cuts	gearrthaí

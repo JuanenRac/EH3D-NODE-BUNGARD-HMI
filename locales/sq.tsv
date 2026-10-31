@@ -70,3 +70,5 @@ f.image_blurry	fotografia është jashtë fokusit
 f.not_calibrated	së pari caktoni shkallën
 f.nothing_to_check	asnjë kontroll nuk është i ndezur
 f.no_expected_holes	asnjë vrimë e punës në pamje
+ui.Holes	vrima
+ui.Cuts	prerje

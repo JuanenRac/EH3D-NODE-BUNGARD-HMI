@@ -70,3 +70,5 @@ f.image_blurry	myndin er úr fókus
 f.not_calibrated	stilltu fyrst kvarðann
 f.nothing_to_check	engin skoðun er virk
 f.no_expected_holes	ekkert gat verksins sést
+ui.Holes	göt
+ui.Cuts	skurðir

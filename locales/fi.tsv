@@ -70,3 +70,5 @@ f.image_blurry	kuva epätarkka
 f.not_calibrated	määritä ensin mittakaava
 f.nothing_to_check	mikään tarkastus ei ole päällä
 f.no_expected_holes	työn reikiä ei näy kuvassa
+ui.Holes	reiät
+ui.Cuts	leikkaukset
