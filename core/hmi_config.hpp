@@ -45,6 +45,8 @@ struct Settings {
     std::uint16_t mic_gain_percent = 50;    // 0..100
     NoticeSetting sound_finish;             // the notice when a job ends: off, the tone or a recorded voice (voice:es:f)
     NoticeSetting sound_tool_change;        // the notice when the machine asks for a tool
+    NoticeSetting sound_check_ok;           // the notice when the visual check of the board (the camera of the drill head) is correct
+    NoticeSetting sound_check_bad;          // and when it is not correct
 };
 
 struct Problem {
@@ -160,6 +162,10 @@ inline Settings parse_settings(const std::string& text, std::vector<Problem>& pr
             if (!parse_notice(val, s.sound_finish)) bad("not off, default or voice:LANG:f|m");
         } else if (key == "sound_tool_change") {
             if (!parse_notice(val, s.sound_tool_change)) bad("not off, default or voice:LANG:f|m");
+        } else if (key == "sound_check_ok") {
+            if (!parse_notice(val, s.sound_check_ok)) bad("not off, default or voice:LANG:f|m");
+        } else if (key == "sound_check_bad") {
+            if (!parse_notice(val, s.sound_check_bad)) bad("not off, default or voice:LANG:f|m");
         } else if (key == "mic_gain_percent") {
             if (num(0, 100)) s.mic_gain_percent = static_cast<std::uint16_t>(n);
         } else {

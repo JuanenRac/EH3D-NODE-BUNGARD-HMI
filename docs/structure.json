@@ -92,6 +92,20 @@
         },
         {
           "desc": {
+            "en": "the quality check and the ring of LEDs",
+            "es": "la verificación de calidad y el aro de LEDs",
+            "it": "il controllo qualità e l'anello di LED",
+            "de": "die Qualitätsprüfung und der LED-Ring",
+            "fr": "le contrôle qualité et l'anneau de LED",
+            "pt": "a verificação de qualidade e o anel de LEDs",
+            "zh": "质量检查和 LED 环形灯",
+            "ja": "品質チェックと LED リング"
+          },
+          "name": "quality.hpp",
+          "tree_name": "quality.hpp"
+        },
+        {
+          "desc": {
             "en": "texts, keyboards and notices",
             "es": "textos, teclados y avisos",
             "it": "testi, tastiere e avvisi",
@@ -103,6 +117,20 @@
           },
           "name": "ui_text.hpp  keyboard.hpp  notices.hpp",
           "tree_name": "ui_text.hpp keyboard.hpp notices.hpp"
+        },
+        {
+          "desc": {
+            "en": "the recordings and the beeps of the notices",
+            "es": "las grabaciones y los pitidos de los avisos",
+            "it": "le registrazioni e i segnali acustici degli avvisi",
+            "de": "die Aufnahmen und die Pieptöne der Hinweise",
+            "fr": "les enregistrements et les bips des avis",
+            "pt": "as gravações e os apitos dos avisos",
+            "zh": "提示的录音和提示音",
+            "ja": "通知の録音とビープ音"
+          },
+          "name": "wav.hpp",
+          "tree_name": "wav.hpp"
         }
       ],
       "sub": {
@@ -234,6 +262,20 @@
           },
           "name": "test_keyboard.cpp  test_notices.cpp",
           "tree_name": "test_keyboard.cpp test_notices.cpp"
+        },
+        {
+          "desc": {
+            "en": "the quality check",
+            "es": "la verificación de calidad",
+            "it": "il controllo qualità",
+            "de": "die Qualitätsprüfung",
+            "fr": "le contrôle qualité",
+            "pt": "a verificação de qualidade",
+            "zh": "质量检查",
+            "ja": "品質チェック"
+          },
+          "name": "test_quality.cpp",
+          "tree_name": "test_quality.cpp"
         }
       ],
       "tree": {

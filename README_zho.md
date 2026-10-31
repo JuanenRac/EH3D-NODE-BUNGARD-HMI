@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
   <img src="https://img.shields.io/badge/Stack-C%2B%2B17%20%2B%20ESP--IDF-00599C.svg" alt="C++17 and ESP-IDF">
   <img src="https://img.shields.io/badge/Languages-8-00E5FF.svg" alt="Languages">
-  <img src="https://img.shields.io/badge/Version-0.0.2-0f6cbd.svg" alt="Version">
+  <img src="https://img.shields.io/badge/Version-0.0.3-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-scaffolding-FFB020.svg" alt="Maturity">
 </p>
 
@@ -28,9 +28,9 @@
 
 | | |
 |---|---|
-| 版本 | `0.0.2` |
+| 版本 | `0.0.3` |
 | 成熟度 | 脚手架 |
-| 测试 | 4 个主机测试程序（共 956 项检查） |
+| 测试 | 4 个主机测试程序（共 1373 项检查） |
 | 技术栈 | C++17, ESP-IDF 5.5, LVGL 9, ESP32-P4 |
 | 真实硬件 | 否：固件尚未编译或烧录，也未连接任何机床 |
 
@@ -45,7 +45,7 @@
 | 领域 | 状态 | 在这里的含义 |
 |---|---|---|
 | 软件 | 🟠 | ESP-IDF 工程（ESP32-P4、LVGL 9、独立分区中的设置文件）已编写；尚未编译或烧录。 |
-| 测试 | 🟢 | 4 个主机测试程序通过（`ctest`）：共 956 项检查，涵盖设置文件、闸门、语音指令和提示、键盘、录制的提示音、服务器客户端，以及八种语言的界面文本。 |
+| 测试 | 🟢 | 4 个主机测试程序通过（`ctest`）：共 1373 项检查，涵盖设置文件、闸门、语音指令和提示、键盘、录制的提示音、服务器客户端，以及八种语言的界面文本。 |
 | 安全规则 | 🟡 | 每次移动和每条主轴指令都经过闸门：屏幕确认、硬件急停锁存（按钮松开后只能由屏幕上的确认解除）、连接未就绪时不得移动。有测试覆盖；从未配合真实急停按钮试过。 |
 | 语音 | 🟡 | 语音指令和提示以八种语言识别和表述，并作为文本测试；未使用任何麦克风或扬声器。 |
 | 界面 | 🟠 | 机床、作业（microSD）、机床和工位以及设置界面已编写，支持横屏和竖屏，外观与桌面程序一致；查看标签页仍是空卡片。目前只有布局示意图，没有模块上的截图。 |
@@ -123,6 +123,7 @@ EH3D-NODE-BUNGARD-HMI 是 Bungard CCD 机床操作员自己的屏幕：它取代
 * **带符号的按钮：** 点动键盘、回零、主轴、暂停、开始、停止以及对问题的回答，都用符号和轴字母代替文字，颜色与桌面程序一致（绿色开始、蓝色暂停、红色停止）。
 * **录制的提示：** 作业结束和请求刀具可以由录制的语音说出，语言和性别按设置（`sound_finish = voice:es:f`），来自存储卡的 `voices` 文件夹；录音与 EH3D-BUNGARD-GUI 相同。固件中尚未接上扬声器。
 * **重启后继续跟踪作业：** 从操作员启动作业起，屏幕会把作业的标识（作业编号、机床、名称）保存在闪存中；断电或重启后继续跟踪同一个作业，服务器的下一次读数会说明它是否仍在运行、是否在换刀处等待或已结束，取消按钮可放弃跟踪。作业本身保存在服务器中。已在电脑上编写并测试；固件从未在模块上运行过。
+* **质量检查和 LED 环形灯：** “质量检查”页面显示通过钻头摄像头检查加工的结论（合格、不合格或无法判定，大如招牌）及发现的问题，可打开和关闭 LED 环形灯，选择拍照用的灯光和中心孔、配置（标准、细间距、原型），校准比例并运行检查；由服务器判断图像并保存配置，因此桌面程序和手机显示的是同一次最近的检查。设置 `sound_check_ok` 和 `sound_check_bad` 后，屏幕会用声音播报结果（提示音，或一段说明电路板目视检查合格或不合格的录音语音），现在也会播报作业结束和换刀请求。
 
 ## 🔒 安全与防护
 
@@ -211,7 +212,9 @@ EH3D-NODE-BUNGARD-HMI/
 │   ├── voice.hpp                                     八种语言的语音指令和提示
 │   ├── orientation.hpp sdfiles.hpp                   竖屏和横屏布局、卡上的文件
 │   ├── server_link.hpp workflow.hpp job_memory.hpp   服务器客户端和作业流程
-│   └── ui_text.hpp keyboard.hpp notices.hpp          文本、键盘与提示
+│   ├── quality.hpp                                   质量检查和 LED 环形灯
+│   ├── ui_text.hpp keyboard.hpp notices.hpp          文本、键盘与提示
+│   └── wav.hpp                                       提示的录音和提示音
 ├── main/
 │   ├── app_main.cpp                                  启动、设置、闸门循环
 │   ├── ui.cpp ui.hpp                                 LVGL 界面和停止按钮

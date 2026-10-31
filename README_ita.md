@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
   <img src="https://img.shields.io/badge/Stack-C%2B%2B17%20%2B%20ESP--IDF-00599C.svg" alt="C++17 and ESP-IDF">
   <img src="https://img.shields.io/badge/Languages-8-00E5FF.svg" alt="Languages">
-  <img src="https://img.shields.io/badge/Version-0.0.2-0f6cbd.svg" alt="Version">
+  <img src="https://img.shields.io/badge/Version-0.0.3-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-scaffolding-FFB020.svg" alt="Maturity">
 </p>
 
@@ -28,9 +28,9 @@
 
 | | |
 |---|---|
-| Versione | `0.0.2` |
+| Versione | `0.0.3` |
 | Maturità | Impalcatura |
-| Test | 4 programmi di test sul computer (956 controlli contati) |
+| Test | 4 programmi di test sul computer (1373 controlli contati) |
 | Stack tecnologico | C++17, ESP-IDF 5.5, LVGL 9, ESP32-P4 |
 | Su hardware reale | No: il firmware non è stato compilato né scritto e nulla è stato collegato a una macchina |
 
@@ -45,7 +45,7 @@ Ogni riga è una parte di questo repository e il semaforo dice a che punto è og
 | Area | Stato | Cosa significa qui |
 |---|---|---|
 | Software | 🟠 | Il progetto ESP-IDF (ESP32-P4, LVGL 9, il file delle impostazioni in una partizione propria) è scritto; non è stato compilato né scritto sul chip. |
-| Test | 🟢 | 4 programmi di test sul computer passano (`ctest`): 956 controlli sul file delle impostazioni, il varco, gli ordini e gli avvisi vocali, le tastiere, gli avvisi registrati, il client del server e i testi delle schermate in otto lingue. |
+| Test | 🟢 | 4 programmi di test sul computer passano (`ctest`): 1373 controlli sul file delle impostazioni, il varco, gli ordini e gli avvisi vocali, le tastiere, gli avvisi registrati, il client del server e i testi delle schermate in otto lingue. |
 | Regole di sicurezza | 🟡 | Ogni movimento e ogni ordine al mandrino passa dal varco: conferma sullo schermo, blocco dell'arresto hardware che solo una conferma sullo schermo toglie a pulsante rilasciato, nessun movimento con il collegamento non armato. Coperto da test; mai provato con un vero pulsante di arresto. |
 | Voce | 🟡 | Ordini e avvisi vocali sono riconosciuti e formulati in otto lingue e provati come testo; nessun microfono o altoparlante è stato usato. |
 | Schermate | 🟠 | Le schermate macchina, lavoro (microSD), macchine e stazioni e impostazioni sono scritte, in orizzontale e in verticale, con l'aspetto del programma desktop; la scheda della vista è ancora una scheda vuota. Esiste solo un disegno del layout, non una cattura di un modulo. |
@@ -123,6 +123,7 @@ Come si incastrano le parti di questo repository: chi parla con esso, cosa conti
 * **Pulsanti con simbolo:** il pad di movimento, l'origine, il mandrino, pausa, avvio, arresto e le risposte a una domanda usano simboli e la lettera dell'asse al posto delle parole, con i colori del programma desktop (verde per avviare, blu per la pausa, rosso per fermare).
 * **Avvisi registrati:** la fine di un lavoro e la richiesta di utensile possono essere dette da una voce registrata, nella lingua e nel genere impostati (`sound_finish = voice:es:f`), dalla cartella `voices` della scheda; le registrazioni sono quelle di EH3D-BUNGARD-GUI. L'altoparlante non è ancora collegato nel firmware.
 * **Il lavoro viene seguito di nuovo dopo un riavvio:** da quando l'operatore avvia un lavoro, lo schermo conserva nella flash quale è (il suo id, la macchina, il suo nome); dopo un'interruzione di corrente o un riavvio segue lo stesso lavoro, la lettura successiva del server dice se è ancora in corso, aspetta a un cambio utensile o è finito, e il pulsante annulla lo lascia. Il lavoro vive nel server. Scritto e testato su un computer; il firmware non è mai stato eseguito su un modulo.
+* **Controllo qualità e anello di LED:** una pagina Controllo qualità mostra il verdetto del controllo del lavoro con la telecamera della testa (CONFORME, NON CONFORME o non valutabile, grande come un cartello) con ciò che è stato trovato, accende e spegne l'anello di LED, sceglie la luce per la foto e il foro al centro, il profilo (standard, passo fine, prototipo), calibra la scala e avvia il controllo; il server giudica la foto e conserva il profilo, così il programma desktop e i telefoni mostrano lo stesso ultimo controllo. Lo schermo dice il risultato a voce quando `sound_check_ok` e `sound_check_bad` sono impostati (un segnale acustico o una voce registrata che dice che il controllo visivo della scheda è corretto o non è corretto), e ora dice anche la fine di un lavoro e la richiesta di un utensile.
 
 ## 🔒 Sicurezza e protezione
 
@@ -211,7 +212,9 @@ EH3D-NODE-BUNGARD-HMI/
 │   ├── voice.hpp                                     ordini e avvisi vocali in otto lingue
 │   ├── orientation.hpp sdfiles.hpp                   layout verticale e orizzontale, file della scheda
 │   ├── server_link.hpp workflow.hpp job_memory.hpp   client del server e flusso di un lavoro
-│   └── ui_text.hpp keyboard.hpp notices.hpp          testi, tastiere e avvisi
+│   ├── quality.hpp                                   il controllo qualità e l'anello di LED
+│   ├── ui_text.hpp keyboard.hpp notices.hpp          testi, tastiere e avvisi
+│   └── wav.hpp                                       le registrazioni e i segnali acustici degli avvisi
 ├── main/
 │   ├── app_main.cpp                                  avvio, impostazioni, il ciclo del varco
 │   ├── ui.cpp ui.hpp                                 le schermate LVGL e il pulsante di arresto

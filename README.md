@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
   <img src="https://img.shields.io/badge/Stack-C%2B%2B17%20%2B%20ESP--IDF-00599C.svg" alt="C++17 and ESP-IDF">
   <img src="https://img.shields.io/badge/Languages-8-00E5FF.svg" alt="Languages">
-  <img src="https://img.shields.io/badge/Version-0.0.2-0f6cbd.svg" alt="Version">
+  <img src="https://img.shields.io/badge/Version-0.0.3-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-scaffolding-FFB020.svg" alt="Maturity">
 </p>
 
@@ -28,9 +28,9 @@
 
 | | |
 |---|---|
-| Version | `0.0.2` |
+| Version | `0.0.3` |
 | Maturity | Scaffolding |
-| Tests | 4 host test programs (956 checks counted) |
+| Tests | 5 host test programs (1373 checks counted) |
 | Stack | C++17, ESP-IDF 5.5, LVGL 9, ESP32-P4 |
 | On real hardware | No: the firmware has not been built or flashed, and nothing has been connected to a machine |
 
@@ -45,7 +45,7 @@ Each line is one part of this repository and the light says how far it is today.
 | Area | State | What it means here |
 |---|---|---|
 | Software | 🟠 | The ESP-IDF project (ESP32-P4, LVGL 9, the settings file in its own partition) is written; it has not been built or flashed. |
-| Tests | 🟢 | 4 host test programs pass (`ctest`): 956 checks in the settings file, the gate, the spoken orders and alerts, the keyboards, the recorded notices, the server client and the texts of the screens in eight languages. |
+| Tests | 🟢 | 5 host test programs pass (`ctest`): 1373 checks in the settings file, the gate, the spoken orders and alerts, the keyboards, the recorded notices, the server client and the texts of the screens in eight languages. |
 | Safety rules | 🟡 | Every move and spindle order goes through the gate: confirmation on the screen, hardware-stop latch that only an acknowledgement on the screen clears once the button is up, no move while the link is not armed. Covered by tests; never run with a real stop button. |
 | Voice | 🟡 | Spoken orders and alerts are recognised and phrased in eight languages and tested as text; no microphone or speaker has been used. |
 | Screens | 🟠 | The machine, job (microSD), machines-and-stations and settings screens are written, lying down and standing up, in the look of the desktop program; the viewer tab is still an empty card. Only a drawing of the layout exists, not a capture of a module. |
@@ -123,6 +123,7 @@ How the parts of this repository fit together: who talks to it, what it holds an
 * **Buttons with a symbol:** the jog pad, home, the spindle, pause, start, stop and the answers of a question use symbols and the letter of the axis instead of words, in the colours of the desktop program (green to start, blue to pause, red to stop).
 * **Recorded notices:** the end of a job and the request for a tool can be said by a recorded voice, in the language and the gender that are set (`sound_finish = voice:es:f`), from the folder `voices` of the card; the recordings are those of EH3D-BUNGARD-GUI. The speaker is not wired in the firmware yet.
 * **The job is followed again after a reset:** from the moment the operator starts a job, the screen keeps in its flash which job it is (its id, the machine, its name); after a power cut or a reset it follows the same job again, the next reading of the server says whether it still runs, waits at a tool change or is over, and the cancel button leaves it. The job itself lives in the server. Written and tested on a computer; the firmware has never run on a module.
+* **Quality check and the ring of LEDs:** a Quality check page shows the verdict of the check of the work through the camera of the drill head (OK, NOT OK or cannot judge, as big as a sign) with what was found, turns the ring of LEDs on and off, chooses the light for the picture and the hole in the centre, the profile (standard, fine pitch, prototype), calibrates the scale and runs the check; the server judges the picture and holds the profile, so the desktop program and the phones show the same last check. The screen says the result aloud when `sound_check_ok` and `sound_check_bad` are set (a beep or a recorded voice that says that the visual check of the board is correct or is not correct), and it now also says the end of a job and the request for a tool.
 
 ## 🔒 Security & Safety
 
@@ -211,7 +212,9 @@ EH3D-NODE-BUNGARD-HMI/
 │   ├── voice.hpp                                     spoken orders and alerts in eight languages
 │   ├── orientation.hpp sdfiles.hpp                   standing and lying layouts, files of the card
 │   ├── server_link.hpp workflow.hpp job_memory.hpp   client of the server and the flow of a job
-│   └── ui_text.hpp keyboard.hpp notices.hpp          texts, keyboards and notices
+│   ├── quality.hpp                                   the quality check and the ring of LEDs
+│   ├── ui_text.hpp keyboard.hpp notices.hpp          texts, keyboards and notices
+│   └── wav.hpp                                       the recordings and the beeps of the notices
 ├── main/
 │   ├── app_main.cpp                                  start, settings, the loop of the gate
 │   ├── ui.cpp ui.hpp                                 the LVGL screens and the stop button

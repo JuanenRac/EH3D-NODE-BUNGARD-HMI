@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
   <img src="https://img.shields.io/badge/Stack-C%2B%2B17%20%2B%20ESP--IDF-00599C.svg" alt="C++17 and ESP-IDF">
   <img src="https://img.shields.io/badge/Languages-8-00E5FF.svg" alt="Languages">
-  <img src="https://img.shields.io/badge/Version-0.0.2-0f6cbd.svg" alt="Version">
+  <img src="https://img.shields.io/badge/Version-0.0.3-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-scaffolding-FFB020.svg" alt="Maturity">
 </p>
 
@@ -28,9 +28,9 @@
 
 | | |
 |---|---|
-| Versión | `0.0.2` |
+| Versión | `0.0.3` |
 | Madurez | Andamiaje |
-| Pruebas | 4 programas de prueba en el ordenador (956 comprobaciones contadas) |
+| Pruebas | 4 programas de prueba en el ordenador (1373 comprobaciones contadas) |
 | Pila tecnológica | C++17, ESP-IDF 5.5, LVGL 9, ESP32-P4 |
 | En hardware real | No: el firmware no se ha compilado ni grabado y nada se ha conectado a una máquina |
 
@@ -45,7 +45,7 @@ Cada línea es una parte de este repositorio y la luz dice hasta dónde llega ho
 | Área | Estado | Qué significa aquí |
 |---|---|---|
 | Software | 🟠 | El proyecto ESP-IDF (ESP32-P4, LVGL 9, el fichero de ajustes en su propia partición) está escrito; no se ha compilado ni grabado. |
-| Pruebas | 🟢 | Pasan 4 programas de prueba en el ordenador (`ctest`): 956 comprobaciones del fichero de ajustes, la compuerta, las órdenes y avisos por voz, los teclados, los avisos grabados, el cliente del servidor y los textos de las pantallas en ocho idiomas. |
+| Pruebas | 🟢 | Pasan 4 programas de prueba en el ordenador (`ctest`): 1373 comprobaciones del fichero de ajustes, la compuerta, las órdenes y avisos por voz, los teclados, los avisos grabados, el cliente del servidor y los textos de las pantallas en ocho idiomas. |
 | Reglas de seguridad | 🟡 | Todo movimiento y toda orden de husillo pasan por la compuerta: confirmación en la pantalla, pestillo de la parada por hardware que solo borra un reconocimiento en la pantalla cuando el pulsador está suelto, ningún movimiento con el enlace sin armar. Cubierto por pruebas; nunca probado con un pulsador de parada real. |
 | Voz | 🟡 | Las órdenes y avisos por voz se reconocen y se formulan en ocho idiomas y se prueban como texto; no se ha usado ningún micrófono ni altavoz. |
 | Pantallas | 🟠 | Las pantallas de máquina, trabajo (microSD), máquinas y estaciones y ajustes están escritas, en horizontal y en vertical, con el aspecto del programa de escritorio; la pestaña del visor sigue siendo una tarjeta vacía. Solo existe un dibujo del diseño, no una captura de un módulo. |
@@ -123,6 +123,7 @@ Cómo encajan las partes de este repositorio: quién habla con él, qué contien
 * **Botones con símbolo:** el pad de movimiento, el origen, el husillo, pausa, inicio, parada y las respuestas de una pregunta usan símbolos y la letra del eje en lugar de palabras, con los colores del programa de escritorio (verde para iniciar, azul para pausar, rojo para parar).
 * **Avisos grabados:** el fin de un trabajo y la petición de herramienta pueden decirse con una voz grabada, en el idioma y el género que se ajusten (`sound_finish = voice:es:f`), desde la carpeta `voices` de la tarjeta; las grabaciones son las de EH3D-BUNGARD-GUI. El altavoz aún no está cableado en el firmware.
 * **El trabajo se sigue de nuevo tras un reinicio:** desde que el operador inicia un trabajo, la pantalla guarda en su flash cuál es (su id, la máquina, su nombre); tras un corte de luz o un reinicio sigue el mismo trabajo, la siguiente lectura del servidor dice si aún corre, espera en un cambio de herramienta o ya terminó, y el botón de cancelar lo deja. El trabajo vive en el servidor. Escrito y probado en un ordenador; el firmware nunca se ha ejecutado en un módulo.
+* **Verificación de calidad y aro de LEDs:** una página Verificación de calidad muestra el veredicto de la comprobación del trabajo con la cámara del cabezal (CORRECTO, NO CORRECTO o no se puede juzgar, grande como un cartel) con lo que se encontró, enciende y apaga el aro de LEDs, elige la luz para la foto y el agujero del centro, el perfil (estándar, paso fino, prototipo), calibra la escala y lanza la verificación; el servidor juzga la foto y guarda el perfil, así el programa de escritorio y los móviles muestran la misma última verificación. La pantalla dice el resultado en voz alta cuando `sound_check_ok` y `sound_check_bad` están puestos (un pitido o una voz grabada que dice que la comprobación visual de la placa es correcta o no es correcta), y ahora también dice el fin de un trabajo y la petición de una herramienta.
 
 ## 🔒 Seguridad y protección
 
@@ -211,7 +212,9 @@ EH3D-NODE-BUNGARD-HMI/
 │   ├── voice.hpp                                     órdenes y avisos por voz en ocho idiomas
 │   ├── orientation.hpp sdfiles.hpp                   diseños vertical y horizontal, ficheros de la tarjeta
 │   ├── server_link.hpp workflow.hpp job_memory.hpp   cliente del servidor y flujo de un trabajo
-│   └── ui_text.hpp keyboard.hpp notices.hpp          textos, teclados y avisos
+│   ├── quality.hpp                                   la verificación de calidad y el aro de LEDs
+│   ├── ui_text.hpp keyboard.hpp notices.hpp          textos, teclados y avisos
+│   └── wav.hpp                                       las grabaciones y los pitidos de los avisos
 ├── main/
 │   ├── app_main.cpp                                  arranque, ajustes, el bucle de la compuerta
 │   ├── ui.cpp ui.hpp                                 las pantallas LVGL y el botón de parada

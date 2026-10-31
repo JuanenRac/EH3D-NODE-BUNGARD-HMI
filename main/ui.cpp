@@ -23,8 +23,9 @@ const lv_color_t kSlate = LV_COLOR_MAKE(0x37, 0x47, 0x4f);
 
 void (*g_post)(const Request&) = nullptr;
 hmi::Layout g_layout;
-lv_obj_t* g_pages[5] = {nullptr};
-lv_obj_t* g_tabs[5] = {nullptr};
+constexpr int kPages = 6;  // machine, job, viewer, machines and stations, settings, quality check
+lv_obj_t* g_pages[kPages] = {nullptr};
+lv_obj_t* g_tabs[kPages] = {nullptr};
 lv_obj_t* g_armed = nullptr;
 lv_obj_t* g_banner = nullptr;
 lv_obj_t* g_ack = nullptr;
@@ -37,6 +38,16 @@ lv_obj_t* g_card_list = nullptr;
 lv_obj_t* g_selected_file = nullptr;
 lv_obj_t* g_move_buttons[10] = {nullptr};
 int g_move_count = 0;
+// the quality check
+lv_obj_t* g_q_badge = nullptr;
+lv_obj_t* g_q_badge_text = nullptr;
+lv_obj_t* g_q_detail = nullptr;
+lv_obj_t* g_q_light_label = nullptr;
+lv_obj_t* g_q_hole_label = nullptr;
+lv_obj_t* g_q_run = nullptr;
+int g_q_light = 2;  // the index in hmi::kLightLevels of the light for the picture
+int g_q_hole = 2;   // the index in hmi::kHoleWidths of the hole in the centre
+hmi::Lang g_q_lang = hmi::Lang::En;
 
 void send(const Request& r) {
     if (g_post != nullptr) g_post(r);
@@ -100,7 +111,7 @@ void on_action(lv_event_t* e) { send_action(*static_cast<const hmi::Action*>(lv_
 
 void on_tab(lv_event_t* e) {
     const int idx = static_cast<int>(reinterpret_cast<intptr_t>(lv_event_get_user_data(e)));
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < kPages; ++i) {
         if (i == idx) lv_obj_remove_flag(g_pages[i], LV_OBJ_FLAG_HIDDEN); else lv_obj_add_flag(g_pages[i], LV_OBJ_FLAG_HIDDEN);
         lv_obj_set_style_border_color(g_tabs[i], i == idx ? kAmber : kDim, 0);
     }
@@ -117,6 +128,50 @@ void on_file(lv_event_t* e) {
     Request r;
     r.what = What::OpenCard;
     std::snprintf(r.file, sizeof r.file, "%s", static_cast<const char*>(lv_event_get_user_data(e)));
+    send(r);
+}
+
+void on_light(lv_event_t* e) {
+    Request r;
+    r.what = What::LightSet;
+    r.light = static_cast<int>(reinterpret_cast<intptr_t>(lv_event_get_user_data(e)));
+    send(r);
+}
+
+// the light for the picture and the hole in the centre are chosen here; the check itself asks the server
+void on_pick_light(lv_event_t* e) {
+    g_q_light = static_cast<int>(reinterpret_cast<intptr_t>(lv_event_get_user_data(e)));
+    char line[64];
+    std::snprintf(line, sizeof line, "%s: %d %%", hmi::quality_text(hmi::Q::Light, g_q_lang), hmi::kLightLevels[g_q_light]);
+    lv_label_set_text(g_q_light_label, line);
+}
+
+void on_hole(lv_event_t*) {
+    g_q_hole = (g_q_hole + 1) % 5;
+    char line[96];
+    if (hmi::kHoleWidths[g_q_hole] > 0.0) std::snprintf(line, sizeof line, "%s: %.1f", hmi::quality_text(hmi::Q::HoleWidth, g_q_lang), hmi::kHoleWidths[g_q_hole]);
+    else std::snprintf(line, sizeof line, "%s: %s", hmi::quality_text(hmi::Q::HoleWidth, g_q_lang), hmi::quality_text(hmi::Q::HoleNone, g_q_lang));
+    lv_label_set_text(g_q_hole_label, line);
+}
+
+void on_inspect(lv_event_t*) {
+    Request r;
+    r.what = What::InspectRun;
+    r.light = g_q_light;
+    r.hole = g_q_hole;
+    send(r);
+}
+
+void on_preset(lv_event_t* e) {
+    Request r;
+    r.what = What::InspectPreset;
+    r.preset = static_cast<int>(reinterpret_cast<intptr_t>(lv_event_get_user_data(e)));
+    send(r);
+}
+
+void on_calibrate(lv_event_t*) {
+    Request r;
+    r.what = What::InspectCalibrate;
     send(r);
 }
 
@@ -158,7 +213,8 @@ void build(const hmi::Settings& s, const hmi::Layout& layout, void (*post)(const
     lv_label_set_text(title, "EH3D  BUNGARD");
     lv_obj_set_style_text_color(title, kAmber, 0);
     const T names[5] = {T::Machine, T::Job, T::Viewer, T::Fleet, T::Settings};
-    for (int i = 0; i < 5; ++i) {
+    g_q_lang = s.language;
+    for (int i = 0; i < kPages; ++i) {
         g_tabs[i] = lv_button_create(top);
         lv_obj_set_style_bg_opa(g_tabs[i], LV_OPA_TRANSP, 0);
         lv_obj_set_style_border_width(g_tabs[i], 2, 0);
@@ -166,7 +222,7 @@ void build(const hmi::Settings& s, const hmi::Layout& layout, void (*post)(const
         lv_obj_set_style_radius(g_tabs[i], 9, 0);
         lv_obj_add_event_cb(g_tabs[i], on_tab, LV_EVENT_CLICKED, reinterpret_cast<void*>(static_cast<intptr_t>(i)));
         lv_obj_t* l = lv_label_create(g_tabs[i]);
-        lv_label_set_text(l, hmi::text(names[i], s.language));
+        lv_label_set_text(l, i < 5 ? hmi::text(names[i], s.language) : hmi::quality_text(hmi::Q::Title, s.language));
     }
     g_armed = lv_label_create(top);
     g_banner = lv_label_create(top);
@@ -177,7 +233,7 @@ void build(const hmi::Settings& s, const hmi::Layout& layout, void (*post)(const
     lv_obj_remove_style_all(body);
     lv_obj_set_width(body, LV_PCT(100));
     lv_obj_set_flex_grow(body, 1);
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < kPages; ++i) {
         g_pages[i] = lv_obj_create(body);
         lv_obj_remove_style_all(g_pages[i]);
         lv_obj_set_size(g_pages[i], LV_PCT(100), LV_PCT(100));
@@ -227,6 +283,62 @@ void build(const hmi::Settings& s, const hmi::Layout& layout, void (*post)(const
     const char* o_names[3] = {"auto", "landscape", "portrait"};
     for (int i = 0; i < 3; ++i) {
         button(set, o_names[i], on_orientation, reinterpret_cast<void*>(static_cast<intptr_t>(i)), kSlate, 220, 80);
+    }
+
+    // quality check: the verdict, big enough to read from across the room, what was found, and the controls of the ring of LEDs and of the check
+    {
+        using hmi::Q;
+        const hmi::Lang lang = s.language;
+        lv_obj_t* verdict = card(g_pages[5], hmi::quality_text(Q::Title, lang));
+        lv_obj_set_size(verdict, layout.portrait ? LV_PCT(100) : LV_PCT(55), LV_PCT(100));
+        g_q_badge = lv_obj_create(verdict);
+        lv_obj_set_size(g_q_badge, LV_PCT(100), 150);
+        lv_obj_set_style_radius(g_q_badge, 16, 0);
+        lv_obj_set_style_bg_color(g_q_badge, kSlate, 0);
+        lv_obj_set_style_border_width(g_q_badge, 0, 0);
+        g_q_badge_text = lv_label_create(g_q_badge);
+        lv_obj_set_style_text_font(g_q_badge_text, &lv_font_montserrat_24, 0);
+        lv_obj_set_style_text_color(g_q_badge_text, lv_color_white(), 0);
+        lv_label_set_text(g_q_badge_text, hmi::quality_text(Q::NotChecked, lang));
+        lv_obj_center(g_q_badge_text);
+        g_q_detail = lv_label_create(verdict);
+        lv_label_set_long_mode(g_q_detail, LV_LABEL_LONG_WRAP);
+        lv_obj_set_width(g_q_detail, LV_PCT(100));
+        lv_label_set_text(g_q_detail, "");
+
+        lv_obj_t* controls = card(g_pages[5], hmi::quality_text(Q::Light, lang));
+        lv_obj_set_size(controls, layout.portrait ? LV_PCT(100) : LV_PCT(43), LV_PCT(100));
+        lv_obj_set_flex_flow(controls, LV_FLEX_FLOW_ROW_WRAP);
+        // the ring: off and three levels (the node keeps its own ceiling)
+        for (int i = 0; i < 4; ++i) {
+            char label[24];
+            if (hmi::kLightLevels[i] == 0) std::snprintf(label, sizeof label, "%s", hmi::quality_text(Q::LightOff, lang));
+            else std::snprintf(label, sizeof label, "%d %%", hmi::kLightLevels[i]);
+            button(controls, label, on_light, reinterpret_cast<void*>(static_cast<intptr_t>(i)), kSlate, 120, 70);
+        }
+        // the light the check uses for its picture
+        g_q_light_label = lv_label_create(controls);
+        lv_obj_set_width(g_q_light_label, LV_PCT(100));
+        char line[96];
+        std::snprintf(line, sizeof line, "%s: %d %%", hmi::quality_text(Q::Light, lang), hmi::kLightLevels[g_q_light]);
+        lv_label_set_text(g_q_light_label, line);
+        for (int i = 1; i < 4; ++i) {
+            char label[24];
+            std::snprintf(label, sizeof label, "%d %%", hmi::kLightLevels[i]);
+            button(controls, label, on_pick_light, reinterpret_cast<void*>(static_cast<intptr_t>(i)), kSlate, 120, 56);
+        }
+        // the hole of the job in the centre of the picture, from the tools of the machine
+        g_q_hole_label = button(controls, "", on_hole, nullptr, kSlate, LV_PCT(100), 70);
+        lv_obj_t* hole_text = lv_obj_get_child(g_q_hole_label, 0);
+        std::snprintf(line, sizeof line, "%s: %.1f", hmi::quality_text(Q::HoleWidth, lang), hmi::kHoleWidths[g_q_hole]);
+        lv_label_set_text(hole_text, line);
+        g_q_hole_label = hole_text;
+        // the profile of the shop: the presets (the tolerances are edited in the desktop program or in Studio)
+        static const Q presets[3] = {Q::Standard, Q::FinePitch, Q::Prototype};
+        for (int i = 0; i < 3; ++i) button(controls, hmi::quality_text(presets[i], lang), on_preset, reinterpret_cast<void*>(static_cast<intptr_t>(i)), kSlate, 150, 60);
+        button(controls, hmi::quality_text(Q::Calibrate, lang), on_calibrate, nullptr, kSlate, LV_PCT(100), 60);
+        g_q_run = button(controls, hmi::quality_text(Q::CheckNow, lang), on_inspect, nullptr, kGo, LV_PCT(100), 90);
+        lv_obj_set_style_text_font(lv_obj_get_child(g_q_run, 0), &lv_font_montserrat_24, 0);
     }
 
     g_note = lv_label_create(scr);
@@ -294,6 +406,52 @@ void ask(const hmi::Action* action, const hmi::Settings& s) {
 }
 
 void refused(hmi::Why why, const hmi::Settings& s) { lv_label_set_text(g_note, hmi::why_text(why, s.language)); }
+
+void show_quality(const hmi::QualityView& q, const hmi::LightView& light, bool running, const hmi::Settings& s) {
+    using hmi::Q;
+    const char* word = hmi::quality_text(Q::NotChecked, s.language);
+    lv_color_t colour = kSlate;
+    if (running) {
+        word = hmi::quality_text(Q::Checking, s.language);
+    } else if (q.verdict == hmi::QualityVerdict::Ok) {
+        word = hmi::quality_text(Q::VerdictOk, s.language);
+        colour = kGo;
+    } else if (q.verdict == hmi::QualityVerdict::NotOk) {
+        word = hmi::quality_text(Q::VerdictNotOk, s.language);
+        colour = kHalt;
+    } else if (q.verdict == hmi::QualityVerdict::Unknown) {
+        word = hmi::quality_text(Q::VerdictUnknown, s.language);
+        colour = LV_COLOR_MAKE(0xe8, 0xa4, 0x20);
+    }
+    lv_obj_set_style_bg_color(g_q_badge, colour, 0);
+    lv_label_set_text(g_q_badge_text, word);
+    lv_obj_center(g_q_badge_text);
+    // what was found: the counts, the width of the channels, and a line for each finding (the first six)
+    std::string detail;
+    if (!running && q.verdict != hmi::QualityVerdict::None) {
+        char line[96];
+        if (q.holes_total > 0) {
+            std::snprintf(line, sizeof line, "%d/%d %s\n", q.holes_ok, q.holes_total, hmi::quality_text(Q::HolesOk, s.language));
+            detail += line;
+        }
+        if (q.channel_mm > 0.0) {
+            std::snprintf(line, sizeof line, "%s %.2f mm\n", hmi::quality_text(Q::ChannelWidth, s.language), q.channel_mm);
+            detail += line;
+        }
+        int shown = 0;
+        for (const auto& f : q.findings) {
+            if (shown++ >= 6) break;
+            detail += hmi::finding_line(f, s.language) + "\n";
+        }
+    }
+    if (light.known) {
+        char line[64];
+        std::snprintf(line, sizeof line, "%s: %s", hmi::quality_text(Q::Light, s.language), light.on ? (std::to_string(light.level) + " %").c_str() : hmi::quality_text(Q::LightOff, s.language));
+        detail += line;
+    }
+    lv_label_set_text(g_q_detail, detail.c_str());
+    if (running) lv_obj_add_state(g_q_run, LV_STATE_DISABLED); else lv_obj_remove_state(g_q_run, LV_STATE_DISABLED);
+}
 
 void show_fleet(const hmi::FleetView& fleet, const hmi::Settings&) {
     lv_obj_clean(g_fleet_list);

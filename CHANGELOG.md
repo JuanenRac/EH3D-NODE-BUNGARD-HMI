@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.0.3] - Quality check with the camera of the drill head and the ring of LEDs
+
+- **The notices are said by the screen:** the settings `sound_finish`, `sound_tool_change` and the two new `sound_check_ok` and `sound_check_bad` (the visual check of the board is correct, is not correct) are now played: off, a beep that the screen makes, or a recorded voice (`voices/LANG/f|m/<name>.wav` on the card, 16 bits, mono), which plays the beep when the recording is not there or is not that format. They are said by a task of their own at the volume of the settings, when a check just made is correct or not correct (never the last one shown when the page opens), when a job ends and when the machine asks for a tool. The four can be edited on the screen like the other settings.
+- **Tests:** the reading of a recording and of its refusals, the beeps and the volume, and the new settings (`test_notices`, 92 checks).
+
+- **Quality check and the ring of LEDs:** a sixth page shows the verdict of the check of the work through the camera of the drill head (OK, NOT OK or cannot judge, as big as a sign), the holes that are right, the width of the milled channels and a line for each finding, in the eight languages. It turns the ring of LEDs off or on at 30, 60 or 80 %, chooses the light for the picture and the width of the hole in the centre, the profile (standard, fine pitch, prototype), sets the scale from the hole just measured and runs the check. Everything goes through EH3D-SERVER, which judges the picture and holds the profile, and the page shows the last check of the machine when it opens.
+- **Tests:** `test_quality` (389 checks): the requests, the reading of the report and of the ring, and every finding in the eight languages.
+
 ## [0.0.2] - Following the job after a reset, keyboards for each setting and a firmware that builds
 
 - **The firmware builds with the compiler of the EH3D nodes:** the link with the server (`main/server_link.cpp`) and the components of the screen (LVGL 9.3 and `esp_lvgl_port`, the versions that go together) build for the ESP32-P4 with ESP-IDF 5.5.5, and `dependencies.lock` is regenerated; it has not been flashed or run on a board.

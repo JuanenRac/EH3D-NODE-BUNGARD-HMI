@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
   <img src="https://img.shields.io/badge/Stack-C%2B%2B17%20%2B%20ESP--IDF-00599C.svg" alt="C++17 and ESP-IDF">
   <img src="https://img.shields.io/badge/Languages-8-00E5FF.svg" alt="Languages">
-  <img src="https://img.shields.io/badge/Version-0.0.2-0f6cbd.svg" alt="Version">
+  <img src="https://img.shields.io/badge/Version-0.0.3-0f6cbd.svg" alt="Version">
   <img src="https://img.shields.io/badge/Maturity-scaffolding-FFB020.svg" alt="Maturity">
 </p>
 
@@ -28,9 +28,9 @@
 
 | | |
 |---|---|
-| Version | `0.0.2` |
+| Version | `0.0.3` |
 | Maturité | Échafaudage |
-| Tests | 4 programmes de test sur ordinateur (956 vérifications comptées) |
+| Tests | 4 programmes de test sur ordinateur (1373 vérifications comptées) |
 | Pile technique | C++17, ESP-IDF 5.5, LVGL 9, ESP32-P4 |
 | Sur du matériel réel | Non : le firmware n'a été ni compilé ni flashé et rien n'a été branché sur une machine |
 
@@ -45,7 +45,7 @@ Chaque ligne est une partie de ce dépôt et le feu dit où elle en est aujourd'
 | Domaine | État | Ce que cela veut dire ici |
 |---|---|---|
 | Logiciel | 🟠 | Le projet ESP-IDF (ESP32-P4, LVGL 9, le fichier de réglages dans sa propre partition) est écrit ; il n'a été ni compilé ni flashé. |
-| Tests | 🟢 | 4 programmes de test sur ordinateur réussissent (`ctest`) : 956 vérifications du fichier de réglages, de la porte, des ordres et alertes vocaux, des claviers, des avis enregistrés, du client du serveur et des textes des écrans en huit langues. |
+| Tests | 🟢 | 4 programmes de test sur ordinateur réussissent (`ctest`) : 1373 vérifications du fichier de réglages, de la porte, des ordres et alertes vocaux, des claviers, des avis enregistrés, du client du serveur et des textes des écrans en huit langues. |
 | Règles de sécurité | 🟡 | Tout déplacement et tout ordre de broche passent par la porte : confirmation à l'écran, verrou de l'arrêt matériel que seul un acquittement à l'écran lève une fois le bouton relâché, aucun déplacement si la liaison n'est pas armée. Couvert par des tests ; jamais essayé avec un vrai bouton d'arrêt. |
 | Voix | 🟡 | Les ordres et alertes vocaux sont reconnus et formulés en huit langues et testés comme du texte ; aucun micro ni haut-parleur n'a été utilisé. |
 | Écrans | 🟠 | Les écrans machine, travail (microSD), machines et stations et réglages sont écrits, en paysage et en portrait, avec l'aspect du programme de bureau ; l'onglet vue est encore une carte vide. Il n'existe qu'un dessin de la mise en page, pas une capture d'un module. |
@@ -123,6 +123,7 @@ Comment s'assemblent les parties de ce dépôt : qui lui parle, ce qu'il contien
 * **Boutons avec symbole :** le pavé de déplacement, l'origine, la broche, pause, démarrage, arrêt et les réponses à une question utilisent des symboles et la lettre de l'axe au lieu de mots, aux couleurs du programme de bureau (vert pour démarrer, bleu pour la pause, rouge pour arrêter).
 * **Avis enregistrés :** la fin d'un travail et la demande d'outil peuvent être dites par une voix enregistrée, dans la langue et le genre réglés (`sound_finish = voice:es:f`), depuis le dossier `voices` de la carte ; les enregistrements sont ceux d'EH3D-BUNGARD-GUI. Le haut-parleur n'est pas encore câblé dans le firmware.
 * **Le travail est suivi de nouveau après un redémarrage :** dès que l'opérateur lance un travail, l'écran garde dans sa flash lequel c'est (son id, la machine, son nom) ; après une coupure de courant ou un redémarrage il suit le même travail, la lecture suivante du serveur dit s'il tourne encore, attend à un changement d'outil ou est terminé, et le bouton annuler le laisse. Le travail lui-même vit dans le serveur. Écrit et testé sur un ordinateur ; le firmware n'a jamais tourné sur un module.
+* **Contrôle qualité et anneau de LED :** une page Contrôle qualité affiche le verdict du contrôle du travail avec la caméra de la tête de perçage (VALIDE, NON VALIDE ou non évaluable, grand comme un panneau) avec ce qui a été trouvé, allume et éteint l'anneau de LED, choisit la lumière pour la photo et le trou au centre, le profil (standard, pas fin, prototype), étalonne l'échelle et lance le contrôle ; le serveur juge la photo et garde le profil, si bien que le programme de bureau et les téléphones affichent le même dernier contrôle. L'écran dit le résultat à voix haute quand `sound_check_ok` et `sound_check_bad` sont réglés (un bip ou une voix enregistrée qui dit que le contrôle visuel de la carte est correct ou n'est pas correct), et il dit maintenant aussi la fin d'un travail et la demande d'un outil.
 
 ## 🔒 Sécurité et protection
 
@@ -211,7 +212,9 @@ EH3D-NODE-BUNGARD-HMI/
 │   ├── voice.hpp                                     ordres et alertes vocaux en huit langues
 │   ├── orientation.hpp sdfiles.hpp                   portrait et paysage, fichiers de la carte
 │   ├── server_link.hpp workflow.hpp job_memory.hpp   client du serveur et déroulement d'un travail
-│   └── ui_text.hpp keyboard.hpp notices.hpp          textes, claviers et avis
+│   ├── quality.hpp                                   le contrôle qualité et l'anneau de LED
+│   ├── ui_text.hpp keyboard.hpp notices.hpp          textes, claviers et avis
+│   └── wav.hpp                                       les enregistrements et les bips des avis
 ├── main/
 │   ├── app_main.cpp                                  démarrage, réglages, la boucle de la porte
 │   ├── ui.cpp ui.hpp                                 les écrans LVGL et le bouton d'arrêt
