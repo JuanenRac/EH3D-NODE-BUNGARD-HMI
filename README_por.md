@@ -30,7 +30,7 @@
 |---|---|
 | Versão | `0.0.6` |
 | Maturidade | Estrutura inicial |
-| Testes | 6 programas de teste no computador (84140 verificações contadas) |
+| Testes | 6 programas de teste no computador (86180 verificações contadas) |
 | Tecnologias | C++17, ESP-IDF 5.5, LVGL 9, ESP32-P4 |
 | Em hardware real | Não: o firmware não foi compilado nem gravado e nada foi ligado a uma máquina |
 
@@ -45,7 +45,7 @@ Cada linha é uma parte deste repositório e a luz diz até onde chega hoje. É 
 | Área | Estado | O que significa aqui |
 |---|---|---|
 | Software | 🟠 | O projeto ESP-IDF (ESP32-P4, LVGL 9, o ficheiro de definições na sua própria partição) está escrito; não foi compilado nem gravado. |
-| Testes | 🟢 | Passam 6 programas de teste no computador (`ctest`): 84140 verificações do ficheiro de definições, da comporta, das ordens e avisos por voz, dos teclados, dos avisos gravados, do cliente do servidor e dos textos dos ecrãs em oito idiomas. |
+| Testes | 🟢 | Passam 6 programas de teste no computador (`ctest`): 86180 verificações do ficheiro de definições, da comporta, das ordens e avisos por voz, dos teclados, dos avisos gravados, do cliente do servidor e dos textos dos ecrãs em oito idiomas. |
 | Regras de segurança | 🟡 | Todo o movimento e toda a ordem do fuso passam pela comporta: confirmação no ecrã, trinco da paragem por hardware que só um reconhecimento no ecrã levanta com o botão solto, nenhum movimento com a ligação por armar. Coberto por testes; nunca experimentado com um botão de paragem real. |
 | Voz | 🟡 | As ordens e avisos por voz são reconhecidos e formulados em oito idiomas e testados como texto; não se usou nenhum microfone nem altifalante. |
 | Ecrãs | 🟠 | Os ecrãs máquina, trabalho (microSD), máquinas e estações e definições estão escritos, na horizontal e na vertical, com o aspeto do programa de secretária; o separador visor ainda é um cartão vazio. Só existe um desenho do esquema, não uma captura de um módulo. |
@@ -187,7 +187,7 @@ O firmware ainda não foi compilado: quando for, `idf.py set-target esp32p4 && i
 
 ## 🧪 Testes
 
-Os testes no computador (`build.bat` ou `./build.sh`, e depois `ctest`) são dois programas e passa tudo: `test_hmi` (945 verificações) do ficheiro de definições, da comporta (a paragem passa sempre, trinco da paragem por hardware, confirmação, tempo limite e volta do relógio, regras de voz, interruptores), das ordens e avisos por voz e dos textos de ecrã em oito idiomas; e `test_workflow` (185 verificações) da orientação e do toque, dos ficheiros do cartão (tipos, nomes seguros, ordenação), do leitor de JSON, dos pedidos e respostas do servidor e do fluxo de um trabalho desde o cartão até ao fim. Os outros dois programas cobrem os teclados (`test_keyboard`, 231 verificações: cada definição tem o seu teclado, os intervalos do teclado numérico são os do ficheiro de definições, as casas decimais, o sinal, as setas, o teclado completo de cada idioma, a maiúscula, os símbolos e o comprimento) e os avisos gravados (`test_notices`, 266 verificações: a definição, o ficheiro de cada idioma e género). Os dois últimos programas são `test_quality` (911 verificações: os pedidos, a leitura do relatório, cada achado) e `test_locales` (81602 verificações: cada chave tem texto em cada uma das outras 29 línguas, nada está vazio nem é demasiado longo, a escrita de cada língua é a certa, o que deve ficar fica, e cada carácter que um texto possa desenhar está no intervalo dos tipos de letra gerados).
+Os testes no computador (`build.bat` ou `./build.sh`, e depois `ctest`) são dois programas e passa tudo: `test_hmi` (985 verificações) do ficheiro de definições, da comporta (a paragem passa sempre, trinco da paragem por hardware, confirmação, tempo limite e volta do relógio, regras de voz, interruptores), das ordens e avisos por voz e dos textos de ecrã em oito idiomas; e `test_workflow` (270 verificações) da orientação e do toque, dos ficheiros do cartão (tipos, nomes seguros, ordenação), do leitor de JSON, dos pedidos e respostas do servidor e do fluxo de um trabalho desde o cartão até ao fim. Os outros dois programas cobrem os teclados (`test_keyboard`, 231 verificações: cada definição tem o seu teclado, os intervalos do teclado numérico são os do ficheiro de definições, as casas decimais, o sinal, as setas, o teclado completo de cada idioma, a maiúscula, os símbolos e o comprimento) e os avisos gravados (`test_notices`, 266 verificações: a definição, o ficheiro de cada idioma e género). Os dois últimos programas são `test_quality` (911 verificações: os pedidos, a leitura do relatório, cada achado) e `test_locales` (83517 verificações: cada chave tem texto em cada uma das outras 29 línguas, nada está vazio nem é demasiado longo, a escrita de cada língua é a certa, o que deve ficar fica, e cada carácter que um texto possa desenhar está no intervalo dos tipos de letra gerados).
 
 ## 🏗️ Compilação e publicação
 

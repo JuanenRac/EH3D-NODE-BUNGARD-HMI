@@ -30,7 +30,7 @@
 |---|---|
 | Version | `0.0.6` |
 | Reifegrad | Gerüst |
-| Tests | 6 Host-Testprogramme (84140 Prüfungen gezählt) |
+| Tests | 6 Host-Testprogramme (86180 Prüfungen gezählt) |
 | Technologie-Stack | C++17, ESP-IDF 5.5, LVGL 9, ESP32-P4 |
 | Auf echter Hardware | Nein: die Firmware wurde weder gebaut noch geflasht, und nichts wurde an eine Maschine angeschlossen |
 
@@ -45,7 +45,7 @@ Jede Zeile ist ein Teil dieses Repositorys, und die Ampel sagt, wie weit er heut
 | Bereich | Stand | Was das hier bedeutet |
 |---|---|---|
 | Software | 🟠 | Das ESP-IDF-Projekt (ESP32-P4, LVGL 9, die Einstellungsdatei in einer eigenen Partition) ist geschrieben; es wurde weder gebaut noch geflasht. |
-| Tests | 🟢 | 6 Host-Testprogramme bestehen (`ctest`): 84140 Prüfungen zu Einstellungsdatei, Tor, gesprochenen Befehlen und Hinweisen, den Tastaturen, den aufgenommenen Hinweisen, dem Server-Client und den Bildschirmtexten in acht Sprachen. |
+| Tests | 🟢 | 6 Host-Testprogramme bestehen (`ctest`): 86180 Prüfungen zu Einstellungsdatei, Tor, gesprochenen Befehlen und Hinweisen, den Tastaturen, den aufgenommenen Hinweisen, dem Server-Client und den Bildschirmtexten in acht Sprachen. |
 | Sicherheitsregeln | 🟡 | Jede Bewegung und jeder Spindelbefehl läuft durch das Tor: Bestätigung auf dem Bildschirm, Hardware-Stopp-Sperre, die bei losgelassenem Taster nur eine Quittung auf dem Bildschirm löst, keine Bewegung bei nicht scharfer Verbindung. Durch Tests gedeckt; nie mit einem echten Stopp-Taster erprobt. |
 | Sprache | 🟡 | Gesprochene Befehle und Hinweise werden in acht Sprachen erkannt und formuliert und als Text getestet; es wurde kein Mikrofon und kein Lautsprecher benutzt. |
 | Bildschirme | 🟠 | Die Bildschirme Maschine, Auftrag (microSD), Maschinen und Stationen und Einstellungen sind geschrieben, im Quer- und im Hochformat, im Aussehen des Desktop-Programms; der Reiter Ansicht ist noch eine leere Karte. Es gibt nur eine Zeichnung des Layouts, keine Aufnahme eines Moduls. |
@@ -187,7 +187,7 @@ Die Firmware wurde noch nicht gebaut: wenn es so weit ist, erzeugt `idf.py set-t
 
 ## 🧪 Tests
 
-Die Host-Tests (`build.bat` oder `./build.sh`, dann `ctest`) sind zwei Programme und alles besteht: `test_hmi` (945 Prüfungen) zu Einstellungsdatei, Tor (Stopp geht immer, Hardware-Stopp-Sperre, Bestätigung, Zeitlimit und Uhrenüberlauf, Sprachregeln, Schalter), gesprochenen Befehlen und Hinweisen und Bildschirmtexten in acht Sprachen; und `test_workflow` (185 Prüfungen) zu Ausrichtung und Berührung, Dateien der Karte (Arten, sichere Namen, Sortierung), JSON-Leser, Anfragen und Antworten des Servers und dem Ablauf eines Auftrags von der Karte bis zum Ende. Die beiden anderen Programme decken die Tastaturen ab (`test_keyboard`, 231 Prüfungen: jede Einstellung hat ihre Tastatur, die Bereiche des Zahlenblocks sind die der Einstellungsdatei, die Nachkommastellen, das Vorzeichen, die Pfeile, die volle Tastatur jeder Sprache, die Umschaltung, die Symbole und die Länge) und die aufgenommenen Hinweise (`test_notices`, 266 Prüfungen: die Einstellung, die Datei jeder Sprache und jedes Geschlechts). Die letzten beiden Programme sind `test_quality` (911 Prüfungen: die Anfragen, das Lesen des Berichts, jeder Befund) und `test_locales` (81602 Prüfungen: jeder Schlüssel hat in jeder der 29 weiteren Sprachen einen Text, nichts ist leer oder zu lang, die Schrift jeder Sprache stimmt, was bleiben muss, bleibt, und jedes Zeichen, das ein Text zeichnen kann, liegt im Bereich der erzeugten Schriften).
+Die Host-Tests (`build.bat` oder `./build.sh`, dann `ctest`) sind zwei Programme und alles besteht: `test_hmi` (985 Prüfungen) zu Einstellungsdatei, Tor (Stopp geht immer, Hardware-Stopp-Sperre, Bestätigung, Zeitlimit und Uhrenüberlauf, Sprachregeln, Schalter), gesprochenen Befehlen und Hinweisen und Bildschirmtexten in acht Sprachen; und `test_workflow` (270 Prüfungen) zu Ausrichtung und Berührung, Dateien der Karte (Arten, sichere Namen, Sortierung), JSON-Leser, Anfragen und Antworten des Servers und dem Ablauf eines Auftrags von der Karte bis zum Ende. Die beiden anderen Programme decken die Tastaturen ab (`test_keyboard`, 231 Prüfungen: jede Einstellung hat ihre Tastatur, die Bereiche des Zahlenblocks sind die der Einstellungsdatei, die Nachkommastellen, das Vorzeichen, die Pfeile, die volle Tastatur jeder Sprache, die Umschaltung, die Symbole und die Länge) und die aufgenommenen Hinweise (`test_notices`, 266 Prüfungen: die Einstellung, die Datei jeder Sprache und jedes Geschlechts). Die letzten beiden Programme sind `test_quality` (911 Prüfungen: die Anfragen, das Lesen des Berichts, jeder Befund) und `test_locales` (83517 Prüfungen: jeder Schlüssel hat in jeder der 29 weiteren Sprachen einen Text, nichts ist leer oder zu lang, die Schrift jeder Sprache stimmt, was bleiben muss, bleibt, und jedes Zeichen, das ein Text zeichnen kann, liegt im Bereich der erzeugten Schriften).
 
 ## 🏗️ Build und Veröffentlichung
 

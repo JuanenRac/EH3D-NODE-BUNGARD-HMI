@@ -30,7 +30,7 @@
 |---|---|
 | Versione | `0.0.6` |
 | Maturità | Impalcatura |
-| Test | 6 programmi di test sul computer (84140 controlli contati) |
+| Test | 6 programmi di test sul computer (86180 controlli contati) |
 | Stack tecnologico | C++17, ESP-IDF 5.5, LVGL 9, ESP32-P4 |
 | Su hardware reale | No: il firmware non è stato compilato né scritto e nulla è stato collegato a una macchina |
 
@@ -45,7 +45,7 @@ Ogni riga è una parte di questo repository e il semaforo dice a che punto è og
 | Area | Stato | Cosa significa qui |
 |---|---|---|
 | Software | 🟠 | Il progetto ESP-IDF (ESP32-P4, LVGL 9, il file delle impostazioni in una partizione propria) è scritto; non è stato compilato né scritto sul chip. |
-| Test | 🟢 | 6 programmi di test sul computer passano (`ctest`): 84140 controlli sul file delle impostazioni, il varco, gli ordini e gli avvisi vocali, le tastiere, gli avvisi registrati, il client del server e i testi delle schermate in otto lingue. |
+| Test | 🟢 | 6 programmi di test sul computer passano (`ctest`): 86180 controlli sul file delle impostazioni, il varco, gli ordini e gli avvisi vocali, le tastiere, gli avvisi registrati, il client del server e i testi delle schermate in otto lingue. |
 | Regole di sicurezza | 🟡 | Ogni movimento e ogni ordine al mandrino passa dal varco: conferma sullo schermo, blocco dell'arresto hardware che solo una conferma sullo schermo toglie a pulsante rilasciato, nessun movimento con il collegamento non armato. Coperto da test; mai provato con un vero pulsante di arresto. |
 | Voce | 🟡 | Ordini e avvisi vocali sono riconosciuti e formulati in otto lingue e provati come testo; nessun microfono o altoparlante è stato usato. |
 | Schermate | 🟠 | Le schermate macchina, lavoro (microSD), macchine e stazioni e impostazioni sono scritte, in orizzontale e in verticale, con l'aspetto del programma desktop; la scheda della vista è ancora una scheda vuota. Esiste solo un disegno del layout, non una cattura di un modulo. |
@@ -187,7 +187,7 @@ Il firmware non è ancora stato compilato: quando lo sarà, `idf.py set-target e
 
 ## 🧪 Test
 
-I test sul computer (`build.bat` o `./build.sh`, poi `ctest`) sono due programmi e passa tutto: `test_hmi` (945 controlli) su file delle impostazioni, varco (l'arresto passa sempre, blocco dell'arresto hardware, conferma, tempo limite e giro dell'orologio, regole vocali, interruttori), ordini e avvisi vocali e testi delle schermate in otto lingue; e `test_workflow` (185 controlli) su orientamento e tocco, file della scheda (tipi, nomi sicuri, ordinamento), lettore JSON, richieste e risposte del server e flusso di un lavoro dalla scheda alla fine. Gli altri due programmi coprono le tastiere (`test_keyboard`, 231 controlli: ogni impostazione ha la sua tastiera, gli intervalli del tastierino sono quelli del file delle impostazioni, i decimali, il segno, le frecce, la tastiera completa di ogni lingua, il maiuscolo, i simboli e la lunghezza) e gli avvisi registrati (`test_notices`, 266 controlli: l'impostazione, il file di ogni lingua e genere). Gli ultimi due programmi sono `test_quality` (911 controlli: le richieste, la lettura del rapporto, ogni rilievo) e `test_locales` (81602 controlli: ogni chiave ha un testo in ciascuna delle altre 29 lingue, nulla è vuoto o troppo lungo, la scrittura di ogni lingua è quella giusta, ciò che deve restare resta, e ogni carattere che un testo può disegnare è nell'intervallo dei font generati).
+I test sul computer (`build.bat` o `./build.sh`, poi `ctest`) sono due programmi e passa tutto: `test_hmi` (985 controlli) su file delle impostazioni, varco (l'arresto passa sempre, blocco dell'arresto hardware, conferma, tempo limite e giro dell'orologio, regole vocali, interruttori), ordini e avvisi vocali e testi delle schermate in otto lingue; e `test_workflow` (270 controlli) su orientamento e tocco, file della scheda (tipi, nomi sicuri, ordinamento), lettore JSON, richieste e risposte del server e flusso di un lavoro dalla scheda alla fine. Gli altri due programmi coprono le tastiere (`test_keyboard`, 231 controlli: ogni impostazione ha la sua tastiera, gli intervalli del tastierino sono quelli del file delle impostazioni, i decimali, il segno, le frecce, la tastiera completa di ogni lingua, il maiuscolo, i simboli e la lunghezza) e gli avvisi registrati (`test_notices`, 266 controlli: l'impostazione, il file di ogni lingua e genere). Gli ultimi due programmi sono `test_quality` (911 controlli: le richieste, la lettura del rapporto, ogni rilievo) e `test_locales` (83517 controlli: ogni chiave ha un testo in ciascuna delle altre 29 lingue, nulla è vuoto o troppo lungo, la scrittura di ogni lingua è quella giusta, ciò che deve restare resta, e ogni carattere che un testo può disegnare è nell'intervallo dei font generati).
 
 ## 🏗️ Compilazione e rilascio
 
