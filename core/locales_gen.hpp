@@ -50,6 +50,7 @@ inline const char* const kText_bg[kKeyCount] = {
     "Продължи",  // ui.Resume
     "Спряно",  // ui.Stopped
     "Следващо",  // ui.Next
+    "Продължено от",  // ui.ResumedFrom
     "Проверка на качеството на работата",  // q.Title
     "Светлинен пръстен",  // q.Light
     "Изкл.",  // q.LightOff
@@ -131,6 +132,7 @@ inline const char* const kText_hr[kKeyCount] = {
     "Nastavi",  // ui.Resume
     "Zaustavljeno",  // ui.Stopped
     "Sljedeće",  // ui.Next
+    "Nastavljeno od",  // ui.ResumedFrom
     "Provjera kvalitete rada",  // q.Title
     "Svjetlosni prsten",  // q.Light
     "Isklj.",  // q.LightOff
@@ -212,6 +214,7 @@ inline const char* const kText_cs[kKeyCount] = {
     "Pokračovat",  // ui.Resume
     "Zastaveno",  // ui.Stopped
     "Další",  // ui.Next
+    "Navázáno na",  // ui.ResumedFrom
     "Kontrola kvality práce",  // q.Title
     "Světelný kruh",  // q.Light
     "Vyp.",  // q.LightOff
@@ -293,6 +296,7 @@ inline const char* const kText_da[kKeyCount] = {
     "Genoptag",  // ui.Resume
     "Stoppet",  // ui.Stopped
     "Næste",  // ui.Next
+    "Genoptaget fra",  // ui.ResumedFrom
     "Kvalitetskontrol af arbejdet",  // q.Title
     "Lysring",  // q.Light
     "Fra",  // q.LightOff
@@ -374,6 +378,7 @@ inline const char* const kText_nl[kKeyCount] = {
     "Hervatten",  // ui.Resume
     "Gestopt",  // ui.Stopped
     "Volgende",  // ui.Next
+    "Hervat van",  // ui.ResumedFrom
     "Kwaliteitscontrole van het werk",  // q.Title
     "Lichtring",  // q.Light
     "Uit",  // q.LightOff
@@ -455,6 +460,7 @@ inline const char* const kText_et[kKeyCount] = {
     "Jätka",  // ui.Resume
     "Peatatud",  // ui.Stopped
     "Järgmine",  // ui.Next
+    "Jätkatud tööst",  // ui.ResumedFrom
     "Töö kvaliteedikontroll",  // q.Title
     "Valgusrõngas",  // q.Light
     "Väljas",  // q.LightOff
@@ -536,6 +542,7 @@ inline const char* const kText_fi[kKeyCount] = {
     "Jatka",  // ui.Resume
     "Pysäytetty",  // ui.Stopped
     "Seuraava",  // ui.Next
+    "Jatkettu työstä",  // ui.ResumedFrom
     "Työn laatutarkastus",  // q.Title
     "Valorengas",  // q.Light
     "Pois",  // q.LightOff
@@ -617,6 +624,7 @@ inline const char* const kText_el[kKeyCount] = {
     "Συνέχεια",  // ui.Resume
     "Σταμάτησε",  // ui.Stopped
     "Επόμενο",  // ui.Next
+    "Συνέχεια από",  // ui.ResumedFrom
     "Έλεγχος ποιότητας της εργασίας",  // q.Title
     "Δακτύλιος φωτός",  // q.Light
     "Κλειστό",  // q.LightOff
@@ -698,6 +706,7 @@ inline const char* const kText_hu[kKeyCount] = {
     "Folytatás",  // ui.Resume
     "Leállítva",  // ui.Stopped
     "Következő",  // ui.Next
+    "Folytatva innen",  // ui.ResumedFrom
     "A munka minőségellenőrzése",  // q.Title
     "Fénygyűrű",  // q.Light
     "Ki",  // q.LightOff
@@ -779,6 +788,7 @@ inline const char* const kText_ga[kKeyCount] = {
     "Lean ar aghaidh",  // ui.Resume
     "Stoptha",  // ui.Stopped
     "An chéad cheann eile",  // ui.Next
+    "Atosaithe ó",  // ui.ResumedFrom
     "Seiceáil cáilíochta na hoibre",  // q.Title
     "Fáinne solais",  // q.Light
     "Múchta",  // q.LightOff
@@ -860,6 +870,7 @@ inline const char* const kText_lv[kKeyCount] = {
     "Turpināt",  // ui.Resume
     "Apturēts",  // ui.Stopped
     "Nākamais",  // ui.Next
+    "Turpināts no",  // ui.ResumedFrom
     "Darba kvalitātes pārbaude",  // q.Title
     "Gaismas gredzens",  // q.Light
     "Izsl.",  // q.LightOff
@@ -941,6 +952,7 @@ inline const char* const kText_lt[kKeyCount] = {
     "Tęsti",  // ui.Resume
     "Sustabdyta",  // ui.Stopped
     "Kitas",  // ui.Next
+    "Tęsiama nuo",  // ui.ResumedFrom
     "Darbo kokybės patikra",  // q.Title
     "Šviesos žiedas",  // q.Light
     "Išj.",  // q.LightOff
@@ -1022,6 +1034,7 @@ inline const char* const kText_mt[kKeyCount] = {
     "Kompli",  // ui.Resume
     "Waqaf",  // ui.Stopped
     "Li jmiss",  // ui.Next
+    "Kontinwat minn",  // ui.ResumedFrom
     "Verifika tal-kwalità tax-xogħol",  // q.Title
     "Ċirku tad-dawl",  // q.Light
     "Mitfi",  // q.LightOff
@@ -1103,6 +1116,7 @@ inline const char* const kText_pl[kKeyCount] = {
     "Wznów",  // ui.Resume
     "Zatrzymano",  // ui.Stopped
     "Dalej",  // ui.Next
+    "Wznowiono z",  // ui.ResumedFrom
     "Kontrola jakości wykonania",  // q.Title
     "Pierścień świetlny",  // q.Light
     "Wył.",  // q.LightOff
@@ -1184,6 +1198,7 @@ inline const char* const kText_ro[kKeyCount] = {
     "Reia",  // ui.Resume
     "Oprit",  // ui.Stopped
     "Următorul",  // ui.Next
+    "Reluat de la",  // ui.ResumedFrom
     "Verificarea calității lucrării",  // q.Title
     "Inel de lumină",  // q.Light
     "Oprit",  // q.LightOff
@@ -1265,6 +1280,7 @@ inline const char* const kText_sk[kKeyCount] = {
     "Pokračovať",  // ui.Resume
     "Zastavené",  // ui.Stopped
     "Ďalší",  // ui.Next
+    "Pokračovanie z",  // ui.ResumedFrom
     "Kontrola kvality práce",  // q.Title
     "Svetelný kruh",  // q.Light
     "Vyp.",  // q.LightOff
@@ -1346,6 +1362,7 @@ inline const char* const kText_sl[kKeyCount] = {
     "Nadaljuj",  // ui.Resume
     "Ustavljeno",  // ui.Stopped
     "Naslednji",  // ui.Next
+    "Nadaljevano od",  // ui.ResumedFrom
     "Kontrola kakovosti izdelka",  // q.Title
     "Svetlobni obroč",  // q.Light
     "Izklj.",  // q.LightOff
@@ -1427,6 +1444,7 @@ inline const char* const kText_sv[kKeyCount] = {
     "Återuppta",  // ui.Resume
     "Stoppad",  // ui.Stopped
     "Nästa",  // ui.Next
+    "Återupptaget från",  // ui.ResumedFrom
     "Kvalitetskontroll av arbetet",  // q.Title
     "Ljusring",  // q.Light
     "Av",  // q.LightOff
@@ -1508,6 +1526,7 @@ inline const char* const kText_no[kKeyCount] = {
     "Gjenoppta",  // ui.Resume
     "Stoppet",  // ui.Stopped
     "Neste",  // ui.Next
+    "Gjenopptatt fra",  // ui.ResumedFrom
     "Kvalitetskontroll av arbeidet",  // q.Title
     "Lysring",  // q.Light
     "Av",  // q.LightOff
@@ -1589,6 +1608,7 @@ inline const char* const kText_is[kKeyCount] = {
     "Halda áfram",  // ui.Resume
     "Stöðvað",  // ui.Stopped
     "Næsta",  // ui.Next
+    "Haldið áfram frá",  // ui.ResumedFrom
     "Gæðaskoðun verksins",  // q.Title
     "Ljósahringur",  // q.Light
     "Af",  // q.LightOff
@@ -1670,6 +1690,7 @@ inline const char* const kText_uk[kKeyCount] = {
     "Продовжити",  // ui.Resume
     "Зупинено",  // ui.Stopped
     "Далі",  // ui.Next
+    "Продовжено після",  // ui.ResumedFrom
     "Контроль якості виконаної роботи",  // q.Title
     "Світлове кільце",  // q.Light
     "Вимк.",  // q.LightOff
@@ -1751,6 +1772,7 @@ inline const char* const kText_ru[kKeyCount] = {
     "Продолжить",  // ui.Resume
     "Остановлено",  // ui.Stopped
     "Далее",  // ui.Next
+    "Продолжено после",  // ui.ResumedFrom
     "Контроль качества выполненной работы",  // q.Title
     "Световое кольцо",  // q.Light
     "Выкл.",  // q.LightOff
@@ -1832,6 +1854,7 @@ inline const char* const kText_sr[kKeyCount] = {
     "Настави",  // ui.Resume
     "Заустављено",  // ui.Stopped
     "Следеће",  // ui.Next
+    "Настављено од",  // ui.ResumedFrom
     "Провера квалитета рада",  // q.Title
     "Светлосни прстен",  // q.Light
     "Искљ.",  // q.LightOff
@@ -1913,6 +1936,7 @@ inline const char* const kText_sq[kKeyCount] = {
     "Vazhdo",  // ui.Resume
     "Ndalur",  // ui.Stopped
     "Tjetri",  // ui.Next
+    "Rifilluar nga",  // ui.ResumedFrom
     "Kontrolli i cilësisë së punës",  // q.Title
     "Unaza e dritës",  // q.Light
     "Fikur",  // q.LightOff
@@ -1994,6 +2018,7 @@ inline const char* const kText_ca[kKeyCount] = {
     "Reprèn",  // ui.Resume
     "Aturat",  // ui.Stopped
     "Següent",  // ui.Next
+    "Represa des de",  // ui.ResumedFrom
     "Verificació de qualitat de la feina",  // q.Title
     "Aro de llum",  // q.Light
     "Apagat",  // q.LightOff
@@ -2075,6 +2100,7 @@ inline const char* const kText_gl[kKeyCount] = {
     "Continuar",  // ui.Resume
     "Parado",  // ui.Stopped
     "Seguinte",  // ui.Next
+    "Retomado desde",  // ui.ResumedFrom
     "Verificación de calidade do traballo",  // q.Title
     "Aro de luz",  // q.Light
     "Apagado",  // q.LightOff
@@ -2156,6 +2182,7 @@ inline const char* const kText_eu[kKeyCount] = {
     "Jarraitu",  // ui.Resume
     "Geldituta",  // ui.Stopped
     "Hurrengoa",  // ui.Next
+    "Hemendik jarraitua",  // ui.ResumedFrom
     "Lanaren kalitate-egiaztapena",  // q.Title
     "Argi-eraztuna",  // q.Light
     "Itzalita",  // q.LightOff
@@ -2237,6 +2264,7 @@ inline const char* const kText_pt_br[kKeyCount] = {
     nullptr,  // ui.Resume
     nullptr,  // ui.Stopped
     nullptr,  // ui.Next
+    nullptr,  // ui.ResumedFrom
     nullptr,  // q.Title
     nullptr,  // q.Light
     nullptr,  // q.LightOff
@@ -2318,6 +2346,7 @@ inline const char* const kText_fr_ca[kKeyCount] = {
     nullptr,  // ui.Resume
     nullptr,  // ui.Stopped
     nullptr,  // ui.Next
+    nullptr,  // ui.ResumedFrom
     nullptr,  // q.Title
     nullptr,  // q.Light
     nullptr,  // q.LightOff
