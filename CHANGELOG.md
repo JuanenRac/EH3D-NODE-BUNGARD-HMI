@@ -11,6 +11,7 @@ All notable changes to this project are documented here.
 - **The stop goes first:** the stop has a task of its own, no longer a place in the queue behind other requests, with a short timeout and three tries; it cancels the job the fleet shows on the machine (also one started from another program or screen) and the own job when it is another one. If it could not be sent the screen says so. Pressing the hardware stop sends the same stop to the server, once for each press.
 - **Texts:** one new word (tool changed) in the 37 languages and the fonts built again for the characters they need. The spoken order for a pause is now a pause, and the one for a start is a start.
 - **Tests:** `test_hmi` grows with the start of a ready job through the gate (and its confirmation while the link is not armed), the pause that is never held back and the press of the hardware stop as an edge; `test_workflow` with the pause, the release of a held job, the tool change as the only thing `confirm` answers, and the requests of a stop (fleet job, own job, both, none). The firmware has not been rebuilt with this change.
+- **The job flow is the same as in the other touch screen:** the flow of a job and the link to the server are now one code in both screens (kept identical by the shared firmware base), so the flow also takes a G-code program from the card and sends it as a G-code job; on a drilling machine the server refuses it with its reason, which the screen shows.
 
 ## [0.0.6] - Resume a stopped job through the server
 
