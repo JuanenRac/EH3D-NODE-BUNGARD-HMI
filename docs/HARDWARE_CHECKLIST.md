@@ -26,3 +26,7 @@ A value in `hmi.cfg` must stand alone on its line: a `#` comment after a value i
 | 7 | Cause a message (a refused move, a job error) | The message is shown in the language of `hmi.cfg` and can be dismissed | |
 | 8 | Leave the screen idle | It dims after `idle_dim_s` and wakes on touch | |
 | 9 | Turn the unit to portrait | The layout follows (with `orientation = auto`) | |
+| 10 | Choose a drilling file with several tools and start the job | The machine page names the model, the tool at work with its holes done, the next tool, the tools finished and the time left; the numbers move with the job | |
+| 11 | Start the confirmation of a job whose plan the server warned about | The confirmation shows the estimated time and each warning in the language of `hmi.cfg` | |
+| 12 | With a changer (ATC) model, make the job reach a tool change | The page says the machine changes the tools by itself; if the server still asks for the tool it says the bar is not ready and names the tool to put in | |
+| 13 | Choose another file on the card while a job runs | The file is refused and the job is still followed | |

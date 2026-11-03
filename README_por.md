@@ -67,6 +67,7 @@ Cada linha é uma parte deste repositório e a luz diz até onde chega hoje. É 
 * **A comporta respeita o fuso:** uma ordem de fuso leva as rotações que pede (`spindle_rpm`, o que o botão do fuso pede) e a comporta nunca a deixa passar o menor valor entre `spindle_max_rpm` e a velocidade máxima do fuso que a máquina leva, como o servidor a diz. Com `spindle_over = clip` (por omissão) uma ordem que pede mais é reduzida a essa velocidade e o ecrã avisa; com `refuse` é recusada com um motivo. A confirmação mostra as rotações que o fuso vai mesmo receber. Escrito e testado num computador; não visto num módulo.
 * **Um trabalho parado continua:** quando um trabalho sai da máquina, o ecrã pergunta ao servidor como terminou; um cancelado ou falhado é mostrado como parado, com os furos (cortes) que fez, e um botão envia de novo o mesmo ficheiro com `skip` igual aos já feitos, de modo que só se fura ou fresa o resto. As ferramentas desligadas continuam desligadas e o arranque passa pela comporta como qualquer outro. Escrito e testado num computador; não visto num módulo. Quando o servidor responde a `resume-from` (guarda o pedido de cada trabalho), o ecrã pede-lhe o trabalho novo em vez de reenviar o ficheiro, pelo que um trabalho continua mesmo depois de reiniciar o ecrã e sem ficheiro; o trabalho novo fica apenas pronto, a página indica o trabalho de que continua e o operador inicia-o pela porta. A um servidor antigo (sem essa rota) responde-se como antes, com o ficheiro que o ecrã guarda.
 * **Furar e depois fresar:** um ficheiro de furação e um de fresagem escolhidos um a seguir ao outro são dois programas de um só trabalho: quando o servidor diz que a furação terminou, a fresagem é criada e espera que o operador a inicie, depois da troca de ferramenta, e a página do trabalho nomeia o programa seguinte. Escrito e testado num computador; não visto num módulo.
+* **O modelo, a barra do trabalho e o plano:** a página da máquina escreve o modelo da máquina que o servidor tem (`CCD ATC`) e, nos modelos com trocador de ferramentas, que troca as ferramentas sozinha; numa troca de ferramenta indica a ferramenta a colocar. Por baixo, uma barra mostra a ferramenta em trabalho com os seus furos (cortes) feitos, a ferramenta seguinte, as ferramentas terminadas e o tempo restante (a definição `tool_bar`). A página do trabalho e a confirmação do início mostram o tempo estimado e o que parece errado no trabalho (minúsculo, longe do canto, maior do que a mesa, uma escala diferente de 1, um plano que ultrapassa o curso de um eixo). Não se pode mudar o ficheiro do cartão enquanto um trabalho está em curso. Escrito e testado num computador; não visto num módulo.
 
 ## 🧩 Papel no EH3D
 
@@ -176,6 +177,7 @@ Tudo o que é afinado é uma linha de `hmi.cfg` (copia `hmi.cfg.example` para a 
 | `orientation` | `auto` | `auto landscape portrait` | vertical ou horizontal; `auto` segue a montagem do módulo |
 | `poll_s` | 3 | 1 - 60 | de quanto em quanto tempo o ecrã pede a frota ao servidor |
 | `stale_after_s` | 15 | 2 - 3600 | os dados mostrados são marcados como antigos quando o servidor não os atualiza há estes segundos |
+| `tool_bar` | on | on / off | a página da máquina mostra o modelo, a ferramenta em trabalho com os seus furos feitos, a ferramenta seguinte, as ferramentas terminadas e o tempo restante |
 | `table_width_mm` | 0 | 0 - 5000 | a largura da mesa da máquina para o aviso de uma placa que não cabe; 0 = a que o servidor indica (o curso menos o desvio) |
 | `table_depth_mm` | 0 | 0 - 5000 | a profundidade da mesa; 0 = a que o servidor indica |
 
@@ -226,7 +228,7 @@ EH3D-NODE-BUNGARD-HMI/
 │   ├── voice.hpp                                     ordens e avisos por voz em oito idiomas
 │   ├── orientation.hpp sdfiles.hpp                   vertical e horizontal, ficheiros do cartão
 │   ├── server_link.hpp workflow.hpp job_memory.hpp   cliente do servidor e fluxo de um trabalho
-│   ├── job_tools.hpp                                 as ferramentas de um ficheiro e as desligadas
+│   ├── job_tools.hpp job_bar.hpp                     as ferramentas, a barra do trabalho, o plano
 │   ├── quality.hpp                                   a verificação de qualidade e o anel de LEDs
 │   ├── ui_text.hpp keyboard.hpp notices.hpp          textos, teclados e avisos
 │   ├── locales.hpp locales_gen.hpp font_ranges.hpp   37 idiomas e intervalos de letra

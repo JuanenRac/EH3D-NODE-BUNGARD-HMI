@@ -67,6 +67,7 @@ Chaque ligne est une partie de ce dépôt et le feu dit où elle en est aujourd'
 * **La porte respecte la broche :** un ordre de broche porte les tours qu'il demande (`spindle_rpm`, ce que demande le bouton de la broche) et la porte ne le laisse jamais dépasser le plus petit de `spindle_max_rpm` et de la vitesse maximale de la broche que porte la machine, telle que le serveur la donne. Avec `spindle_over = clip` (par défaut) un ordre qui en demande plus est ramené à cette vitesse et l'écran le dit ; avec `refuse` il est refusé avec une raison. La confirmation montre les tours que la broche recevra vraiment. Écrit et testé sur un ordinateur ; non vu sur un module.
 * **Un travail arrêté reprend :** quand un travail quitte la machine, l'écran demande au serveur comment il s'est terminé ; un travail annulé ou en échec est montré comme arrêté, avec les trous (découpes) qu'il a faits, et un bouton renvoie le même fichier avec `skip` égal à ce qui est déjà fait, de sorte que seul le reste est percé ou fraisé. Les outils désactivés le restent et le démarrage passe par la porte comme tout autre. Écrit et testé sur un ordinateur ; non vu sur un module. Quand le serveur répond à `resume-from` (il garde la demande de chaque travail), l'écran lui demande le nouveau travail au lieu de renvoyer le fichier, si bien qu'un travail reprend même après un redémarrage de l'écran et sans fichier ; le nouveau travail est seulement prêt, la page nomme le travail dont il reprend, et l'opérateur le démarre par la porte. Un ancien serveur (sans cette route) reçoit comme avant le fichier que l'écran garde.
 * **Percer puis fraiser :** un fichier de perçage et un fichier de fraisage choisis l'un après l'autre sont deux programmes d'un même travail : quand le serveur dit que le perçage est terminé, le fraisage est créé et attend que l'opérateur le démarre, après le changement d'outil, et la page du travail nomme le programme suivant. Écrit et testé sur un ordinateur ; non vu sur un module.
+* **Le modèle, la barre du travail et le plan :** la page de la machine écrit le modèle de la machine que tient le serveur (`CCD ATC`) et, sur les modèles avec changeur d'outils, qu'elle change les outils elle-même ; lors d'un changement d'outil elle nomme l'outil à mettre. En dessous, une barre montre l'outil au travail avec ses trous (découpes) faits, l'outil suivant, les outils terminés et le temps restant (le réglage `tool_bar`). La page du travail et la confirmation du démarrage montrent le temps estimé et ce qui paraît anormal dans le travail (minuscule, loin du coin, plus grand que la table, une échelle différente de 1, un plan qui dépasse la course d'un axe). On ne peut pas changer le fichier de la carte pendant qu'un travail s'exécute. Écrit et testé sur un ordinateur ; non vu sur un module.
 
 ## 🧩 Rôle dans EH3D
 
@@ -176,6 +177,7 @@ Tout ce qui est ajusté est une ligne de `hmi.cfg` (copiez `hmi.cfg.example` dan
 | `orientation` | `auto` | `auto landscape portrait` | portrait ou paysage ; `auto` suit le montage du module |
 | `poll_s` | 3 | 1 - 60 | à quelle fréquence l'écran demande la flotte au serveur |
 | `stale_after_s` | 15 | 2 - 3600 | les données affichées sont marquées comme anciennes quand le serveur ne les a pas mises à jour depuis ce nombre de secondes |
+| `tool_bar` | on | on / off | la page de la machine montre le modèle, l'outil au travail avec ses trous faits, l'outil suivant, les outils terminés et le temps restant |
 | `table_width_mm` | 0 | 0 - 5000 | la largeur de la table de la machine pour l'avertissement d'une carte qui ne tient pas ; 0 = celle que dit le serveur (la course moins le décalage) |
 | `table_depth_mm` | 0 | 0 - 5000 | la profondeur de la table ; 0 = celle que dit le serveur |
 
@@ -226,7 +228,7 @@ EH3D-NODE-BUNGARD-HMI/
 │   ├── voice.hpp                                     ordres et alertes vocaux en huit langues
 │   ├── orientation.hpp sdfiles.hpp                   portrait et paysage, fichiers de la carte
 │   ├── server_link.hpp workflow.hpp job_memory.hpp   client du serveur et déroulement d'un travail
-│   ├── job_tools.hpp                                 les outils d'un fichier et ceux désactivés
+│   ├── job_tools.hpp job_bar.hpp                     les outils, la barre du travail, le plan
 │   ├── quality.hpp                                   le contrôle qualité et l'anneau de LED
 │   ├── ui_text.hpp keyboard.hpp notices.hpp          textes, claviers et avis
 │   ├── locales.hpp locales_gen.hpp font_ranges.hpp   37 langues et plages de polices

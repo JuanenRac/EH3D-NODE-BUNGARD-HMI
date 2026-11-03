@@ -92,17 +92,17 @@
         },
         {
           "desc": {
-            "en": "the tools of a file and the ones switched off",
-            "es": "las herramientas de un archivo y las desactivadas",
-            "it": "gli utensili di un file e quelli disattivati",
-            "de": "die Werkzeuge einer Datei und die abgeschalteten",
-            "fr": "les outils d'un fichier et ceux désactivés",
-            "pt": "as ferramentas de um ficheiro e as desligadas",
-            "zh": "文件中的刀具和被关闭的刀具",
-            "ja": "ファイルの工具とオフにした工具"
+            "en": "the tools of a file, the work bar, the plan",
+            "es": "las herramientas, la barra del trabajo, el plan",
+            "it": "gli utensili, la barra del lavoro, il piano",
+            "de": "die Werkzeuge, die Arbeitsleiste, der Plan",
+            "fr": "les outils, la barre du travail, le plan",
+            "pt": "as ferramentas, a barra do trabalho, o plano",
+            "zh": "刀具、作业条、计划",
+            "ja": "工具、作業バー、計画"
           },
-          "name": "job_tools.hpp",
-          "tree_name": "job_tools.hpp"
+          "name": "job_tools.hpp  job_bar.hpp",
+          "tree_name": "job_tools.hpp job_bar.hpp"
         },
         {
           "desc": {

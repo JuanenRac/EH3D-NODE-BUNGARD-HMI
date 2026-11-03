@@ -67,6 +67,7 @@ Each line is one part of this repository and the light says how far it is today.
 * **The gate keeps to the spindle:** a spindle order carries the turns it asks for (`spindle_rpm`, what the spindle button asks), and the gate never lets it pass the lower of `spindle_max_rpm` and the top speed of the spindle the machine carries, as the server says it. With `spindle_over = clip` (the default) an order for more is cut to that speed and the screen says so; with `refuse` it is refused with a reason. The confirmation shows the turns the spindle will really get. Written and tested on a computer; not seen on a module.
 * **A stopped job goes on:** when a job leaves the machine the screen asks the server how it ended; a job that was cancelled or failed is shown as stopped, with the holes (cuts) it did, and a button sends the same file again with `skip` set to those already done, so only the rest is drilled or routed. The tools switched off stay off and the start goes through the gate like any other. Written and tested on a computer; not seen on a module. When the server answers `resume-from` (it keeps the request of every job), the screen asks it for the new job instead of sending the file again, so a job goes on even after the screen was reset and has no file; the new job is only made ready, the page names the job it goes on from, and the operator starts it through the gate. An older server (no such route) is answered with the file the screen keeps, as before.
 * **Drilling and then routing:** a drilling file and a routing file chosen one after the other are two programs of one job: when the server says the drilling is done, the routing is made and waits for the operator to start it, after the change of tool, and the job page names the program that comes next. Written and tested on a computer; not seen on a module.
+* **The model, the bar of the work and the plan:** the machine page writes the model of the machine that the server holds (`CCD ATC`) and, on the models with the tool changer, that it changes the tools by itself; at a tool change it names the tool to put in. Under it a bar shows the tool at work with its holes (cuts) done, the next tool, the tools finished and the time left (the setting `tool_bar`). The job page and the confirmation of the start show the estimated time and what looks wrong in the work (tiny, far from the corner, bigger than the table, a scale that is not 1, a plan past the course of an axis). A file cannot be changed on the card while a job runs. Written and tested on a computer; not seen on a module.
 
 ## 🧩 Role in EH3D
 
@@ -176,6 +177,7 @@ Everything tuned is a line of `hmi.cfg` (copy `hmi.cfg.example` to the `config` 
 | `orientation` | `auto` | `auto landscape portrait` | standing up or lying down; `auto` follows the way the module is mounted |
 | `poll_s` | 3 | 1 - 60 | how often the screen asks the server for the fleet |
 | `stale_after_s` | 15 | 2 - 3600 | the data shown are marked old when the server has not updated them for this many seconds |
+| `tool_bar` | on | on / off | the machine page shows the model, the tool at work with its holes done, the next tool, the tools finished and the time left |
 | `table_width_mm` | 0 | 0 - 5000 | the width of the table of the machine for the warning of a board that does not fit; 0 = the one the server says (the course less the offset) |
 | `table_depth_mm` | 0 | 0 - 5000 | the depth of the table; 0 = the one the server says |
 
@@ -226,7 +228,7 @@ EH3D-NODE-BUNGARD-HMI/
 │   ├── voice.hpp                                     spoken orders and alerts in eight languages
 │   ├── orientation.hpp sdfiles.hpp                   standing and lying layouts, files of the card
 │   ├── server_link.hpp workflow.hpp job_memory.hpp   client of the server and the flow of a job
-│   ├── job_tools.hpp                                 the tools of a file and the ones switched off
+│   ├── job_tools.hpp job_bar.hpp                     the tools of a file, the work bar, the plan
 │   ├── quality.hpp                                   the quality check and the ring of LEDs
 │   ├── ui_text.hpp keyboard.hpp notices.hpp          texts, keyboards and notices
 │   ├── locales.hpp locales_gen.hpp font_ranges.hpp   37 languages and the font ranges

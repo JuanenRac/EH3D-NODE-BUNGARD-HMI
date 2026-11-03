@@ -67,6 +67,7 @@ Ogni riga è una parte di questo repository e il semaforo dice a che punto è og
 * **Il varco rispetta il mandrino:** un ordine al mandrino porta i giri che chiede (`spindle_rpm`, ciò che chiede il pulsante del mandrino) e il varco non lo lascia mai superare il minore tra `spindle_max_rpm` e la velocità massima del mandrino che la macchina monta, come la dice il server. Con `spindle_over = clip` (predefinito) un ordine che ne chiede di più viene ridotto a quella velocità e lo schermo lo dice; con `refuse` viene rifiutato con un motivo. La conferma mostra i giri che il mandrino riceverà davvero. Scritto e provato su un computer; non visto su un modulo.
 * **Un lavoro fermato prosegue:** quando un lavoro lascia la macchina, lo schermo chiede al server come è finito; uno annullato o fallito è mostrato come fermato, con i fori (tagli) che ha fatto, e un pulsante rinvia lo stesso file con `skip` pari a quelli già fatti, così si fora o si fresa solo il resto. Gli utensili disattivati restano disattivati e l'avvio passa dal varco come ogni altro. Scritto e provato su un computer; non visto su un modulo. Quando il server risponde a `resume-from` (conserva la richiesta di ogni lavoro), lo schermo gli chiede il nuovo lavoro invece di rinviare il file, così un lavoro prosegue anche dopo un riavvio dello schermo e senza file; il nuovo lavoro viene solo preparato, la pagina indica il lavoro da cui prosegue e l'operatore lo avvia attraverso la porta. A un server vecchio (senza quella rotta) si risponde come prima, con il file che lo schermo conserva.
 * **Prima forare, poi fresare:** un file di foratura e uno di fresatura scelti uno dopo l'altro sono due programmi di un solo lavoro: quando il server dice che la foratura è finita, la fresatura viene creata e aspetta che l'operatore la avvii, dopo il cambio utensile, e la pagina del lavoro indica il programma successivo. Scritto e provato su un computer; non visto su un modulo.
+* **Il modello, la barra del lavoro e il piano:** la pagina della macchina scrive il modello della macchina che il server conosce (`CCD ATC`) e, nei modelli con cambio utensili, che cambia gli utensili da sola; a un cambio utensile indica l'utensile da inserire. Sotto, una barra mostra l'utensile al lavoro con i suoi fori (tagli) fatti, l'utensile successivo, gli utensili finiti e il tempo rimasto (l'impostazione `tool_bar`). La pagina del lavoro e la conferma dell'avvio mostrano il tempo stimato e ciò che sembra sbagliato nel lavoro (minuscolo, lontano dall'angolo, più grande del tavolo, una scala diversa da 1, un piano che supera la corsa di un asse). Il file della scheda non si può cambiare mentre un lavoro è in corso. Scritto e provato su un computer; non visto su un modulo.
 
 ## 🧩 Ruolo in EH3D
 
@@ -176,6 +177,7 @@ Tutto ciò che si regola è una riga di `hmi.cfg` (copia `hmi.cfg.example` nella
 | `orientation` | `auto` | `auto landscape portrait` | in verticale o in orizzontale; `auto` segue come è montato il modulo |
 | `poll_s` | 3 | 1 - 60 | ogni quanto lo schermo chiede la flotta al server |
 | `stale_after_s` | 15 | 2 - 3600 | i dati mostrati sono segnati come vecchi quando il server non li aggiorna da questi secondi |
+| `tool_bar` | on | on / off | la pagina della macchina mostra il modello, l'utensile al lavoro con i fori fatti, l'utensile successivo, gli utensili finiti e il tempo rimasto |
 | `table_width_mm` | 0 | 0 - 5000 | la larghezza del tavolo della macchina per l'avviso di una scheda che non entra; 0 = quella che dice il server (la corsa meno lo scostamento) |
 | `table_depth_mm` | 0 | 0 - 5000 | la profondità del tavolo; 0 = quella che dice il server |
 
@@ -226,7 +228,7 @@ EH3D-NODE-BUNGARD-HMI/
 │   ├── voice.hpp                                     ordini e avvisi vocali in otto lingue
 │   ├── orientation.hpp sdfiles.hpp                   layout verticale e orizzontale, file della scheda
 │   ├── server_link.hpp workflow.hpp job_memory.hpp   client del server e flusso di un lavoro
-│   ├── job_tools.hpp                                 gli utensili di un file e quelli disattivati
+│   ├── job_tools.hpp job_bar.hpp                     gli utensili, la barra del lavoro, il piano
 │   ├── quality.hpp                                   il controllo qualità e l'anello di LED
 │   ├── ui_text.hpp keyboard.hpp notices.hpp          testi, tastiere e avvisi
 │   ├── locales.hpp locales_gen.hpp font_ranges.hpp   37 lingue e intervalli dei font

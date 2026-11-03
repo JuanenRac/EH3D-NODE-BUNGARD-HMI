@@ -67,6 +67,7 @@ Jede Zeile ist ein Teil dieses Repositorys, und die Ampel sagt, wie weit er heut
 * **Das Tor hält sich an die Spindel:** Ein Spindelbefehl trägt die Drehzahl, die er verlangt (`spindle_rpm`, was die Spindeltaste anfordert), und das Tor lässt ihn nie über den kleineren Wert von `spindle_max_rpm` und der Höchstdrehzahl der Spindel der Maschine, wie der Server sie meldet, hinaus. Mit `spindle_over = clip` (Standard) wird ein Befehl mit mehr auf diese Drehzahl gekürzt und der Bildschirm sagt es; mit `refuse` wird er mit Begründung abgelehnt. Die Bestätigung zeigt die Drehzahl, die die Spindel wirklich bekommt. Geschrieben und auf dem Rechner getestet; nicht auf einem Modul gesehen.
 * **Ein gestoppter Auftrag macht weiter:** Verlässt ein Auftrag die Maschine, fragt der Bildschirm den Server, wie er endete; ein abgebrochener oder fehlgeschlagener wird als gestoppt gezeigt, mit den Bohrungen (Fräsungen), die er geschafft hat, und eine Taste sendet dieselbe Datei erneut mit `skip` gleich der bereits erledigten Zahl, sodass nur der Rest gebohrt oder gefräst wird. Abgeschaltete Werkzeuge bleiben aus und der Start geht wie jeder andere durch das Tor. Geschrieben und auf dem Rechner getestet; nicht auf einem Modul gesehen. Antwortet der Server auf `resume-from` (er behält die Anfrage jedes Auftrags), verlangt der Bildschirm von ihm den neuen Auftrag, statt die Datei erneut zu senden; so macht ein Auftrag auch nach einem Neustart des Bildschirms ohne Datei weiter. Der neue Auftrag wird nur bereitgestellt, die Seite nennt den Auftrag, von dem er fortfährt, und der Bediener startet ihn über das Tor. Ein älterer Server (ohne diese Route) bekommt wie bisher die Datei, die der Bildschirm behält.
 * **Erst bohren, dann fräsen:** Eine Bohrdatei und eine Frässdatei, nacheinander gewählt, sind zwei Programme eines Auftrags: Meldet der Server das Bohren als erledigt, wird das Fräsen angelegt und wartet darauf, dass der Bediener es nach dem Werkzeugwechsel startet; die Auftragsseite nennt das nächste Programm. Geschrieben und auf dem Rechner getestet; nicht auf einem Modul gesehen.
+* **Das Modell, die Leiste der Arbeit und der Plan:** Die Maschinenseite schreibt das Modell der Maschine, das der Server hält (`CCD ATC`), und bei den Modellen mit Werkzeugwechsler, dass sie die Werkzeuge selbst wechselt; bei einem Werkzeugwechsel nennt sie das einzusetzende Werkzeug. Darunter zeigt eine Leiste das Werkzeug bei der Arbeit mit seinen erledigten Bohrungen (Fräsungen), das nächste Werkzeug, die fertigen Werkzeuge und die Restzeit (die Einstellung `tool_bar`). Die Auftragsseite und die Bestätigung des Starts zeigen die geschätzte Zeit und was an der Arbeit auffällt (winzig, weit von der Ecke, größer als der Tisch, ein Maßstab ungleich 1, ein Plan über den Verfahrweg einer Achse hinaus). Solange ein Auftrag läuft, lässt sich die Datei der Karte nicht wechseln. Am Computer geschrieben und getestet; nicht auf einem Modul gesehen.
 
 ## 🧩 Rolle in EH3D
 
@@ -176,6 +177,7 @@ Alles Abgestimmte ist eine Zeile in `hmi.cfg` (kopiere `hmi.cfg.example` in die 
 | `orientation` | `auto` | `auto landscape portrait` | Hoch- oder Querformat; `auto` folgt der Einbaulage des Moduls |
 | `poll_s` | 3 | 1 - 60 | wie oft der Bildschirm die Flotte beim Server abfragt |
 | `stale_after_s` | 15 | 2 - 3600 | die gezeigten Daten werden als alt markiert, wenn der Server sie so viele Sekunden nicht aktualisiert hat |
+| `tool_bar` | on | on / off | die Maschinenseite zeigt das Modell, das Werkzeug bei der Arbeit mit den erledigten Bohrungen, das nächste Werkzeug, die fertigen Werkzeuge und die Restzeit |
 | `table_width_mm` | 0 | 0 - 5000 | die Breite des Tisches der Maschine für die Warnung vor einer Platine, die nicht passt; 0 = die, die der Server meldet (Verfahrweg abzüglich Versatz) |
 | `table_depth_mm` | 0 | 0 - 5000 | die Tiefe des Tisches; 0 = die, die der Server meldet |
 
@@ -226,7 +228,7 @@ EH3D-NODE-BUNGARD-HMI/
 │   ├── voice.hpp                                     gesprochene Befehle und Hinweise in acht Sprachen
 │   ├── orientation.hpp sdfiles.hpp                   Hoch- und Querformat, Dateien der Karte
 │   ├── server_link.hpp workflow.hpp job_memory.hpp   Client des Servers und Ablauf eines Auftrags
-│   ├── job_tools.hpp                                 die Werkzeuge einer Datei und die abgeschalteten
+│   ├── job_tools.hpp job_bar.hpp                     die Werkzeuge, die Arbeitsleiste, der Plan
 │   ├── quality.hpp                                   die Qualitätsprüfung und der LED-Ring
 │   ├── ui_text.hpp keyboard.hpp notices.hpp          Texte, Tastaturen und Hinweise
 │   ├── locales.hpp locales_gen.hpp font_ranges.hpp   37 Sprachen, Schriftbereiche

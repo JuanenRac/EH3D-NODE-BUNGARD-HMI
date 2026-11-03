@@ -67,6 +67,7 @@ Cada línea es una parte de este repositorio y la luz dice hasta dónde llega ho
 * **La compuerta respeta el husillo:** una orden de husillo lleva las vueltas que pide (`spindle_rpm`, lo que pide el botón del husillo) y la compuerta nunca la deja pasar de lo menor entre `spindle_max_rpm` y la velocidad máxima del husillo que lleva la máquina, según dice el servidor. Con `spindle_over = clip` (por defecto) una orden que pide más se recorta a esa velocidad y la pantalla lo avisa; con `refuse` se rechaza con un motivo. La confirmación muestra las vueltas que el husillo recibirá de verdad. Escrito y probado en el ordenador; sin ver en un módulo.
 * **Un trabajo parado continúa:** cuando un trabajo sale de la máquina la pantalla pregunta al servidor cómo terminó; uno cancelado o fallido se muestra como parado, con los taladros (cortes) que hizo, y un botón envía de nuevo el mismo archivo con `skip` igual a los ya hechos, de modo que solo se taladra o fresa el resto. Las herramientas apagadas siguen apagadas y el inicio pasa por la compuerta como cualquier otro. Escrito y probado en el ordenador; sin ver en un módulo. Cuando el servidor responde a `resume-from` (guarda el pedido de cada trabajo), la pantalla le pide el trabajo nuevo en vez de reenviar el archivo, de modo que un trabajo continúa incluso tras reiniciar la pantalla y sin archivo; el trabajo nuevo solo queda listo, la página nombra el trabajo del que continúa y el operador lo inicia por la compuerta. A un servidor antiguo (sin esa ruta) se le responde como antes, con el archivo que guarda la pantalla.
 * **Taladrar y después fresar:** un archivo de taladrado y uno de fresado elegidos uno tras otro son dos programas de un mismo trabajo: cuando el servidor dice que el taladrado terminó, se crea el fresado y espera a que el operario lo inicie, tras el cambio de herramienta, y la página del trabajo nombra el programa que viene después. Escrito y probado en el ordenador; sin ver en un módulo.
+* **El modelo, la barra del trabajo y el plan:** la página de la máquina escribe el modelo de la máquina que tiene el servidor (`CCD ATC`) y, en los modelos con cambiador de herramientas, que cambia las herramientas sola; en un cambio de herramienta nombra la herramienta que hay que poner. Debajo, una barra muestra la herramienta en trabajo con sus taladros (cortes) hechos, la herramienta siguiente, las herramientas terminadas y el tiempo restante (el ajuste `tool_bar`). La página del trabajo y la confirmación del inicio muestran el tiempo estimado y lo que parece mal en el trabajo (diminuto, lejos de la esquina, mayor que la mesa, una escala distinta de 1, un plan que pasa del recorrido de un eje). No se puede cambiar el archivo de la tarjeta mientras un trabajo está en marcha. Escrito y probado en un ordenador; no visto en un módulo.
 
 ## 🧩 Papel en EH3D
 
@@ -176,6 +177,7 @@ Todo lo afinado es una línea de `hmi.cfg` (copia `hmi.cfg.example` a la partici
 | `orientation` | `auto` | `auto landscape portrait` | en vertical o en horizontal; `auto` sigue cómo está montado el módulo |
 | `poll_s` | 3 | 1 - 60 | cada cuánto pide la pantalla la flota al servidor |
 | `stale_after_s` | 15 | 2 - 3600 | los datos mostrados se marcan como antiguos cuando el servidor no los ha actualizado en estos segundos |
+| `tool_bar` | on | on / off | la página de la máquina muestra el modelo, la herramienta en trabajo con sus taladros hechos, la herramienta siguiente, las herramientas terminadas y el tiempo restante |
 | `table_width_mm` | 0 | 0 - 5000 | el ancho de la mesa de la máquina para el aviso de una placa que no cabe; 0 = el que dice el servidor (el recorrido menos el desplazamiento) |
 | `table_depth_mm` | 0 | 0 - 5000 | el fondo de la mesa; 0 = el que dice el servidor |
 
@@ -226,7 +228,7 @@ EH3D-NODE-BUNGARD-HMI/
 │   ├── voice.hpp                                     órdenes y avisos por voz en ocho idiomas
 │   ├── orientation.hpp sdfiles.hpp                   diseños vertical y horizontal, ficheros de la tarjeta
 │   ├── server_link.hpp workflow.hpp job_memory.hpp   cliente del servidor y flujo de un trabajo
-│   ├── job_tools.hpp                                 las herramientas de un archivo y las desactivadas
+│   ├── job_tools.hpp job_bar.hpp                     las herramientas, la barra del trabajo, el plan
 │   ├── quality.hpp                                   la verificación de calidad y el aro de LEDs
 │   ├── ui_text.hpp keyboard.hpp notices.hpp          textos, teclados y avisos
 │   ├── locales.hpp locales_gen.hpp font_ranges.hpp   37 idiomas y rangos de fuente
