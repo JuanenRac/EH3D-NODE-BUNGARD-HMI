@@ -55,6 +55,13 @@ static void errors_of_the_settings_file() {
     CHECK(parse_settings("stale_after_s = 30", q).stale_after_s == 30 && q.empty());
     CHECK(parse_settings("stale_after_s = 1", q).stale_after_s == 15 && q.size() == 1);
     CHECK(parse_settings("stale_after_s = 99999", q).stale_after_s == 15 && q.size() == 2);
+    // the bar of the machine page is a setting: on by default, and a word that is not on or off changes nothing
+    std::vector<Problem> t;
+    CHECK(parse_settings("", t).tool_bar && t.empty());
+    CHECK(!parse_settings("tool_bar = off", t).tool_bar && t.empty());
+    CHECK(parse_settings("tool_bar = maybe", t).tool_bar && t.size() == 1);
+    // a job that runs locks the file: the reason is told in the language of the operator
+    CHECK(reason_text(reasons::kJobRunning, Lang::Es) != reasons::kJobRunning && reason_text(reasons::kJobRunning, Lang::Es) == text(T::WfRunning, Lang::Es));
 }
 
 static void the_link() {

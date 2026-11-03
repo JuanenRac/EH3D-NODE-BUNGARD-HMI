@@ -430,6 +430,15 @@ static void link_task(void*) {
     }
 }
 
+// Shows the lines of the machine page about the work in hand (the LVGL lock is taken by the caller).
+static void refresh_hud() {
+    xSemaphoreTake(g_lock, portMAX_DELAY);
+    std::string text;
+    if (g_settings.tool_bar) text = hmi::hud_text(g_flow.bar(), g_settings.language, g_flow.model(), g_flow.route(), g_flow.tool_wait(), g_flow.pause_tool());
+    xSemaphoreGive(g_lock);
+    ui::show_hud(text);
+}
+
 // Shows the tools of the chosen file and the spindle of the machine (the LVGL lock is taken by the caller).
 static void refresh_job() {
     xSemaphoreTake(g_lock, portMAX_DELAY);
@@ -454,6 +463,7 @@ static void refresh_job() {
     xSemaphoreGive(g_lock);
     ui::show_job(tools, spindle, advice, g_settings);
     ui::show_flow(flow, g_settings);
+    refresh_hud();
 }
 
 // The stack each task has left, as the lowest it has ever been (bytes): logged now and then, and a warning when one is short, so an overflow shows on the bench before it corrupts memory.
@@ -597,7 +607,15 @@ extern "C" void app_main() {
                         hmi::Decision d = gate.request(r.action, hmi::Origin::Touch, board::now_ms());
                         if (d.verdict == hmi::Verdict::NeedConfirm) {
                             // the confirmation shows the turns the spindle will really get; when they were cut the screen says so
-                            ui::ask(&gate.pending_action(), g_settings, gate.remaining_ms(board::now_ms()));
+                            // the start of a job also shows the plan the server made: the estimated time and what looks wrong in the work
+                            std::string plan;
+                            if (r.action.kind == hmi::Kind::Start) {
+                                xSemaphoreTake(g_lock, portMAX_DELAY);
+                                const hmi::TableSize table = g_table.known() ? g_table : hmi::TableSize{static_cast<double>(g_settings.table_width_mm), static_cast<double>(g_settings.table_depth_mm)};
+                                plan = hmi::plan_text(g_flow.advice(table).plan, g_settings.language);
+                                xSemaphoreGive(g_lock);
+                            }
+                            ui::ask(&gate.pending_action(), g_settings, gate.remaining_ms(board::now_ms()), plan);
                             if (d.clipped) set_note(std::string(hmi::text(hmi::T::SpindleCut, g_settings.language)) + ": " + std::to_string(d.asked_rpm) + " > " + std::to_string(d.rpm) + " rpm");
                         } else if (d.verdict == hmi::Verdict::Refused) {
                             ui::refused(d.why, g_settings);
@@ -757,6 +775,7 @@ extern "C" void app_main() {
         if (fleet_new || state.stale != fleet_stale_shown) ui::show_fleet(fleet, g_settings, state.stale);
         fleet_stale_shown = state.stale;
         if (spindle_new || stage_changed) refresh_job();
+        else if (fleet_new) refresh_hud();  // the progress and the model change with every reading; the tool chips are not rebuilt for them
         if (quality_new) ui::show_quality(quality, light, quality_running, g_settings);
         if (gate.pending()) ui::ask_tick(gate.remaining_ms(board::now_ms()), g_settings);  // the countdown to the abort
         else ui::ask(nullptr, g_settings);

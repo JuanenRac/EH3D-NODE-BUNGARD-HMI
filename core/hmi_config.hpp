@@ -44,6 +44,7 @@ struct Settings {
     bool hw_stop_required = true;           // the screen controls the machine only while the hardware stop input is wired and released
     std::uint32_t link_idle_ms = 3000;      // the link is lost when the machine stays quiet this long, 200..60000
     std::uint32_t stale_after_s = 15;       // the data shown (the fleet, the progress) are marked old when the server has not updated them for this long, 2..3600
+    bool tool_bar = true;                   // the machine page says the model, the tool at work with its holes (cuts) done, the next tool, the tools finished and the time left
 
     // voice
     bool voice_alerts = true;               // spoken alerts (the end of a job, a tool change, an error)
@@ -174,6 +175,8 @@ inline Settings parse_settings(const std::string& text, std::vector<Problem>& pr
             if (num(200, 60000)) s.link_idle_ms = n;
         } else if (key == "stale_after_s") {
             if (num(2, 3600)) s.stale_after_s = n;
+        } else if (key == "tool_bar") {
+            if (flag()) s.tool_bar = b;
         } else if (key == "voice_alerts") {
             if (flag()) s.voice_alerts = b;
         } else if (key == "voice_orders") {

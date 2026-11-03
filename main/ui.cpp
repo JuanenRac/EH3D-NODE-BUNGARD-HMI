@@ -49,6 +49,7 @@ lv_obj_t* g_fleet_list = nullptr;
 lv_obj_t* g_card_list = nullptr;
 lv_obj_t* g_selected_file = nullptr;
 lv_obj_t* g_job_summary = nullptr;
+lv_obj_t* g_hud = nullptr;
 lv_obj_t* g_tools_box = nullptr;
 lv_obj_t* g_flow_label = nullptr;
 lv_obj_t* g_resume_button = nullptr;
@@ -303,6 +304,11 @@ void build(const hmi::Settings& s, const hmi::Layout& layout, void (*post)(const
     // machine: the job card, the plan view and the jog pad
     lv_obj_t* job = card(g_pages[0], hmi::text(T::Job, s.language));
     lv_obj_set_size(job, col_w, layout.portrait ? 180 : LV_PCT(100));
+    // the model of the machine, the tool at work with its holes (cuts) done, the next tool, the tools finished and the time left
+    g_hud = lv_label_create(job);
+    lv_obj_set_width(g_hud, LV_PCT(100));
+    lv_label_set_long_mode(g_hud, LV_LABEL_LONG_WRAP);
+    lv_label_set_text(g_hud, "");
     lv_obj_t* plan = card(g_pages[0], "2D");
     lv_obj_set_size(plan, col_w, layout.portrait ? 360 : LV_PCT(100));
     lv_obj_t* jog = card(g_pages[0], hmi::text(T::Jog, s.language));
@@ -479,7 +485,7 @@ void build(const hmi::Settings& s, const hmi::Layout& layout, void (*post)(const
     g_dialog = lv_obj_create(scr);
     style_card(g_dialog);
     lv_obj_add_flag(g_dialog, LV_OBJ_FLAG_FLOATING);
-    lv_obj_set_size(g_dialog, 560, 300);
+    lv_obj_set_size(g_dialog, 560, 420);
     lv_obj_center(g_dialog);
     g_dialog_text = lv_label_create(g_dialog);
     lv_obj_align(g_dialog_text, LV_ALIGN_TOP_MID, 0, 16);
@@ -511,15 +517,16 @@ void show(const State& st, const hmi::Settings& s) {
     if (!st.note.empty()) lv_label_set_text(g_note, st.note.c_str());
 }
 
-void ask(const hmi::Action* action, const hmi::Settings& s, std::uint32_t remaining_ms) {
+void ask(const hmi::Action* action, const hmi::Settings& s, std::uint32_t remaining_ms, const std::string& extra) {
     using hmi::T;
     if (action == nullptr) {
         if (!lv_obj_has_flag(g_dialog, LV_OBJ_FLAG_HIDDEN)) lv_obj_add_flag(g_dialog, LV_OBJ_FLAG_HIDDEN);
         return;
     }
     // the question and the order in the language of the operator ("Stop the machine"), then the seconds left before it aborts by itself
-    static char text[256];
-    lv_snprintf(text, sizeof text, "%s\n%s", hmi::text(action->kind == hmi::Kind::Spindle ? T::AskSpindle : T::AskMove, s.language), hmi::order_text(*action, s.language).c_str());
+    static char text[512];
+    lv_snprintf(text, sizeof text, "%s\n%s%s%s", hmi::text(action->kind == hmi::Kind::Spindle ? T::AskSpindle : T::AskMove, s.language), hmi::order_text(*action, s.language).c_str(), extra.empty() ? "" : "\n\n",
+                extra.c_str());
     lv_label_set_text(g_dialog_text, text);
     lv_label_set_text(g_dialog_count, hmi::countdown_text(remaining_ms, s.language).c_str());
     lv_obj_remove_flag(g_dialog, LV_OBJ_FLAG_HIDDEN);
@@ -647,7 +654,15 @@ void show_job(const hmi::ToolSwitch& tools, const hmi::SpindleView& spindle, con
                       n.value, what, n.limit);
         text += line;
     }
+    // what the server says about the plan it made: the time and what looks wrong in the work (a warning in amber would need a label of its own; the sign leads each line)
+    const std::string plan = hmi::plan_text(advice.plan, s.language);
+    if (!plan.empty()) text += std::string(text.empty() ? "" : "\n") + plan;
     lv_label_set_text(g_job_summary, text.c_str());
+}
+
+void show_hud(const std::string& text) {
+    if (g_hud == nullptr) return;
+    lv_label_set_text(g_hud, text.c_str());
 }
 
 void show_flow(const FlowState& flow, const hmi::Settings& s) {

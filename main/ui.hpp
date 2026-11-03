@@ -50,8 +50,9 @@ struct Request {
 void build(const hmi::Settings& settings, const hmi::Layout& layout, void (*post)(const Request&));
 /// Shows the state (with the LVGL lock taken).
 void show(const State& state, const hmi::Settings& settings);
-/// Shows the question of the gate with the order in the language of the operator and the seconds left before it aborts by itself, or hides it when `action` is null.
-void ask(const hmi::Action* action, const hmi::Settings& settings, std::uint32_t remaining_ms = 0);
+/// Shows the question of the gate with the order in the language of the operator and the seconds left before it aborts by itself, or hides it when `action` is null. `extra` is
+/// the summary of the plan under the question (the estimated time and what looks wrong in the work) when the order is the start of a job.
+void ask(const hmi::Action* action, const hmi::Settings& settings, std::uint32_t remaining_ms = 0, const std::string& extra = "");
 /// Updates the countdown of the question that is showing.
 void ask_tick(std::uint32_t remaining_ms, const hmi::Settings& settings);
 /// The version of the firmware, shown in the title bar and in the settings (set it before `build`).
@@ -84,6 +85,8 @@ struct FlowState {
 };
 /// Shows where the job is: what a stopped job did and the button to go on from there, and the program that comes next.
 void show_flow(const FlowState& flow, const hmi::Settings& settings);
+/// Shows the lines of the machine page about the work in hand (the model, the tool at work, the next one, the tools finished and the time left); empty text clears them.
+void show_hud(const std::string& text);
 /// Shows the files of the card.
 void show_card(const std::vector<hmi::Entry>& files, const hmi::Settings& settings);
 

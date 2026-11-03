@@ -41,6 +41,8 @@ hw_stop_required = on
 link_idle_ms = 3000
 # the data shown are marked old when the server has not updated them for this many seconds, 2..3600
 stale_after_s = 15
+# the machine page says the model, the tool at work with its holes (cuts) done, the next tool, the tools finished and the time left
+tool_bar = on
 
 # voice
 voice_alerts = on

@@ -173,6 +173,7 @@ inline std::string reason_text(const std::string& why, Lang l) {
     if (why == reasons::kEmptyFile) return text(T::WfEmpty, l);
     if (why == reasons::kOldServerNoFile) return text(T::WfOldNoFile, l);
     if (why == reasons::kNotStopped || why == reasons::kNothingToGoOn) return text(T::WfNothing, l);
+    if (why == reasons::kJobRunning) return text(T::WfRunning, l);
     return why;
 }
 
