@@ -144,3 +144,19 @@ ui.WarnFar	Darbas toli nuo kampo
 ui.WarnScale	Mastelis nėra 1
 ui.WarnCourse	Planas viršija ašies eigą
 ui.WfRunning	Vykdomas darbas: failo pakeisti negalima
+ui.Elapsed	Praėjo
+ui.EndsAt	Baigsis
+ui.Routed	Frezuotas ilgis
+ui.Changes	Įrankių keitimai
+ui.StageDone	Gręžimas baigtas, toliau frezavimas
+ui.FollowRouting	Sekti frezavimą
+ui.BoardOut	Darbas baigtas: išimkite plokštę
+ui.JogLimit	Eigos pabaiga
+ui.JogRaise	Galvutė per žemai: pirmiausia pakelkite Z
+ui.WhyJobRunning	Vykdomas darbas: rankinis judinimas negalimas
+ui.Continuous	Nepertraukiamas
+ui.RackTitle	Padėtys juostoje
+ui.RackNoSlot	neturi vietos juostoje
+ui.RackShared	dalijasi vieta juostoje su kitu įrankiu
+ui.RackUndefined	jo vieta nėra apibrėžta staklėse
+ui.RackNotChained	Serveris nesujungė įrankių keitimų: sudėkite įrankius į juostą darbo tvarka

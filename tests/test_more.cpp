@@ -86,8 +86,9 @@ static void the_file_of_a_cue_depends_on_the_voice_only() {
   CHECK(notice_file("/sdcard", voice, Cue::ToolChange) == "/sdcard/voices/pt-br/m/tool.wav");
   CHECK(notice_file("/sdcard", voice, Cue::CheckOk) == "/sdcard/voices/pt-br/m/check_ok.wav");
   CHECK(notice_file("/sdcard", voice, Cue::CheckNotOk) == "/sdcard/voices/pt-br/m/check_bad.wav");
+  CHECK(notice_file("/sdcard", voice, Cue::Stage) == "/sdcard/voices/pt-br/m/stage.wav");
   CHECK(notice_file("", NoticeSetting{NoticeSetting::Kind::Voice, Lang::En, true}, Cue::Finished) == "/voices/en/f/finished.wav");
-  for (const Cue c : {Cue::Finished, Cue::ToolChange, Cue::CheckOk, Cue::CheckNotOk}) {
+  for (const Cue c : {Cue::Finished, Cue::ToolChange, Cue::CheckOk, Cue::CheckNotOk, Cue::Stage}) {
     CHECK(notice_file("/sdcard", NoticeSetting{}, c).empty() && notice_file("/sdcard", NoticeSetting{NoticeSetting::Kind::Tone, Lang::En, true}, c).empty());
   }
 }
@@ -173,7 +174,7 @@ static void a_chunk_that_says_it_is_bigger_than_the_file_does_not_make_the_searc
 }
 
 static void the_tones_follow_the_volume_and_the_rate() {
-  for (const Cue c : {Cue::Finished, Cue::ToolChange, Cue::CheckOk, Cue::CheckNotOk}) {
+  for (const Cue c : {Cue::Finished, Cue::ToolChange, Cue::CheckOk, Cue::CheckNotOk, Cue::Stage}) {
     std::size_t expected = 0;
     for (const Note& n : tone_notes(c)) expected += static_cast<std::size_t>(22050ull * n.ms / 1000);
     CHECK(tone_samples(c, 22050, 70).size() == expected && !tone_notes(c).empty());

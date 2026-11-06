@@ -295,6 +295,45 @@ def _notice(v):
     return "" if m and m.group(1) in LANGS else "not off, default or voice:LANG:f|m"
 
 
+def _dec(lo, hi):
+    def check(v):
+        try:
+            x = float(v)
+        except ValueError:
+            return "out of range or not a number (%g..%g)" % (lo, hi)
+        return "" if re.fullmatch(r"[0-9]+(\.[0-9]+)?", v) and lo <= x <= hi else "out of range or not a number (%g..%g)" % (lo, hi)
+    return check
+
+
+def _steps(v):
+    parts = [x.strip() for x in v.split(",")]
+    try:
+        nums = [float(x) for x in parts]
+    except ValueError:
+        return "up to 8 distances above 0 and up to 500, increasing"
+    ok = 1 <= len(nums) <= 8 and all(0.001 <= n <= 500 for n in nums) and all(b > a for a, b in zip(nums, nums[1:]))
+    return "" if ok else "up to 8 distances above 0 and up to 500, increasing"
+
+
+def _places(v):
+    if not re.fullmatch(r"\s*[0-9]+(\s*-\s*[0-9]+)?(\s*,\s*[0-9]+(\s*-\s*[0-9]+)?)*\s*", v):
+        return "places from 1 to 14, like 1-14 or 1,2,5-8"
+    got = set()
+    for part in v.split(","):
+        lo, _, hi = part.partition("-")
+        a, b = int(lo), int(hi or lo)
+        if b < a:
+            return "places from 1 to 14, like 1-14 or 1,2,5-8"
+        got.update(n for n in range(a, min(b, 1000) + 1) if 1 <= n <= 14)
+    return "" if got else "places from 1 to 14, like 1-14 or 1,2,5-8"
+
+
+def _offset(v):
+    if re.fullmatch(r"-?[0-9]{1,4}", v) and -720 <= int(v) <= 840:
+        return ""
+    return "out of range or not a number (-720..840)"
+
+
 RULES = {
     "language": lambda v: "" if v in LANGS else "not one of the language codes of the screen",
     "theme": lambda v: "",
@@ -309,7 +348,13 @@ RULES = {
     "hw_stop_required": _flag, "link_idle_ms": _num(200, 60000), "stale_after_s": _num(2, 3600), "tool_bar": _flag,
     "voice_alerts": _flag, "voice_orders": _flag, "voice_confirm": _flag,
     "volume_percent": _num(0, 100), "mic_gain_percent": _num(0, 100),
-    "sound_finish": _notice, "sound_tool_change": _notice, "sound_check_ok": _notice, "sound_check_bad": _notice,
+    "sound_finish": _notice, "sound_tool_change": _notice, "sound_check_ok": _notice, "sound_check_bad": _notice, "sound_stage": _notice,
+    "jog_steps": _steps, "jog_step": _dec(0.001, 500), "jog_continuous": _flag,
+    "jog_speed_slow": _dec(1, 20000), "jog_speed_medium": _dec(1, 20000), "jog_speed_fast": _dec(1, 20000),
+    "jog_speed": lambda v: "" if v in ("slow", "medium", "fast") else "not slow, medium or fast",
+    "jog_chunk_mm": _dec(0.1, 20), "jog_clearance_mm": _dec(0, 100), "jog_board_z_mm": _dec(0, 500), "jog_below_board_mm": _dec(0, 50),
+    "jog_block_running": _flag, "jog_limits": _flag, "jog_safe_z": _flag,
+    "rack_places": _places, "rack_check": _flag, "rack_chain": _flag, "stage_window": _flag, "clock_utc_offset_min": _offset,
 }
 if HAS_MACHINE_KIND:
     RULES["machine_kind"] = lambda v: "" if v in ("cnc", "laser", "pnp") else "not cnc, laser or pnp"
