@@ -200,7 +200,7 @@ struct Response {
 /// Why a call to the server did not come back with an answer (the screen says it in the language of the operator: see status.hpp).
 enum class CallError { None, NoServer, Client, TooLong, Broke, Send, NoAnswer };
 
-/// Who the screen says it is in every request (`name/version`, for example `eh3d-node-hmi-gui/0.0.5`): the server can tell the screens apart in its log.
+/// Who the screen says it is in every request (`name/version`, for example `eh3d-node-bungard-hmi/0.0.5`): the server can tell the screens apart in its log.
 inline std::string client_id(const std::string& name, const std::string& version) { return version.empty() ? name : name + "/" + version; }
 
 /// The request as the text that goes on the wire; the token of the screen goes as a bearer token, and `client` (see `client_id`) as User-Agent and X-EH3D-Client.
