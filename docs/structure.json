@@ -106,6 +106,34 @@
         },
         {
           "desc": {
+            "en": "the card of the work, the stages",
+            "es": "la tarjeta del trabajo, las etapas",
+            "it": "la scheda del lavoro, le fasi",
+            "de": "die Arbeitskarte, die Etappen",
+            "fr": "la fiche du travail, les étapes",
+            "pt": "o cartão do trabalho, as etapas",
+            "zh": "作业卡片、各阶段",
+            "ja": "作業カード、段階"
+          },
+          "name": "job_card.hpp  stage_notice.hpp",
+          "tree_name": "job_card.hpp stage_notice.hpp"
+        },
+        {
+          "desc": {
+            "en": "the changer bar, the panel by hand",
+            "es": "la barra del cambiador, el panel manual",
+            "it": "la barra del cambio, il pannello manuale",
+            "de": "Wechslerleiste, Handfeld",
+            "fr": "la barre du changeur, le panneau manuel",
+            "pt": "a barra do trocador, o painel manual",
+            "zh": "刀库、手动面板",
+            "ja": "バー、手動パネル"
+          },
+          "name": "rack.hpp  jog_panel.hpp",
+          "tree_name": "rack.hpp jog_panel.hpp"
+        },
+        {
+          "desc": {
             "en": "the quality check and the ring of LEDs",
             "es": "la verificación de calidad y el aro de LEDs",
             "it": "il controllo qualità e l'anello di LED",
@@ -331,6 +359,20 @@
             "zh": "37 种语言与字体",
             "ja": "37 言語とフォント"
           }
+        },
+        {
+          "desc": {
+            "en": "the bar, the card, the stages and the panel by hand",
+            "es": "la barra, la tarjeta, las etapas y el panel manual",
+            "it": "la barra, la scheda, le fasi e il pannello manuale",
+            "de": "Leiste, Karte, Etappen und Handfeld",
+            "fr": "la barre, la fiche, les étapes et le panneau manuel",
+            "pt": "a barra, o cartão, as etapas e o painel manual",
+            "zh": "刀库、卡片、阶段和手动面板",
+            "ja": "バー、カード、段階、手動パネル"
+          },
+          "name": "test_parity.cpp",
+          "tree_name": "test_parity.cpp"
         }
       ],
       "tree": {

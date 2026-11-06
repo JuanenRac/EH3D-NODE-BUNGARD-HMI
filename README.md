@@ -30,7 +30,7 @@
 |---|---|
 | Version | `0.0.8` |
 | Maturity | Scaffolding |
-| Tests | 8 host test programs (192292 checks counted) |
+| Tests | 9 host test programs (219916 checks counted) |
 | Stack | C++17, ESP-IDF 5.5, LVGL 9, ESP32-P4 |
 | On real hardware | No: the firmware has not been built or flashed, and nothing has been connected to a machine |
 
@@ -45,13 +45,14 @@ Each line is one part of this repository and the light says how far it is today.
 | Area | State | What it means here |
 |---|---|---|
 | Software | 🟠 | The ESP-IDF project (ESP32-P4, LVGL 9, the settings file in its own partition) is written; it has not been built or flashed. |
-| Tests | 🟡 | 8 host test programs pass (`ctest`): 192292 checks in the settings file, the gate, the spoken orders and alerts, the keyboards, the recorded notices, the server client and the texts of the screens in eight languages. |
+| Tests | 🟡 | 9 host test programs pass (`ctest`): 219916 checks in the settings file, the gate, the spoken orders and alerts, the keyboards, the recorded notices, the server client and the texts of the screens in eight languages. |
 | Safety rules | 🟡 | Every move and spindle order goes through the gate: confirmation on the screen, hardware-stop latch that only an acknowledgement on the screen clears once the button is up, no move while the link is not armed. Covered by tests; never run with a real stop button. |
 | Voice | 🟡 | Spoken orders and alerts are recognised and phrased in eight languages and tested as text; no microphone or speaker has been used. |
 | Screens | 🟠 | The machine, job (microSD), machines-and-stations and settings screens are written, lying down and standing up, in the look of the desktop program; the viewer tab is still an empty card. Only a drawing of the layout exists, not a capture of a module. |
 | Real hardware | 🔴 | No module has run this firmware, the link to the server does not exist yet, and nothing has been connected to a machine. |
 | Documentation | 🟡 | README in eight languages, the settings reference and the hardware notes. |
 | Server and card | 🟡 | The files of the microSD card (listing, safe names, kinds), the requests to EH3D-SERVER, the reading of the fleet and the flow of a job (send it ready, start it through the gate, follow it, answer the tool change) are tested on a computer with answers of the server written down; the sockets and the card driver have never run on a module. |
+| Shared with the desktop program | 🟠 | The card of the work in hand, the stage between the drilling and the routing, the panel to move the machine by hand and the bar of the tool changer with its places are written and tested on a computer (`docs/PARITY_BUNGARD_GUI.md` says what is done and what is missing); none of it has run on a module, and the moves of the panel wait for the link to the node. |
 
 ## 🎯 Overview
 
@@ -132,6 +133,7 @@ How the parts of this repository fit together: who talks to it, what it holds an
 * **The job is followed again after a reset:** from the moment the operator starts a job, the screen keeps in its flash which job it is (its id, the machine, its name); after a power cut or a reset it follows the same job again, the next reading of the server says whether it still runs, waits at a tool change or is over, and the cancel button leaves it. The job itself lives in the server. Written and tested on a computer; the firmware has never run on a module.
 * **Quality check and the ring of LEDs:** a Quality check page shows the verdict of the check of the work through the camera of the drill head (OK, NOT OK or cannot judge, as big as a sign) with what was found, turns the ring of LEDs on and off, chooses the light for the picture and the hole in the centre, the profile (standard, fine pitch, prototype), calibrates the scale and runs the check; the server judges the picture and holds the profile, so the desktop program and the phones show the same last check. The screen says the result aloud when `sound_check_ok` and `sound_check_bad` are set (a beep or a recorded voice that says that the visual check of the board is correct or is not correct), and it now also says the end of a job and the request for a tool.
 * **The screen says what is wrong and what is old:** a line of `hmi.cfg` that cannot be used is shown under the top bar (which line, which key, why) instead of being ignored in silence, and the server is checked at the start (a clear note when it does not answer on its port, `18200` by default). The top bar says connected, no connection or other server, and marks what the screen shows as old when the server has not updated it for `stale_after_s` seconds. The confirmation counts down to its abort (`confirm_timeout_ms`) and names the order in the language of the operator; the notes of the application are texts in the 37 languages, no longer English literals. The version of the firmware is on the title bar and in the settings, and every request to the server carries it in the headers `User-Agent` and `X-EH3D-Client`. `sdkconfig.defaults` sets the task watchdog, the stack of the main task and the stack overflow check, the firmware logs the stack each task has left, and `tools/check_firmware_defaults.py` guards these settings. Written and tested on a computer; not built or run on a module.
+* **What the desktop program does, on the screen:** the card of the work in hand (the tool and its step, the times with the local hour the job ends, the position and depth, the counters); a notice and a window between the drilling and the routing, so the board is asked to come out only at the end of the whole job; a panel to move the machine by hand (a cross for X and Y, Z, steps of 0.01 to 50 mm, a continuous mode, three speeds, four places), blocked while a job runs or the stop is on and held inside the table and clear of the board; and, on a machine with the tool changer, the bar of the tools with their state and the window that says where each tool is (a job does not start with a tool without a place, a place the machine lacks or two tools in one place; the request carries the places and the chaining of the drilling and the routing, and the screen says so when the server does not take them). Written and tested on a computer; the moves of the panel wait for the link to the node, and none of it has run on a module.
 
 ## 🔒 Security & Safety
 
@@ -178,6 +180,16 @@ Everything tuned is a line of `hmi.cfg` (copy `hmi.cfg.example` to the `config` 
 | `poll_s` | 3 | 1 - 60 | how often the screen asks the server for the fleet |
 | `stale_after_s` | 15 | 2 - 3600 | the data shown are marked old when the server has not updated them for this many seconds |
 | `tool_bar` | on | on / off | the machine page shows the model, the tool at work with its holes done, the next tool, the tools finished and the time left |
+| `jog_block_running` | on | on / off | no move by hand while a job runs or waits; the hardware stop always blocks it |
+| `jog_limits` | on | on / off | the head stays inside the table and above the board |
+| `jog_safe_z` | on | on / off | Z goes up to the clearance before the head crosses the board |
+| `jog_steps` | `0.01, 0.1, 1, 10, 50` | up to 8 distances, 0.001 - 500 mm, increasing | the steps of the panel that moves the machine by hand (`jog_step`, `jog_continuous`, `jog_speed_*`, `jog_chunk_mm`, `jog_clearance_mm`, `jog_board_z_mm` and `jog_below_board_mm` tune the rest) |
+| `rack_places` | `1-14` | places 1 to 14 | the places of the bar of the tool changer that the machine defines |
+| `rack_check` | on | on / off | a job on a machine with the tool changer does not start while a tool has no place, a place is not defined or two tools share one |
+| `rack_chain` | on | on / off | the request carries the places of the tools and the chaining of the drilling and the routing |
+| `stage_window` | on | on / off | the window between the drilling and the routing, with the buttons to follow it or to stop |
+| `clock_utc_offset_min` | 0 | -720 - 840 | the time zone of the hour a job is expected to end at |
+| `sound_stage` | off | off / default / voice:LANG:f/m | the notice at the end of the drilling when the routing comes next |
 | `table_width_mm` | 0 | 0 - 5000 | the width of the table of the machine for the warning of a board that does not fit; 0 = the one the server says (the course less the offset) |
 | `table_depth_mm` | 0 | 0 - 5000 | the depth of the table; 0 = the one the server says |
 
@@ -194,7 +206,7 @@ The firmware has not been built yet: when it is, `idf.py set-target esp32p4 && i
 
 ## 🧪 Testing
 
-The host tests (`build.bat` or `./build.sh`, then `ctest`) are two programs and all of it passes: `test_hmi` (1638 checks) on the settings file, the gate (stop always goes, hardware-stop latch, confirmation, timeout and clock wrap-around, voice rules, switches), the spoken orders and alerts and the screen texts in eight languages; and `test_workflow` (365 checks) on the orientation and the touch, the files of the card (kinds, safe names, sorting), the JSON reader, the requests and answers of the server, and the flow of a job from the card to its end. The other two programs cover the keyboards (`test_keyboard`, 231 checks: every setting has its keyboard, the ranges of the pad are the ones of the settings file, the decimals, the sign, the arrows, the full keyboard of each language, the shift, the symbols and the length) and the recorded notices (`test_notices`, 266 checks: the setting, the file of each language and gender). The last two programs are `test_quality` (911 checks: the requests, the reading of the report, every finding) and `test_locales` (185862 checks: every key has a text in each of the 29 other languages, nothing is empty or too long, the script of each language is the right one, what must stay stays, and every character that any text can draw is in the range of the generated fonts). Another program, `test_status` (1155 checks: the report of `hmi.cfg`, the state of the link and the age of the data, the notes, the orders with their countdown and the identification of the client).
+The host tests (`build.bat` or `./build.sh`, then `ctest`) are two programs and all of it passes: `test_hmi` (1798 checks) on the settings file, the gate (stop always goes, hardware-stop latch, confirmation, timeout and clock wrap-around, voice rules, switches), the spoken orders and alerts and the screen texts in eight languages; and `test_workflow` (365 checks) on the orientation and the touch, the files of the card (kinds, safe names, sorting), the JSON reader, the requests and answers of the server, and the flow of a job from the card to its end. The other two programs cover the keyboards (`test_keyboard`, 255 checks: every setting has its keyboard, the ranges of the pad are the ones of the settings file, the decimals, the sign, the arrows, the full keyboard of each language, the shift, the symbols and the length) and the recorded notices (`test_notices`, 266 checks: the setting, the file of each language and gender). The last two programs are `test_quality` (911 checks: the requests, the reading of the report, every finding) and `test_locales` (213069 checks: every key has a text in each of the 29 other languages, nothing is empty or too long, the script of each language is the right one, what must stay stays, and every character that any text can draw is in the range of the generated fonts). Another program, `test_status` (1155 checks: the report of `hmi.cfg`, the state of the link and the age of the data, the notes, the orders with their countdown and the identification of the client). The ninth program, `test_parity` (227 checks), covers the places of the bar and their checks, the chaining of the drilling and the routing and the request of the second version, the workflow on a machine with the tool changer, the card of the work in hand and its hour, the stages of a job, the panel to move the machine by hand and the new settings.
 
 Self-test for the day the screen meets the hardware: `python tools/selftest.py` checks `hmi.cfg.example` (or `--cfg FILE`) with the rules of the firmware and starts a toy server on port 18200 to check that its answers are what the screen expects; with `--server HOST:PORT` it asks a real server the same questions using GET only. It sends nothing to hardware. Its tests run in the CI (`python -I -m unittest discover -s tools -p "test_*.py"`). The steps to do by hand on the screen are in [docs/HARDWARE_CHECKLIST.md](docs/HARDWARE_CHECKLIST.md).
 
@@ -229,6 +241,8 @@ EH3D-NODE-BUNGARD-HMI/
 │   ├── orientation.hpp sdfiles.hpp                   standing and lying layouts, files of the card
 │   ├── server_link.hpp workflow.hpp job_memory.hpp   client of the server and the flow of a job
 │   ├── job_tools.hpp job_bar.hpp                     the tools of a file, the work bar, the plan
+│   ├── job_card.hpp stage_notice.hpp                 the card of the work, the stages
+│   ├── rack.hpp jog_panel.hpp                        the changer bar, the panel by hand
 │   ├── quality.hpp                                   the quality check and the ring of LEDs
 │   ├── ui_text.hpp keyboard.hpp notices.hpp          texts, keyboards and notices
 │   ├── locales.hpp locales_gen.hpp font_ranges.hpp   37 languages and the font ranges

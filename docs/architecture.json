@@ -35,12 +35,15 @@
       "level": "untested",
       "title": "LVGL screens",
       "lines": [
-        "machine, job, viewer, fleet,",
-        "settings; stop always on top"
+        "machine card, jog panel, tool bar,",
+        "job, fleet, settings; stop on top"
       ],
       "code": [
         "main/ui.cpp",
-        "main/app_main.cpp"
+        "main/app_main.cpp",
+        "core/job_card.hpp",
+        "core/jog_panel.hpp",
+        "core/rack.hpp"
       ]
     },
     {
