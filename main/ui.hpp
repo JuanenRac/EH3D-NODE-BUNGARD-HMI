@@ -6,8 +6,10 @@
 
 #include "../core/gate.hpp"
 #include "../core/hmi_config.hpp"
+#include "../core/job_card.hpp"
 #include "../core/job_tools.hpp"
 #include "../core/orientation.hpp"
+#include "../core/rack.hpp"
 #include "../core/quality.hpp"
 #include "../core/sdfiles.hpp"
 #include "../core/server_link.hpp"
@@ -30,7 +32,7 @@ struct State {
     std::string note;  // the line under the buttons: why something was refused, what the server answered
 };
 
-enum class What { Action, AckRelease, Confirm, Cancel, SetOrientation, SetLanguage, OpenCard, SendJob, RefreshCard, LightSet, InspectRun, InspectPreset, InspectCalibrate, ToggleTool, Resume, SetSpindleOver };
+enum class What { Action, AckRelease, Confirm, Cancel, SetOrientation, SetLanguage, OpenCard, SendJob, RefreshCard, LightSet, InspectRun, InspectPreset, InspectCalibrate, ToggleTool, Resume, SetSpindleOver, JogPress, JogRelease, JogStep, JogMode, JogSpeed, JogPlace, JogHome, RackSet };
 
 /// What the operator did on the screen; the application runs it through the gate.
 struct Request {
@@ -44,6 +46,10 @@ struct Request {
     int preset = 0;       // InspectPreset: 0 standard, 1 fine pitch, 2 prototype
     int tool = 0;         // ToggleTool: the number of the tool (the pen of a routing file) to switch off or on
     bool refuse = false;  // SetSpindleOver: true = refuse an order beyond the spindle, false = cut it to the top speed
+    int index = 0;        // JogPress: the arrow (0 X-, 1 X+, 2 Y-, 3 Y+, 4 Z down, 5 Z up); JogStep: the step; JogSpeed: 0 slow, 1 medium, 2 fast; JogPlace: the place 0..3
+    bool save = false;    // JogPlace: keep the place of the head there instead of going to it
+    bool route_tool = false;  // RackSet: the tool is a cutter (a routing pen), not a drill
+    int slot = 0;         // RackSet: the place of the bar (0 takes it away)
 };
 
 /// Builds the screens for a layout (with the LVGL lock taken). `post` is called, in the LVGL task, for each request of the operator.
@@ -89,5 +95,33 @@ void show_flow(const FlowState& flow, const hmi::Settings& settings);
 void show_hud(const std::string& text);
 /// Shows the files of the card.
 void show_card(const std::vector<hmi::Entry>& files, const hmi::Settings& settings);
+
+/// The panel that moves the machine by hand, as the application keeps it.
+struct JogView {
+    std::vector<double> steps;
+    int step = 0;
+    bool continuous = false;
+    int speed = 1;            // 0 slow, 1 medium, 2 fast
+    double feeds[3] = {0, 0, 0};
+    bool has_place[4] = {false, false, false, false};
+    bool pos_known = false;   // the head is where the panel has put it (the machine does not tell it)
+    double x = 0, y = 0, z = 0;
+    std::string note;         // why the last press did not move the machine
+};
+/// Shows the panel that moves the machine by hand.
+void show_jog(const JogView& view, const hmi::Settings& settings);
+/// Shows the four blocks of the card of the work in hand (the tool and its step, the times, the position and the depth, the counters).
+void show_job_card(const hmi::CardText& card);
+/// The bar of the tool changer: the squares of the tools with their places and states, and the window to give each tool its place.
+struct RackView {
+    std::vector<hmi::BarTool> tools;
+    std::vector<int> places;      // the places of the bar the machine defines
+    std::string problems;         // what stops the start (empty when all is well)
+    std::string not_chained;      // the red line when the server did not chain the tool changes (empty otherwise)
+    bool atc = false;             // the machine changes the tools itself: the bar and its window show only then
+};
+void show_rack(const RackView& view, const hmi::Settings& settings);
+/// The window between the stages: the drilling is done and the routing comes next, with the buttons to follow the routing or to stop; an empty text hides it.
+void show_stage(const std::string& text, const hmi::Settings& settings);
 
 }  // namespace ui

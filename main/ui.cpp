@@ -5,6 +5,7 @@
 #include "ui.hpp"
 
 #include <cstdio>
+#include <cstdlib>
 
 #include "lvgl.h"
 
@@ -57,8 +58,34 @@ lv_obj_t* g_continue_button = nullptr;
 lv_obj_t* g_toolchange_button = nullptr;
 lv_obj_t* g_over_label = nullptr;
 bool g_over_refuse = false;
-lv_obj_t* g_move_buttons[10] = {nullptr};
+lv_obj_t* g_move_buttons[24] = {nullptr};
 int g_move_count = 0;
+// the card of the work in hand, the panel that moves the machine by hand, the bar of the tool changer and the window between the stages
+lv_obj_t* g_card_blocks[4] = {nullptr};
+lv_obj_t* g_jog_box = nullptr;
+lv_obj_t* g_jog_steps[8] = {nullptr};
+lv_obj_t* g_jog_speeds[3] = {nullptr};
+lv_obj_t* g_jog_places[4] = {nullptr};
+lv_obj_t* g_jog_mode = nullptr;
+lv_obj_t* g_jog_save = nullptr;
+lv_obj_t* g_jog_label = nullptr;
+bool g_jog_save_mode = false;
+std::size_t g_jog_step_count = 0;
+lv_obj_t* g_rack_box = nullptr;      // the squares of the bar, on the job page
+lv_obj_t* g_rack_open = nullptr;     // the button that opens the window of the positions
+lv_obj_t* g_rack_note = nullptr;     // the red line: the server did not chain the tool changes
+lv_obj_t* g_rack_win = nullptr;      // the window of the positions in the bar
+lv_obj_t* g_rack_problems = nullptr;
+std::string g_rack_signature;        // which tools the window was built for
+struct RackTag {
+    bool route;
+    int tool;
+};
+RackTag g_rack_tags[32];
+lv_obj_t* g_rack_drops[32] = {nullptr};
+std::size_t g_rack_drop_count = 0;
+lv_obj_t* g_stage_win = nullptr;
+lv_obj_t* g_stage_text = nullptr;
 // the quality check
 lv_obj_t* g_q_badge = nullptr;
 lv_obj_t* g_q_badge_text = nullptr;
@@ -130,13 +157,14 @@ void on_confirm(lv_event_t*) { Request r; r.what = What::Confirm; send(r); }
 void on_cancel(lv_event_t*) { Request r; r.what = What::Cancel; send(r); }
 void on_action(lv_event_t* e) { send_action(*static_cast<const hmi::Action*>(lv_event_get_user_data(e))); }
 
-void on_tab(lv_event_t* e) {
-    const int idx = static_cast<int>(reinterpret_cast<intptr_t>(lv_event_get_user_data(e)));
+void show_page(int idx) {
     for (int i = 0; i < kPages; ++i) {
         if (i == idx) lv_obj_remove_flag(g_pages[i], LV_OBJ_FLAG_HIDDEN); else lv_obj_add_flag(g_pages[i], LV_OBJ_FLAG_HIDDEN);
         lv_obj_set_style_border_color(g_tabs[i], i == idx ? kAmber : kDim, 0);
     }
 }
+
+void on_tab(lv_event_t* e) { show_page(static_cast<int>(reinterpret_cast<intptr_t>(lv_event_get_user_data(e)))); }
 
 void on_orientation(lv_event_t* e) {
     Request r;
@@ -224,17 +252,119 @@ void on_spindle_over(lv_event_t*) {
 void on_send_job(lv_event_t*) { Request r; r.what = What::SendJob; send(r); }
 void on_refresh_card(lv_event_t*) { Request r; r.what = What::RefreshCard; send(r); }
 
-const hmi::Action kJog[6] = {{hmi::Kind::Motion, "jog X -"}, {hmi::Kind::Motion, "jog X +"}, {hmi::Kind::Motion, "jog Y -"},
-                             {hmi::Kind::Motion, "jog Y +"}, {hmi::Kind::Motion, "jog Z -"}, {hmi::Kind::Motion, "jog Z +"}};
+// the panel that moves the machine by hand: the arrows, the steps, the mode, the speeds and the four places; the application keeps the state, the screen only reports the touches
+void jog_request(What what, int index, bool save = false) {
+    Request r;
+    r.what = what;
+    r.index = index;
+    r.save = save;
+    send(r);
+}
+int index_of(lv_event_t* e) { return static_cast<int>(reinterpret_cast<intptr_t>(lv_event_get_user_data(e))); }
+void on_jog_press(lv_event_t* e) { jog_request(What::JogPress, index_of(e)); }
+void on_jog_release(lv_event_t*) { jog_request(What::JogRelease, 0); }
+void on_jog_step(lv_event_t* e) { jog_request(What::JogStep, index_of(e)); }
+void on_jog_mode(lv_event_t*) { jog_request(What::JogMode, 0); }
+void on_jog_speed(lv_event_t* e) { jog_request(What::JogSpeed, index_of(e)); }
+void on_jog_home(lv_event_t*) { jog_request(What::JogHome, 0); }
+void on_jog_save(lv_event_t*) {
+    g_jog_save_mode = !g_jog_save_mode;
+    lv_obj_set_style_border_width(g_jog_save, g_jog_save_mode ? 3 : 0, 0);
+    lv_obj_set_style_border_color(g_jog_save, kAmber, 0);
+}
+void on_jog_place(lv_event_t* e) {
+    jog_request(What::JogPlace, index_of(e), g_jog_save_mode);
+    if (g_jog_save_mode) {
+        g_jog_save_mode = false;
+        lv_obj_set_style_border_width(g_jog_save, 0, 0);
+    }
+}
+
+// the window between the stages: follow the routing (back to the machine page) or stop
+void on_stage_follow(lv_event_t*) {
+    lv_obj_add_flag(g_stage_win, LV_OBJ_FLAG_HIDDEN);
+    show_page(0);
+}
+void on_stage_abort(lv_event_t*) {
+    lv_obj_add_flag(g_stage_win, LV_OBJ_FLAG_HIDDEN);
+    send_action({hmi::Kind::Stop, "stop"});
+}
+
+// the bar of the tool changer: the window of the positions and the choice of the place of a tool
+void on_rack_open(lv_event_t*) {
+    if (g_rack_win != nullptr) lv_obj_remove_flag(g_rack_win, LV_OBJ_FLAG_HIDDEN);
+}
+void on_rack_close(lv_event_t*) {
+    if (g_rack_win != nullptr) lv_obj_add_flag(g_rack_win, LV_OBJ_FLAG_HIDDEN);
+}
+void on_rack_pick(lv_event_t* e) {
+    const std::size_t i = static_cast<std::size_t>(index_of(e));
+    if (i >= g_rack_drop_count) return;
+    Request r;
+    r.what = What::RackSet;
+    r.route_tool = g_rack_tags[i].route;
+    r.tool = g_rack_tags[i].tool;
+    // the options are "-" and then the places the machine defines: the text of the choice is the place
+    char chosen[8] = {0};
+    lv_dropdown_get_selected_str(g_rack_drops[i], chosen, sizeof chosen);
+    r.slot = std::atoi(chosen);  // "-" is 0: the place is taken away
+    send(r);
+}
 const hmi::Action kStart{hmi::Kind::Start, "start job"};
 const hmi::Action kPause{hmi::Kind::Pause, "pause"};
 const hmi::Action kContinue{hmi::Kind::Motion, "resume job"};
 const hmi::Action kToolChanged{hmi::Kind::Motion, "tool changed"};
-const hmi::Action kHome{hmi::Kind::Motion, "home"};
 hmi::Action g_spindle_action{hmi::Kind::Spindle, "spindle on", 0};  // the turns come from the setting `spindle_rpm`; the gate cuts them to what the spindle gives
 
 void remember_move(lv_obj_t* b) {
-    if (g_move_count < 10) g_move_buttons[g_move_count++] = b;
+    if (g_move_count < 24) g_move_buttons[g_move_count++] = b;
+}
+
+// an arrow of the panel: it asks when it is pressed and tells when it is let go (the held arrow of the continuous mode stops there)
+lv_obj_t* jog_arrow(lv_obj_t* parent, const char* label, int index) {
+    lv_obj_t* b = lv_button_create(parent);
+    lv_obj_set_size(b, 84, 64);
+    lv_obj_set_style_bg_color(b, kSlate, 0);
+    lv_obj_set_style_radius(b, 10, 0);
+    lv_obj_add_event_cb(b, on_jog_press, LV_EVENT_PRESSED, reinterpret_cast<void*>(static_cast<intptr_t>(index)));
+    lv_obj_add_event_cb(b, on_jog_release, LV_EVENT_RELEASED, nullptr);
+    lv_obj_add_event_cb(b, on_jog_release, LV_EVENT_PRESS_LOST, nullptr);
+    lv_obj_t* l = lv_label_create(b);
+    lv_label_set_text(l, label);
+    lv_obj_set_style_text_font(l, &eh3d_font_24, 0);
+    lv_obj_center(l);
+    remember_move(b);
+    return b;
+}
+
+lv_obj_t* spacer(lv_obj_t* parent) {
+    lv_obj_t* o = lv_obj_create(parent);
+    lv_obj_remove_style_all(o);
+    lv_obj_set_size(o, 84, 64);
+    return o;
+}
+
+lv_obj_t* chip(lv_obj_t* parent, const char* label, lv_event_cb_t cb, int index, int w) {
+    lv_obj_t* b = button(parent, label, cb, reinterpret_cast<void*>(static_cast<intptr_t>(index)), kSlate, w, 48);
+    lv_obj_set_style_border_color(b, kAmber, 0);
+    lv_obj_set_style_border_width(b, 0, 0);
+    return b;
+}
+
+void mark(lv_obj_t* o, bool on) {
+    if (o == nullptr) return;
+    lv_obj_set_style_border_width(o, on ? 3 : 0, 0);
+}
+
+// a window that floats over the screen
+lv_obj_t* window(int w, int h) {
+    lv_obj_t* win = lv_obj_create(lv_screen_active());
+    style_card(win);
+    lv_obj_add_flag(win, LV_OBJ_FLAG_FLOATING);
+    lv_obj_set_size(win, w, h);
+    lv_obj_center(win);
+    lv_obj_add_flag(win, LV_OBJ_FLAG_HIDDEN);
+    return win;
 }
 
 }  // namespace
@@ -309,16 +439,87 @@ void build(const hmi::Settings& s, const hmi::Layout& layout, void (*post)(const
     lv_obj_set_width(g_hud, LV_PCT(100));
     lv_label_set_long_mode(g_hud, LV_LABEL_LONG_WRAP);
     lv_label_set_text(g_hud, "");
+    {
+        // the four blocks: the tool and its step, the times, the position and the depth, the counters
+        lv_obj_t* blocks = lv_obj_create(job);
+        lv_obj_remove_style_all(blocks);
+        lv_obj_set_size(blocks, LV_PCT(100), LV_SIZE_CONTENT);
+        lv_obj_set_flex_flow(blocks, LV_FLEX_FLOW_ROW_WRAP);
+        lv_obj_set_style_pad_gap(blocks, 8, 0);
+        for (int i = 0; i < 4; ++i) {
+            lv_obj_t* box = lv_obj_create(blocks);
+            lv_obj_remove_style_all(box);
+            lv_obj_set_size(box, LV_PCT(48), LV_SIZE_CONTENT);
+            g_card_blocks[i] = lv_label_create(box);
+            lv_obj_set_width(g_card_blocks[i], LV_PCT(100));
+            lv_label_set_long_mode(g_card_blocks[i], LV_LABEL_LONG_WRAP);
+            lv_label_set_text(g_card_blocks[i], "");
+        }
+    }
     lv_obj_t* plan = card(g_pages[0], "2D");
     lv_obj_set_size(plan, col_w, layout.portrait ? 360 : LV_PCT(100));
     lv_obj_t* jog = card(g_pages[0], hmi::text(T::Jog, s.language));
     lv_obj_set_size(jog, col_w, layout.portrait ? 380 : LV_PCT(100));
     lv_obj_set_flex_flow(jog, LV_FLEX_FLOW_ROW_WRAP);
-    // the jog pad: the letter of the axis and an arrow, which mean the same in every language
-    static const char* const arrows[6] = {"X " LV_SYMBOL_LEFT, "X " LV_SYMBOL_RIGHT, "Y " LV_SYMBOL_DOWN, "Y " LV_SYMBOL_UP, "Z " LV_SYMBOL_DOWN, "Z " LV_SYMBOL_UP};
-    for (int i = 0; i < 6; ++i) remember_move(icon_button(jog, arrows[i], on_action, const_cast<hmi::Action*>(&kJog[i]), kSlate, 120, 80));
-    remember_move(icon_button(jog, LV_SYMBOL_HOME, on_action, const_cast<hmi::Action*>(&kHome), kSlate, 120, 80));
-    remember_move(icon_button(jog, LV_SYMBOL_REFRESH, on_action, &g_spindle_action, kSlate, 120, 80));
+    // the panel that moves the machine by hand: the cross of X and Y, the column of Z, the steps, the mode, the speeds and the four places
+    g_jog_box = jog;
+    g_jog_step_count = 0;
+    g_jog_save_mode = false;
+    {
+        lv_obj_t* row = lv_obj_create(jog);
+        lv_obj_remove_style_all(row);
+        lv_obj_set_size(row, LV_PCT(100), LV_SIZE_CONTENT);
+        lv_obj_set_flex_flow(row, LV_FLEX_FLOW_ROW);
+        lv_obj_set_style_pad_gap(row, 12, 0);
+        lv_obj_t* cross = lv_obj_create(row);
+        lv_obj_remove_style_all(cross);
+        lv_obj_set_size(cross, 3 * 84 + 8, LV_SIZE_CONTENT);
+        lv_obj_set_flex_flow(cross, LV_FLEX_FLOW_ROW_WRAP);
+        lv_obj_set_style_pad_gap(cross, 4, 0);
+        spacer(cross);
+        jog_arrow(cross, "Y " LV_SYMBOL_UP, 3);
+        spacer(cross);
+        jog_arrow(cross, "X " LV_SYMBOL_LEFT, 0);
+        remember_move(icon_button(cross, LV_SYMBOL_HOME, on_jog_home, nullptr, kSlate, 84, 64));
+        jog_arrow(cross, "X " LV_SYMBOL_RIGHT, 1);
+        spacer(cross);
+        jog_arrow(cross, "Y " LV_SYMBOL_DOWN, 2);
+        spacer(cross);
+        lv_obj_t* zcol = lv_obj_create(row);
+        lv_obj_remove_style_all(zcol);
+        lv_obj_set_size(zcol, 84, LV_SIZE_CONTENT);
+        lv_obj_set_flex_flow(zcol, LV_FLEX_FLOW_COLUMN);
+        lv_obj_set_style_pad_gap(zcol, 4, 0);
+        jog_arrow(zcol, "Z " LV_SYMBOL_UP, 5);
+        remember_move(icon_button(zcol, LV_SYMBOL_REFRESH, on_action, &g_spindle_action, kSlate, 84, 64));
+        jog_arrow(zcol, "Z " LV_SYMBOL_DOWN, 4);
+        // the steps (the list is in hmi.cfg), the mode and the three speeds
+        lv_obj_t* steps = lv_obj_create(jog);
+        lv_obj_remove_style_all(steps);
+        lv_obj_set_size(steps, LV_PCT(100), LV_SIZE_CONTENT);
+        lv_obj_set_flex_flow(steps, LV_FLEX_FLOW_ROW_WRAP);
+        lv_obj_set_style_pad_gap(steps, 6, 0);
+        for (std::size_t i = 0; i < s.jog_steps.size() && i < 8; ++i) {
+            char label[24];
+            std::snprintf(label, sizeof label, "%g", s.jog_steps[i]);
+            g_jog_steps[i] = chip(steps, label, on_jog_step, static_cast<int>(i), 72);
+            ++g_jog_step_count;
+        }
+        g_jog_mode = chip(steps, hmi::text(T::Continuous, s.language), on_jog_mode, 0, 170);
+        for (int i = 0; i < 3; ++i) g_jog_speeds[i] = chip(steps, "", on_jog_speed, i, 96);
+        for (int i = 0; i < 4; ++i) {
+            char label[8];
+            std::snprintf(label, sizeof label, "P%d", i + 1);
+            g_jog_places[i] = chip(steps, label, on_jog_place, i, 72);
+        }
+        g_jog_save = icon_button(steps, LV_SYMBOL_SAVE, on_jog_save, nullptr, kSlate, 72, 48);
+        lv_obj_set_style_border_color(g_jog_save, kAmber, 0);
+        lv_obj_set_style_border_width(g_jog_save, 0, 0);
+        g_jog_label = lv_label_create(jog);
+        lv_obj_set_width(g_jog_label, LV_PCT(100));
+        lv_label_set_long_mode(g_jog_label, LV_LABEL_LONG_WRAP);
+        lv_label_set_text(g_jog_label, "");
+    }
 
     // job: the files of the microSD card, and the button that sends the chosen one to the server as a job
     lv_obj_t* files = card(g_pages[1], "microSD");
@@ -339,6 +540,19 @@ void build(const hmi::Settings& s, const hmi::Layout& layout, void (*post)(const
     lv_obj_set_size(g_tools_box, LV_PCT(100), LV_SIZE_CONTENT);
     lv_obj_set_flex_flow(g_tools_box, LV_FLEX_FLOW_ROW_WRAP);
     lv_obj_set_style_pad_gap(g_tools_box, 6, 0);
+    // the bar of the tool changer: a square for every tool of the job with its place, and the window to say where each tool is (shown only on a machine with the changer)
+    g_rack_box = lv_obj_create(side);
+    lv_obj_remove_style_all(g_rack_box);
+    lv_obj_set_size(g_rack_box, LV_PCT(100), LV_SIZE_CONTENT);
+    lv_obj_set_flex_flow(g_rack_box, LV_FLEX_FLOW_ROW_WRAP);
+    lv_obj_set_style_pad_gap(g_rack_box, 6, 0);
+    g_rack_open = button(side, hmi::text(T::RackTitle, s.language), on_rack_open, nullptr, kSlate, 300, 56);
+    lv_obj_add_flag(g_rack_open, LV_OBJ_FLAG_HIDDEN);
+    g_rack_note = lv_label_create(side);
+    lv_obj_set_width(g_rack_note, LV_PCT(100));
+    lv_label_set_long_mode(g_rack_note, LV_LABEL_LONG_WRAP);
+    lv_obj_set_style_text_color(g_rack_note, kBad, 0);
+    lv_label_set_text(g_rack_note, "");
     // where the job is: what a stopped job did, the button that goes on from there, and the program that comes next
     g_flow_label = lv_label_create(side);
     lv_obj_set_width(g_flow_label, LV_PCT(100));
@@ -499,6 +713,24 @@ void build(const hmi::Settings& s, const hmi::Layout& layout, void (*post)(const
     lv_obj_t* no = icon_button(g_dialog, LV_SYMBOL_CLOSE, on_cancel, nullptr, LV_COLOR_MAKE(0x54, 0x6e, 0x7a), 220, 90);
     lv_obj_align(no, LV_ALIGN_BOTTOM_RIGHT, -8, -8);
     lv_obj_add_flag(g_dialog, LV_OBJ_FLAG_HIDDEN);
+
+    // the window between the stages: the drilling is done, the routing comes next; follow it or stop
+    g_stage_win = window(600, 360);
+    g_stage_text = lv_label_create(g_stage_win);
+    lv_obj_align(g_stage_text, LV_ALIGN_TOP_MID, 0, 16);
+    lv_label_set_long_mode(g_stage_text, LV_LABEL_LONG_WRAP);
+    lv_obj_set_width(g_stage_text, 560);
+    lv_obj_t* follow = button(g_stage_win, hmi::text(T::FollowRouting, s.language), on_stage_follow, nullptr, kGo, 270, 90);
+    lv_obj_align(follow, LV_ALIGN_BOTTOM_LEFT, 8, -8);
+    lv_obj_t* abort_button = button(g_stage_win, hmi::text(T::Stop, s.language), on_stage_abort, nullptr, kHalt, 270, 90);
+    lv_obj_align(abort_button, LV_ALIGN_BOTTOM_RIGHT, -8, -8);
+
+    // the window of the positions in the bar: a drop-down list of places for every tool; it is filled when it is shown
+    g_rack_win = window(760, 640);
+    lv_obj_set_flex_flow(g_rack_win, LV_FLEX_FLOW_COLUMN);
+    g_rack_signature.clear();
+    g_rack_problems = nullptr;
+    g_rack_drop_count = 0;
 }
 
 void show(const State& st, const hmi::Settings& s) {
@@ -687,6 +919,132 @@ void show_flow(const FlowState& flow, const hmi::Settings& s) {
         if (flow.held) lv_obj_remove_flag(g_continue_button, LV_OBJ_FLAG_HIDDEN); else lv_obj_add_flag(g_continue_button, LV_OBJ_FLAG_HIDDEN);
         if (flow.tool_wait) lv_obj_remove_flag(g_toolchange_button, LV_OBJ_FLAG_HIDDEN); else lv_obj_add_flag(g_toolchange_button, LV_OBJ_FLAG_HIDDEN);
     }
+}
+
+void show_job_card(const hmi::CardText& card) {
+    for (int i = 0; i < 4; ++i)
+        if (g_card_blocks[i] != nullptr) lv_label_set_text(g_card_blocks[i], card.block[i].c_str());
+}
+
+void show_jog(const JogView& v, const hmi::Settings& s) {
+    if (g_jog_label == nullptr) return;
+    for (std::size_t i = 0; i < g_jog_step_count; ++i) mark(g_jog_steps[i], static_cast<int>(i) == v.step);
+    mark(g_jog_mode, v.continuous);
+    for (int i = 0; i < 3; ++i) {
+        char label[24];
+        std::snprintf(label, sizeof label, "%.0f", v.feeds[i]);
+        lv_label_set_text(lv_obj_get_child(g_jog_speeds[i], 0), label);
+        mark(g_jog_speeds[i], i == v.speed);
+    }
+    for (int i = 0; i < 4; ++i) mark(g_jog_places[i], v.has_place[i]);
+    // where the panel has put the head (the machine does not tell it) and why the last press did not move
+    std::string text;
+    char line[96];
+    if (v.pos_known) {
+        std::snprintf(line, sizeof line, "X %.2f  Y %.2f  Z %.2f", v.x, v.y, v.z);
+        text = line;
+    }
+    if (!v.note.empty()) text += std::string(text.empty() ? "" : "\n") + v.note;
+    lv_label_set_text(g_jog_label, text.c_str());
+    (void)s;
+}
+
+void show_stage(const std::string& text, const hmi::Settings& s) {
+    if (g_stage_win == nullptr) return;
+    if (text.empty()) {
+        lv_obj_add_flag(g_stage_win, LV_OBJ_FLAG_HIDDEN);
+        return;
+    }
+    if (!s.stage_window) return;
+    lv_label_set_text(g_stage_text, text.c_str());
+    lv_obj_remove_flag(g_stage_win, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_move_to_index(g_stage_win, -1);
+}
+
+void show_rack(const RackView& v, const hmi::Settings& s) {
+    if (g_rack_box == nullptr) return;
+    lv_obj_clean(g_rack_box);
+    const bool visible = v.atc && !v.tools.empty();
+    if (!visible) {
+        lv_obj_add_flag(g_rack_open, LV_OBJ_FLAG_HIDDEN);
+        lv_label_set_text(g_rack_note, "");
+        return;
+    }
+    lv_obj_remove_flag(g_rack_open, LV_OBJ_FLAG_HIDDEN);
+    // the squares of the bar: the tool and its place, in the colour of its state (pending dim, in use amber, done green)
+    for (const hmi::BarTool& t : v.tools) {
+        char label[32];
+        if (t.slot > 0) std::snprintf(label, sizeof label, "%s%d @%d", t.route ? "R" : "T", t.tool, t.slot);
+        else std::snprintf(label, sizeof label, "%s%d @-", t.route ? "R" : "T", t.tool);
+        lv_obj_t* sq = lv_obj_create(g_rack_box);
+        style_card(sq);
+        lv_obj_set_size(sq, 104, 48);
+        lv_obj_set_style_pad_all(sq, 4, 0);
+        lv_obj_set_style_border_color(sq, t.state == hmi::BarState::InUse ? kAmber : (t.state == hmi::BarState::Done ? kGo : kDim), 0);
+        lv_obj_set_style_border_width(sq, t.state == hmi::BarState::InUse ? 4 : 2, 0);
+        lv_obj_t* l = lv_label_create(sq);
+        lv_label_set_text(l, label);
+        lv_obj_set_style_text_color(l, t.state == hmi::BarState::Done ? kGo : (t.state == hmi::BarState::InUse ? kAmber : kText), 0);
+        lv_obj_center(l);
+    }
+    // the red line, when the server did not chain the tool changes
+    lv_label_set_text(g_rack_note, v.not_chained.c_str());
+    // the window of the positions: built again when the tools change, only updated otherwise (the list that was just used is not taken down inside its own event)
+    std::string signature;
+    for (const hmi::BarTool& t : v.tools) signature += (t.route ? "R" : "T") + std::to_string(t.tool) + ",";
+    for (int p : v.places) signature += "p" + std::to_string(p);
+    if (signature != g_rack_signature) {
+        g_rack_signature = signature;
+        lv_obj_clean(g_rack_win);
+        g_rack_drop_count = 0;
+        lv_obj_t* title = lv_label_create(g_rack_win);
+        lv_label_set_text(title, hmi::text(hmi::T::RackTitle, s.language));
+        lv_obj_set_style_text_color(title, kAmber, 0);
+        std::string options = "-";
+        for (int p : v.places) options += "\n" + std::to_string(p);
+        lv_obj_t* list = lv_obj_create(g_rack_win);
+        lv_obj_remove_style_all(list);
+        lv_obj_set_width(list, LV_PCT(100));
+        lv_obj_set_flex_grow(list, 1);
+        lv_obj_set_flex_flow(list, LV_FLEX_FLOW_COLUMN);
+        lv_obj_set_scroll_dir(list, LV_DIR_VER);
+        lv_obj_set_style_pad_gap(list, 6, 0);
+        for (const hmi::BarTool& t : v.tools) {
+            if (g_rack_drop_count >= 32) break;
+            lv_obj_t* row = lv_obj_create(list);
+            lv_obj_remove_style_all(row);
+            lv_obj_set_size(row, LV_PCT(100), 56);
+            lv_obj_set_flex_flow(row, LV_FLEX_FLOW_ROW);
+            lv_obj_set_flex_align(row, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+            lv_obj_set_style_pad_gap(row, 12, 0);
+            char label[96];
+            if (t.diameter_mm > 0) std::snprintf(label, sizeof label, "%s %d  %.2f mm", hmi::text(hmi::T::Tool, s.language), t.tool, t.diameter_mm);
+            else std::snprintf(label, sizeof label, "%s %d", hmi::text(hmi::T::Tool, s.language), t.tool);
+            lv_obj_t* name = lv_label_create(row);
+            lv_obj_set_width(name, 360);
+            lv_label_set_text(name, (std::string(t.route ? "R " : "") + label).c_str());
+            lv_obj_t* drop = lv_dropdown_create(row);
+            lv_obj_set_width(drop, 140);
+            lv_dropdown_set_options(drop, options.c_str());
+            g_rack_tags[g_rack_drop_count] = {t.route, t.tool};
+            g_rack_drops[g_rack_drop_count] = drop;
+            lv_obj_add_event_cb(drop, on_rack_pick, LV_EVENT_VALUE_CHANGED, reinterpret_cast<void*>(static_cast<intptr_t>(g_rack_drop_count)));
+            ++g_rack_drop_count;
+        }
+        g_rack_problems = lv_label_create(g_rack_win);
+        lv_obj_set_width(g_rack_problems, LV_PCT(100));
+        lv_label_set_long_mode(g_rack_problems, LV_LABEL_LONG_WRAP);
+        lv_obj_set_style_text_color(g_rack_problems, kBad, 0);
+        icon_button(g_rack_win, LV_SYMBOL_OK, on_rack_close, nullptr, kGo, 220, 70);
+    }
+    // the place of each tool in its list (the options are "-" and then the places the machine defines), and what stops the start
+    for (std::size_t i = 0; i < g_rack_drop_count && i < v.tools.size(); ++i) {
+        std::uint32_t sel = 0;
+        for (std::size_t k = 0; k < v.places.size(); ++k)
+            if (v.places[k] == v.tools[i].slot) sel = static_cast<std::uint32_t>(k + 1);
+        if (lv_dropdown_get_selected(g_rack_drops[i]) != sel) lv_dropdown_set_selected(g_rack_drops[i], sel);
+    }
+    if (g_rack_problems != nullptr) lv_label_set_text(g_rack_problems, v.problems.c_str());
 }
 
 void show_card(const std::vector<hmi::Entry>& files, const hmi::Settings&) {

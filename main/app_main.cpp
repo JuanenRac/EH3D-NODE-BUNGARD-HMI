@@ -4,6 +4,7 @@
 // node see the same jobs at the same time. This has not been built or run on a module yet. GPL-3.0-or-later.
 #include <cstdio>
 #include <cstring>
+#include <ctime>
 #include <string>
 #include <vector>
 
@@ -19,10 +20,13 @@
 #include "sdkconfig.h"
 
 #include "../core/hmi_config.hpp"
+#include "../core/job_card.hpp"
 #include "../core/job_memory.hpp"
+#include "../core/jog_panel.hpp"
 #include "../core/orientation.hpp"
 #include "../core/quality.hpp"
 #include "../core/sdfiles.hpp"
+#include "../core/stage_notice.hpp"
 #include "../core/status.hpp"
 #include "../core/ui_text.hpp"
 #include "../core/voice.hpp"
@@ -62,6 +66,11 @@ static hmi::Workflow g_flow;
 static hmi::SpindleView g_spindle;  // the spindle of the machine, as the server says it (asked now and then)
 static bool g_spindle_new = false;
 static hmi::TableSize g_table;  // the table of the machine, as the server says it (asked with the spindle)
+static hmi::JogPanel* g_jog = nullptr;  // the panel that moves the machine by hand (only the application task touches it)
+static std::string g_jog_note;          // why the last press did not move the machine
+static bool g_finger_down = false;      // an arrow of the panel is under a finger now
+static bool g_estop_now = true;         // the hardware stop is pressed or not yet acknowledged (set by the application loop)
+static hmi::EndWatcher g_end;           // tells once when a stage is done or the whole job is over
 
 // the quality check: what the server last said, the ring of LEDs, and what the operator chose for the next request
 static hmi::QualityView g_quality;
@@ -128,6 +137,7 @@ static void say_task(void*) {
             case hmi::Cue::ToolChange: setting = &g_settings.sound_tool_change; break;
             case hmi::Cue::CheckOk: setting = &g_settings.sound_check_ok; break;
             case hmi::Cue::CheckNotOk: setting = &g_settings.sound_check_bad; break;
+            case hmi::Cue::Stage: setting = &g_settings.sound_stage; break;
         }
         if (setting == nullptr || setting->kind == hmi::NoticeSetting::Kind::Off) continue;
         const unsigned volume = g_settings.volume_percent;
@@ -280,8 +290,96 @@ static void request_stop() {
     else if (g_stop_task != nullptr) xTaskNotifyGive(g_stop_task);
 }
 
+// ------------------------------------------------------------------------------------------------------------------------------ the panel that moves the machine by hand
+static const hmi::JogDir kJogDirs[6] = {hmi::JogDir::XMinus, hmi::JogDir::XPlus, hmi::JogDir::YMinus, hmi::JogDir::YPlus, hmi::JogDir::ZDown, hmi::JogDir::ZUp};
+
+static void refresh_jog() {
+    if (g_jog == nullptr) return;
+    ui::JogView v;
+    v.steps = g_jog->steps();
+    v.step = static_cast<int>(g_jog->step_index());
+    v.continuous = g_jog->continuous();
+    v.speed = g_jog->speed() == hmi::JogSpeed::Slow ? 0 : (g_jog->speed() == hmi::JogSpeed::Medium ? 1 : 2);
+    v.feeds[0] = g_jog->feed_of(hmi::JogSpeed::Slow);
+    v.feeds[1] = g_jog->feed_of(hmi::JogSpeed::Medium);
+    v.feeds[2] = g_jog->feed_of(hmi::JogSpeed::Fast);
+    for (int i = 0; i < 4; ++i) v.has_place[i] = g_jog->has_place(static_cast<std::size_t>(i));
+    // the head is where the panel put it, and only after it moved it (the machine does not report its position here)
+    v.pos_known = g_jog->touched();
+    v.x = g_jog->pos().x;
+    v.y = g_jog->pos().y;
+    v.z = g_jog->pos().z;
+    v.note = g_jog_note;
+    ui::show_jog(v, g_settings);
+}
+
+static const char* jog_refusal_text(hmi::JogRefusal r) {
+    switch (r) {
+        case hmi::JogRefusal::Job: return hmi::why_text(hmi::Why::JobRunning, g_settings.language);
+        case hmi::JogRefusal::Estop: return hmi::why_text(hmi::Why::HardwareStop, g_settings.language);
+        case hmi::JogRefusal::Limit: return hmi::text(hmi::T::JogLimit, g_settings.language);
+        case hmi::JogRefusal::RaiseZ: return hmi::text(hmi::T::JogRaise, g_settings.language);
+        case hmi::JogRefusal::None: break;
+    }
+    return "";
+}
+
+// The moves of the panel go to the machine through the link to the node, which is not written yet: nothing is sent, so the position the panel keeps is not changed either.
+static bool send_jog_orders(const std::vector<hmi::JogOrder>& orders) {
+    for (const hmi::JogOrder& o : orders) ESP_LOGI(TAG, "jog %.3f %.3f %.3f at %.0f (not sent: no link to the node)", o.dx, o.dy, o.dz, o.feed);
+    return false;
+}
+
+// A confirmed order of the panel: the moves it makes are worked out on a copy, and the copy is kept only if the moves went.
+static void run_jog(const hmi::Action& go) {
+    const hmi::JogAsk ask = hmi::parse_jog_command(go.what);
+    if (g_jog == nullptr || ask.command == hmi::JogCommand::None) {
+        note(hmi::ScreenNote::MoveNoLink);
+        return;
+    }
+    bool running = false;
+    hmi::TableSize table;
+    xSemaphoreTake(g_lock, portMAX_DELAY);
+    running = g_flow.stage() == hmi::Stage::Running || g_flow.stage() == hmi::Stage::Waiting;
+    table = g_table.known() ? g_table : hmi::TableSize{static_cast<double>(g_settings.table_width_mm), static_cast<double>(g_settings.table_depth_mm)};
+    xSemaphoreGive(g_lock);
+    g_jog->set_limits(hmi::make_jog_limits(table.width, table.depth, g_settings));
+    hmi::JogPanel trial = *g_jog;
+    const bool mode = trial.continuous();
+    const hmi::JogGate jg{running, g_estop_now};
+    std::vector<hmi::JogOrder> orders;
+    hmi::JogRefusal r = hmi::JogRefusal::None;
+    if (ask.command == hmi::JogCommand::Press) {
+        // an arrow already let go before the confirmation cannot be held: it makes one step
+        if (mode && !g_finger_down) trial.set_continuous(false);
+        r = trial.press(ask.dir, jg, orders);
+        trial.set_continuous(mode);
+    } else if (ask.command == hmi::JogCommand::Home) {
+        r = trial.home(jg, orders);
+    } else {
+        r = trial.goto_place(static_cast<std::size_t>(ask.place), jg, orders);
+    }
+    if (r != hmi::JogRefusal::None) {
+        g_jog_note = jog_refusal_text(r);
+        refresh_jog();
+        return;
+    }
+    if (!orders.empty() && !send_jog_orders(orders)) {
+        g_jog_note = hmi::note_with(hmi::ScreenNote::MoveNoLink, "", g_settings.language);
+        refresh_jog();
+        return;
+    }
+    *g_jog = trial;
+    g_jog_note.clear();
+    refresh_jog();
+}
+
 // What the operator asked, once the gate lets it go: the job of the screen is started, held, let go on or answered at a tool change.
 static void run_action(const hmi::Action& go) {
+    if (go.kind == hmi::Kind::Jog) {
+        run_jog(go);
+        return;
+    }
     ServerJob job;
     if (go.what == "start job") job.what = ServerJob::Do::Start;
     else if (go.what == "pause") job.what = ServerJob::Do::Pause;
@@ -350,7 +448,11 @@ static void link_task(void*) {
                 std::string why;
                 xSemaphoreTake(g_lock, portMAX_DELAY);
                 bool ok = true;
-                if (job.what == ServerJob::Do::Create) ok = g_flow.on_created(r, why);
+                bool retry_plain = false;
+                if (job.what == ServerJob::Do::Create) {
+                    ok = g_flow.on_created(r, why);
+                    retry_plain = !ok && g_flow.take_rack_retry();  // the server turned the bar of the tool changer down: the job is sent again without it
+                }
                 else if (job.what == ServerJob::Do::Start) ok = g_flow.on_started(r, why);
                 else if (r.status != 200 && r.status != 202) { ok = false; why = hmi::error_line(r); }
                 const std::string base = g_flow.report_base();
@@ -358,7 +460,16 @@ static void link_task(void*) {
                 const std::string job_id = g_flow.job_id();
                 xSemaphoreGive(g_lock);
                 if (ok && job.what == ServerJob::Do::Start) memory_save({job_id, g_settings.server_machine, name});
-                if (ok) note(hmi::ScreenNote::Ok); else set_note(hmi::reason_text(why, g_settings.language));
+                if (retry_plain) {
+                    ServerJob again;
+                    again.what = ServerJob::Do::Create;
+                    xQueueSend(g_to_server, &again, 0);
+                    set_note(hmi::text(hmi::T::RackNotChained, g_settings.language));
+                } else if (ok) {
+                    note(hmi::ScreenNote::Ok);
+                } else {
+                    set_note(hmi::reason_text(why, g_settings.language));
+                }
                 if (ok && job.what == ServerJob::Do::Create) {
                     // the answer of the server is kept on the card, without replacing an older report
                     const std::string file = hmi::free_name(base, "txt", [](const std::string& n) {
@@ -435,8 +546,27 @@ static void refresh_hud() {
     xSemaphoreTake(g_lock, portMAX_DELAY);
     std::string text;
     if (g_settings.tool_bar) text = hmi::hud_text(g_flow.bar(), g_settings.language, g_flow.model(), g_flow.route(), g_flow.tool_wait(), g_flow.pause_tool());
+    // the card of the work in hand: the machine as the fleet reports it, and the wall clock (the system's when it is set, else the server's)
+    const hmi::JobBar bar = g_flow.bar();
+    const hmi::MachineRow* row = nullptr;
+    for (const hmi::MachineRow& m : g_fleet.machines)
+        if (m.id == g_settings.server_machine) row = &m;
+    long now = static_cast<long>(std::time(nullptr));
+    if (now < hmi::kClockSetAfter) now = g_fleet.server_time_s;
+    const int current_tool = bar.current >= 0 ? bar.tools[static_cast<std::size_t>(bar.current)].number : 0;
+    const hmi::JobCard card = hmi::make_job_card(bar, row, g_flow.route(), now, g_settings.clock_utc_offset_min, current_tool > 0 ? g_flow.rack_slot(g_flow.route(), current_tool) : 0);
+    // the bar of the tool changer
+    ui::RackView rack;
+    rack.atc = g_flow.atc();
+    rack.tools = g_flow.rack_bar();
+    rack.places = g_flow.rack_places();
+    rack.problems = hmi::rack_problem_text(g_flow.rack_problems(), g_settings.language);
+    if (g_flow.rack_reply() == hmi::Workflow::RackReply::NotApplied) rack.not_chained = hmi::text(hmi::T::RackNotChained, g_settings.language);
     xSemaphoreGive(g_lock);
     ui::show_hud(text);
+    ui::show_job_card(hmi::card_text(card, g_settings.language));
+    ui::show_rack(rack, g_settings);
+    refresh_jog();
 }
 
 // Shows the tools of the chosen file and the spindle of the machine (the LVGL lock is taken by the caller).
@@ -551,10 +681,16 @@ extern "C" void app_main() {
         xQueueSend(g_to_server, &last, 0);
     }
 
+    g_flow.configure_rack(g_settings);
+    g_jog = new hmi::JogPanel(g_settings, hmi::make_jog_limits(static_cast<double>(g_settings.table_width_mm), static_cast<double>(g_settings.table_depth_mm), g_settings));
+    board::lvgl_lock();
+    refresh_job();  // the panel and the bar show their first state
+    board::lvgl_unlock();
     hmi::Gate gate(g_settings);
     ui::State state;
     hmi::Stage last_stage = hmi::Stage::Nothing;
     bool last_ended_well = false;
+    int last_stages = 0;
     bool fleet_stale_shown = false;
     std::uint32_t next_stack_report = board::now_ms() + 5000;
     for (;;) {
@@ -571,10 +707,72 @@ extern "C" void app_main() {
             xSemaphoreGive(g_lock);
         }
 
+        g_estop_now = gate.latched() || pressed;
+        if (g_jog != nullptr && g_jog->held()) {
+            // the stretches of a held arrow, worked out on a copy that is kept only if they went; a stop, a job or the end of the travel ends the hold
+            hmi::JogPanel trial = *g_jog;
+            std::vector<hmi::JogOrder> stretches;
+            const bool running = state.armed;
+            const hmi::JogRefusal ended = trial.tick(0.05, hmi::JogGate{running, g_estop_now}, stretches);
+            if (ended != hmi::JogRefusal::None) {
+                g_jog->release();
+                g_jog_note = jog_refusal_text(ended);
+            } else if (!stretches.empty() && send_jog_orders(stretches)) {
+                *g_jog = trial;
+            } else if (!stretches.empty()) {
+                g_jog->release();
+            }
+        }
         ui::Request r;
         while (xQueueReceive(g_requests, &r, 0) == pdTRUE) {
             board::lvgl_lock();
+            // a press on the panel, the home button and a place to go to are orders like any other: they go through the gate
+            if (g_jog != nullptr) {
+                if (r.what == ui::What::JogPress && r.index >= 0 && r.index < 6) {
+                    g_finger_down = true;
+                    r.action = {hmi::Kind::Jog, hmi::jog_order_id(kJogDirs[r.index], g_jog->step_mm(), g_jog->continuous())};
+                    r.what = ui::What::Action;
+                } else if (r.what == ui::What::JogHome) {
+                    r.action = {hmi::Kind::Jog, hmi::jog_home_id()};
+                    r.what = ui::What::Action;
+                } else if (r.what == ui::What::JogPlace && r.index >= 0 && r.index < hmi::JogPanel::kPlaces) {
+                    if (r.save) {
+                        g_jog->save_place(static_cast<std::size_t>(r.index));  // keeping a place moves nothing
+                        refresh_jog();
+                    } else if (g_jog->has_place(static_cast<std::size_t>(r.index))) {
+                        r.action = {hmi::Kind::Jog, hmi::jog_goto_id(r.index)};
+                        r.what = ui::What::Action;
+                    }
+                }
+            }
             switch (r.what) {
+                case ui::What::JogPress:
+                case ui::What::JogHome:
+                case ui::What::JogPlace:
+                    break;
+                case ui::What::JogRelease:
+                    g_finger_down = false;
+                    if (g_jog != nullptr) g_jog->release();
+                    break;
+                case ui::What::JogStep:
+                    if (g_jog != nullptr) g_jog->set_step(static_cast<std::size_t>(r.index));
+                    refresh_jog();
+                    break;
+                case ui::What::JogMode:
+                    if (g_jog != nullptr) g_jog->set_continuous(!g_jog->continuous());
+                    refresh_jog();
+                    break;
+                case ui::What::JogSpeed:
+                    if (g_jog != nullptr) g_jog->set_speed(r.index == 0 ? hmi::JogSpeed::Slow : (r.index == 1 ? hmi::JogSpeed::Medium : hmi::JogSpeed::Fast));
+                    refresh_jog();
+                    break;
+                case ui::What::RackSet: {
+                    xSemaphoreTake(g_lock, portMAX_DELAY);
+                    g_flow.set_rack_place(r.route_tool, r.tool, r.slot);
+                    xSemaphoreGive(g_lock);
+                    refresh_job();
+                    break;
+                }
                 case ui::What::AckRelease:
                     gate.acknowledge_release();
                     break;
@@ -601,6 +799,15 @@ extern "C" void app_main() {
                             xSemaphoreGive(g_lock);
                             if (!ready) {
                                 note(hmi::ScreenNote::NoJobReady);
+                                break;
+                            }
+                            // on a machine with the tool changer, a tool with no place, a place the machine does not have or two tools in one place stop the start and say so
+                            xSemaphoreTake(g_lock, portMAX_DELAY);
+                            const std::string bad = hmi::rack_problem_text(g_flow.rack_problems(), g_settings.language);
+                            xSemaphoreGive(g_lock);
+                            if (!bad.empty()) {
+                                set_note(bad);
+                                refresh_job();
                                 break;
                             }
                         }
@@ -752,6 +959,9 @@ extern "C" void app_main() {
         const bool over = g_flow.settled();
         const bool ended_well = g_flow.ended_well();
         const hmi::Stage stage_now = g_flow.stage();
+        const int stages_done = g_flow.stages_done();
+        const bool job_complete = g_flow.job_complete();
+        const std::string stage_next = g_flow.stage_next_name();
         xSemaphoreGive(g_lock);
         if (over && g_remembered) memory_clear();
         // the notices of the job, once each time the stage changes into them
@@ -761,16 +971,33 @@ extern "C" void app_main() {
             last_stage = stage_now;
             stage_changed = true;
         }
-        // the notice of the end only when the server said the job was done, not when it was cancelled or failed
+        // the end of a program is not always the end of the job: a drilling that ends with the routing still to come is a stage of its own (its notice and its window), and the
+        // sound of the end and the order to take the board out wait until the whole job is done, and only when the server said it did all its work
+        std::string stage_window;
+        switch (g_end.update(stages_done, job_complete)) {
+            case hmi::EndNotice::StageDone:
+                say(hmi::Cue::Stage);
+                stage_window = hmi::stage_text(stage_next, g_settings.language);
+                break;
+            case hmi::EndNotice::BoardOut:
+                say(hmi::Cue::Finished);
+                set_note(hmi::text(hmi::T::BoardOut, g_settings.language));
+                break;
+            case hmi::EndNotice::None: break;
+        }
         if (ended_well != last_ended_well) {
-            if (ended_well) say(hmi::Cue::Finished);
             last_ended_well = ended_well;
+            stage_changed = true;
+        }
+        if (stages_done != last_stages) {
+            last_stages = stages_done;
             stage_changed = true;
         }
         state.stop_wired = wired;
         state.stop_pressed = pressed;
         state.stop_latched = gate.latched();
         board::lvgl_lock();
+        if (!stage_window.empty()) ui::show_stage(stage_window, g_settings);
         ui::show(state, g_settings);
         if (fleet_new || state.stale != fleet_stale_shown) ui::show_fleet(fleet, g_settings, state.stale);
         fleet_stale_shown = state.stale;
