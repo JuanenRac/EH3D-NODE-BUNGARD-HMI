@@ -382,10 +382,10 @@ static void run_action(const hmi::Action& go) {
         return;
     }
     ServerJob job;
-    if (go.what == "start job") job.what = ServerJob::Do::Start;
-    else if (go.what == "pause") job.what = ServerJob::Do::Pause;
-    else if (go.what == "resume job") job.what = ServerJob::Do::Release;
-    else if (go.what == "tool changed") job.what = ServerJob::Do::Confirm;
+    if (go.op == hmi::Op::StartJob) job.what = ServerJob::Do::Start;
+    else if (go.op == hmi::Op::Pause) job.what = ServerJob::Do::Pause;
+    else if (go.op == hmi::Op::ResumeJob) job.what = ServerJob::Do::Release;
+    else if (go.op == hmi::Op::ToolChanged) job.what = ServerJob::Do::Confirm;
     else {
         note(hmi::ScreenNote::MoveNoLink);
         return;
