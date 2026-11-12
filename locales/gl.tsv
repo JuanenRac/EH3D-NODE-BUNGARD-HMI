@@ -160,3 +160,5 @@ ui.RackNoSlot	non ten lugar na barra
 ui.RackShared	comparte o lugar na barra con outra ferramenta
 ui.RackUndefined	o seu lugar non está definido na máquina
 ui.RackNotChained	O servidor non encadeou os cambios: poña as ferramentas na barra na orde do traballo
+ui.WhyNoSpindleHere	Este tipo de máquina non ten un fuso que a pantalla poida arrancar.
+ui.SrvDegraded	O servidor responde pero di que non está ben

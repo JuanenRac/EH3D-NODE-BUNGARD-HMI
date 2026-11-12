@@ -160,3 +160,5 @@ ui.RackNoSlot	ei ole ribal kohta
 ui.RackShared	jagab oma kohta ribal teise tööriistaga
 ui.RackUndefined	selle koht pole masinas määratud
 ui.RackNotChained	Server ei sidunud tööriistavahetusi: pange tööriistad ribale töö järjekorras
+ui.WhyNoSpindleHere	Sellel masinatüübil pole spindlit, mida ekraan saaks käivitada.
+ui.SrvDegraded	Server vastab, kuid teatab, et ta ei ole korras

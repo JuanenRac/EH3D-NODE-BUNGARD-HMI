@@ -160,3 +160,5 @@ ui.RackNoSlot	nuk ka vend në shirit
 ui.RackShared	ndan vendin e tij në shirit me një vegël tjetër
 ui.RackUndefined	vendi i tij nuk është përcaktuar në makinë
 ui.RackNotChained	Serveri nuk i lidhi ndërrimet: vendosini veglat në shirit sipas renditjes së punës
+ui.WhyNoSpindleHere	Ky lloj makine nuk ka bosht që ekrani ta nisë.
+ui.SrvDegraded	Serveri përgjigjet, por thotë se nuk është mirë

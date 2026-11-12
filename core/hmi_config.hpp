@@ -13,6 +13,7 @@
 #include "notices.hpp"
 #include "orientation.hpp"
 #include "rack.hpp"
+#include "machine.hpp"
 
 namespace hmi {
 
@@ -23,6 +24,9 @@ enum class SpindleOver { Clip, Refuse };
 enum class JogSpeed { Slow, Medium, Fast };
 
 struct Settings {
+    // the kind of machine: what the screen may order on it (a CNC machine has a spindle and the camera of the drill head, a laser and a pick and place machine do not)
+    MachineKind machine = MachineKind::Cnc;
+
     // the screen
     Lang language = Lang::En;
     std::string theme = "forge";
@@ -229,6 +233,9 @@ inline Settings parse_settings(const std::string& text, std::vector<Problem>& pr
             if (num(200, 60000)) s.link_idle_ms = n;
         } else if (key == "stale_after_s") {
             if (num(2, 3600)) s.stale_after_s = n;
+        } else if (key == "machine_kind") {
+            MachineKind k;
+            if (machine_kind_from_text(val, k)) s.machine = k; else bad("not cnc, laser or pnp");
         } else if (key == "tool_bar") {
             if (flag()) s.tool_bar = b;
         } else if (key == "voice_alerts") {

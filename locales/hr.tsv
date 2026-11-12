@@ -160,3 +160,5 @@ ui.RackNoSlot	nema mjesto u traci
 ui.RackShared	dijeli mjesto u traci s drugim alatom
 ui.RackUndefined	njegovo mjesto nije definirano u stroju
 ui.RackNotChained	Poslužitelj nije povezao izmjene alata: stavite alate u traku redoslijedom posla
+ui.WhyNoSpindleHere	Ova vrsta stroja nema vreteno koje bi zaslon mogao pokrenuti.
+ui.SrvDegraded	Poslužitelj odgovara, ali kaže da nije dobro

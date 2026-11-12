@@ -160,3 +160,5 @@ ui.RackNoSlot	hefur engan stað í stikunni
 ui.RackShared	deilir stað sínum í stikunni með öðru verkfæri
 ui.RackUndefined	staður þess er ekki skilgreindur í vélinni
 ui.RackNotChained	Þjónninn tengdi ekki verkfæraskiptin: setjið verkfærin í stikuna í röð verksins
+ui.WhyNoSpindleHere	Vélargerð þessi er ekki með snældu sem skjárinn getur ræst.
+ui.SrvDegraded	Þjónninn svarar en segist ekki vera í lagi

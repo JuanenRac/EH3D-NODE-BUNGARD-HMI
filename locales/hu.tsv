@@ -160,3 +160,5 @@ ui.RackNoSlot	nincs helye a sávban
 ui.RackShared	a sávban megosztja a helyét egy másik szerszámmal
 ui.RackUndefined	a helye nincs megadva a gépben
 ui.RackNotChained	A szerver nem láncolta a cseréket: tegye a szerszámokat a sávba a munka sorrendjében
+ui.WhyNoSpindleHere	Ennek a géptípusnak nincs főorsója, amelyet a képernyő elindíthatna.
+ui.SrvDegraded	A kiszolgáló válaszol, de azt jelzi, hogy nincs rendben

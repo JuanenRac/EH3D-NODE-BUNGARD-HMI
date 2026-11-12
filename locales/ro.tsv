@@ -160,3 +160,5 @@ ui.RackNoSlot	nu are loc în bară
 ui.RackShared	își împarte locul din bară cu altă sculă
 ui.RackUndefined	locul său nu este definit în mașină
 ui.RackNotChained	Serverul nu a înlănțuit schimbările de sculă: puneți sculele în bară în ordinea lucrării
+ui.WhyNoSpindleHere	Acest tip de mașină nu are un ax principal pe care ecranul să-l poată porni.
+ui.SrvDegraded	Serverul răspunde, dar spune că nu este bine

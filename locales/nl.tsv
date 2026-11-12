@@ -160,3 +160,5 @@ ui.RackNoSlot	heeft geen plaats in de balk
 ui.RackShared	deelt zijn plaats in de balk met een ander gereedschap
 ui.RackUndefined	de plaats is niet gedefinieerd in de machine
 ui.RackNotChained	De server koppelde de wissels niet: leg het gereedschap in de balk op volgorde van de taak
+ui.WhyNoSpindleHere	Dit type machine heeft geen spindel die het scherm kan starten.
+ui.SrvDegraded	De server antwoordt maar meldt dat het niet goed met hem gaat

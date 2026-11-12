@@ -160,3 +160,5 @@ ui.RackNoSlot	nie ma miejsca w magazynie
 ui.RackShared	dzieli miejsce w magazynie z innym narzędziem
 ui.RackUndefined	jego miejsce nie jest zdefiniowane w maszynie
 ui.RackNotChained	Serwer nie połączył wymian narzędzi: ułóż narzędzia w magazynie w kolejności zadania
+ui.WhyNoSpindleHere	Ten rodzaj maszyny nie ma wrzeciona, które ekran mógłby uruchomić.
+ui.SrvDegraded	Serwer odpowiada, ale zgłasza, że nie jest w porządku

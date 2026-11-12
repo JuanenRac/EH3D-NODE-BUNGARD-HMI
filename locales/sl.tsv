@@ -160,3 +160,5 @@ ui.RackNoSlot	nima mesta v vrstici
 ui.RackShared	deli svoje mesto v vrstici z drugim orodjem
 ui.RackUndefined	njegovo mesto ni določeno v stroju
 ui.RackNotChained	Strežnik ni povezal menjav orodja: položite orodja v vrstico v vrstnem redu naloge
+ui.WhyNoSpindleHere	Ta vrsta stroja nima vretena, ki bi ga lahko zagnal zaslon.
+ui.SrvDegraded	Strežnik odgovarja, vendar sporoča, da ni v redu

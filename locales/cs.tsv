@@ -160,3 +160,5 @@ ui.RackNoSlot	nemá místo v liště
 ui.RackShared	sdílí své místo v liště s jiným nástrojem
 ui.RackUndefined	jeho místo není ve stroji definováno
 ui.RackNotChained	Server nepropojil výměny nástroje: vložte nástroje do lišty v pořadí úlohy
+ui.WhyNoSpindleHere	Tento druh stroje nemá vřeteno, které by obrazovka mohla spustit.
+ui.SrvDegraded	Server odpovídá, ale hlásí, že není v pořádku

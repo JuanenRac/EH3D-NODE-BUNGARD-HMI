@@ -160,3 +160,5 @@ ui.RackNoSlot	neturi vietos juostoje
 ui.RackShared	dalijasi vieta juostoje su kitu įrankiu
 ui.RackUndefined	jo vieta nėra apibrėžta staklėse
 ui.RackNotChained	Serveris nesujungė įrankių keitimų: sudėkite įrankius į juostą darbo tvarka
+ui.WhyNoSpindleHere	Šio tipo staklės neturi verpstės, kurią galėtų paleisti ekranas.
+ui.SrvDegraded	Serveris atsako, bet praneša, kad jam nesiseka

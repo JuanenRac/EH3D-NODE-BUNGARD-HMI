@@ -160,3 +160,5 @@ ui.RackNoSlot	ez du lekurik barran
 ui.RackShared	barrako lekua beste tresna batekin partekatzen du
 ui.RackUndefined	bere lekua ez dago makinan definituta
 ui.RackNotChained	Zerbitzariak ez ditu tresna-aldaketak katean lotu: jarri tresnak barran lanaren ordenan
+ui.WhyNoSpindleHere	Makina mota honek ez dauka pantailak abiaraz dezakeen ardatzik.
+ui.SrvDegraded	Zerbitzariak erantzuten du, baina ez dagoela ondo dio

@@ -160,3 +160,5 @@ ui.RackNoSlot	ei ole paikkaa palkissa
 ui.RackShared	jakaa paikkansa palkissa toisen työkalun kanssa
 ui.RackUndefined	sen paikkaa ei ole määritetty koneessa
 ui.RackNotChained	Palvelin ei ketjuttanut työkalunvaihtoja: aseta työkalut palkkiin työn järjestyksessä
+ui.WhyNoSpindleHere	Tällä konetyypillä ei ole karaa, jonka näyttö voisi käynnistää.
+ui.SrvDegraded	Palvelin vastaa, mutta ilmoittaa, ettei se voi hyvin

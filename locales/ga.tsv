@@ -160,3 +160,5 @@ ui.RackNoSlot	níl áit aige sa bharra
 ui.RackShared	roinneann sé a áit sa bharra le huirlis eile
 ui.RackUndefined	níl a áit sainithe sa mheaisín
 ui.RackNotChained	Níor shlabhraigh an freastalaí na hathruithe: cuir na huirlisí sa bharra in ord na hoibre
+ui.WhyNoSpindleHere	Níl fearsaid ag an gcineál meaisín seo a bhféadfadh an scáileán a thosú.
+ui.SrvDegraded	Freagraíonn an freastalaí ach deir sé nach bhfuil sé ceart go leor

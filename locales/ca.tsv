@@ -160,3 +160,5 @@ ui.RackNoSlot	no té lloc a la barra
 ui.RackShared	comparteix el lloc a la barra amb una altra eina
 ui.RackUndefined	el seu lloc no està definit a la màquina
 ui.RackNotChained	El servidor no ha encadenat els canvis: poseu les eines a la barra en l'ordre de la feina
+ui.WhyNoSpindleHere	Aquest tipus de màquina no té cap capçal que la pantalla pugui engegar.
+ui.SrvDegraded	El servidor respon però diu que no està bé

@@ -160,3 +160,5 @@ ui.RackNoSlot	har ingen plass i listen
 ui.RackShared	deler plassen sin i listen med et annet verktøy
 ui.RackUndefined	plassen er ikke definert i maskinen
 ui.RackNotChained	Serveren koblet ikke sammen verktøyskiftene: legg verktøyene i listen i jobbens rekkefølge
+ui.WhyNoSpindleHere	Denne maskintypen har ingen spindel som skjermen kan starte.
+ui.SrvDegraded	Serveren svarer, men sier at den ikke har det bra

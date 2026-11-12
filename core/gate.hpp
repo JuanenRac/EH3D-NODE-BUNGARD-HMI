@@ -37,7 +37,7 @@ struct Action {
 };
 
 enum class Verdict { Run, NeedConfirm, Refused };
-enum class Why { None, HardwareStop, NotArmed, VoiceOrdersOff, NoHardwareStop, SpindleDisabled, SpindleTooFast, JobRunning };
+enum class Why { None, HardwareStop, NotArmed, VoiceOrdersOff, NoHardwareStop, SpindleDisabled, NoSpindleHere, SpindleTooFast, JobRunning };
 
 struct Decision {
     Verdict verdict = Verdict::Refused;
@@ -112,6 +112,7 @@ public:
         if (from == Origin::Voice && !s_.voice_orders) return {Verdict::Refused, Why::VoiceOrdersOff};
         if (a.kind == Kind::Spindle && s_.spindle_max_rpm == 0) return {Verdict::Refused, Why::SpindleDisabled};
         // a move by hand (the jog panel) does not need a job to be running; it is refused while one runs (the switch `jog_block_running`), and the hardware stop above always blocks it
+        if (a.kind == Kind::Spindle && !controls_for(s_.machine).spindle) return {Verdict::Refused, Why::NoSpindleHere};
         if (a.kind == Kind::Jog && armed_ && s_.jog_block_running) return {Verdict::Refused, Why::JobRunning};
         if (!armed_ && a.kind != Kind::Start && a.kind != Kind::Jog) return {Verdict::Refused, Why::NotArmed};
         Decision d;
