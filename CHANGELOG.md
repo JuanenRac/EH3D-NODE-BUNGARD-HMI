@@ -4,6 +4,10 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **A new image goes back when the screen does not run:** `CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE` is on and `main/image_confirm.hpp` confirms an image written by an update after 30 seconds of running, or sends it back to the previous one at once when the display does not start; an image flashed through the cable is not touched.
+- **The first request to the server is its health check:** after a start or when the link was lost the screen asks `GET /api/v1/health` (open to anyone, no token goes with it) and tells "nobody answers" from "something answers that is not an EH3D server" (`classify_health` in `core/server_link.hpp`) before it asks for the fleet.
+- **The host tests also run under AddressSanitizer and UBSan in the CI:** the same programs are built with `-fsanitize=address,undefined` and run (an undefined behaviour stops the test), and `test.sh` / `test.bat` run the same steps as the CI (the repository checks, the tests of the tools, the pictures and the languages, and the host tests).
+
 ## [0.0.9] - The touch screen follows the changer chaining, the positions of the tools, the jog panel and the stage notices of the job
 
 - **The card of the work in hand:** under the lines of the machine page, four blocks as in the desktop program: the tool and its step (number, diameter, place in the bar, hole or cut X of N), the times (left, elapsed and the local hour the job is expected to end at), the position and the depth (X, Y, Z, the stroke, the feed and the turns of the spindle) and the counters (holes done or length routed, tool changes). What the server does not report is a dash, never an invented number; the hour comes from the system clock, or from `time_s` of the fleet, and `clock_utc_offset_min`.
