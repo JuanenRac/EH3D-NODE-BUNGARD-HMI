@@ -249,6 +249,10 @@ inline Request fleet_request() { return {"GET", "/api/v1/fleet", ""}; }
 /// The health check of the server: open to anyone (no token is needed), so it is the first request after a start or after the link was lost.
 inline Request health_request() { return {"GET", "/api/v1/health", ""}; }
 
+/// Whether the token of the server goes with a request: every request except the health check, which is asked before anybody is known to be an EH3D server and must not hand the token to
+/// whatever answers on that address.
+inline bool request_carries_token(const Request& r) { return r.path != "/api/v1/health"; }
+
 /// What the health check says about whoever answered: nobody (`Silent`), something that is not an EH3D server (`NotEh3d`: another service on that address, a proxy page, a router), a server
 /// that says it is not well (`Degraded`) or a server that is well (`Ok`). `reached` says whether any answer came.
 enum class Health { Silent, NotEh3d, Degraded, Ok };
@@ -262,6 +266,9 @@ inline Health classify_health(bool reached, const Response& r) {
 inline Request job_report_request(const std::string& id) { return {"GET", "/api/v1/jobs/" + id, ""}; }
 inline Request job_start_request(const std::string& id) { return {"POST", "/api/v1/jobs/" + id + "/start", "{}"}; }
 inline Request job_cancel_request(const std::string& id) { return {"POST", "/api/v1/jobs/" + id + "/cancel", "{}"}; }
+/// Stops whatever job the server has on the machine (`POST /machines/:id/stop`); it needs no job id, so it works for a job another program started after the last reading of
+/// the fleet. An old server has no such route (404 or 405).
+inline Request machine_stop_request(const std::string& machine) { return {"POST", "/api/v1/machines/" + machine + "/stop", "{}"}; }
 inline Request job_confirm_request(const std::string& id) { return {"POST", "/api/v1/jobs/" + id + "/confirm", "{}"}; }
 /// Holds a running job where it is (`POST /jobs/:id/pause`) and lets a held one go on (`POST /jobs/:id/resume`); the server holds only G-code jobs.
 inline Request job_pause_request(const std::string& id) { return {"POST", "/api/v1/jobs/" + id + "/pause", "{}"}; }

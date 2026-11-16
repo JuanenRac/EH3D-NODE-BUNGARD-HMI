@@ -1,4 +1,4 @@
-// EH3D-NODE-HMI-GUI - core/machine.hpp
+// EH3D-NODE-BUNGARD-HMI - core/machine.hpp
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D). GPL-3.0-or-later.
 // The kind of machine the screen controls. The same screen serves a CNC machine, a laser and a pick and place machine; what changes is what the screen is
 // allowed to order. Today that is a spindle and the visual check of the board. The screen never fires a laser and never starts the vacuum or the nozzles of a pick and place head
