@@ -4,6 +4,7 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **A number of the server is brought into range before it becomes an integer:** `percent`, the counters of a job, the tool, the limits of the spindle, the clock and the other whole numbers read from the answers of the server go through `Json::int_in(key, lo, hi)`, so a value such as `1e99` or an infinite one gives the end of the range instead of an undefined conversion; a host test covers it.
 - **The shared part of the touch screen follows the shared base:** the stop now goes to the machine first (`POST /machines/<id>/stop`) with the cancel of the job kept as a backup, and the health check no longer carries the token.
 - **Simulation of the server for the screen:** add `tests/test_sim.cpp`, a program that runs the screen against a simulated EH3D-SERVER in memory (one machine, one job that stops when it is told to) that can be made to fail: no answer, a router page, a missing token, a 503, an answer cut short and a degraded server. The screen is driven with its own requests, its own reading of the answers and its own state of the link and the age of the data, with the clock as a number; a seeded storm of 300 failures checks that the state of the link is always the one of the cause and that the same seed gives the same run. 1824 checks. The manifest now says `evidence: simulator`. Nothing has run on the screen (the Guition 10.1" with the ESP32-P4 and the ESP32-C6) or against a real server.
 
