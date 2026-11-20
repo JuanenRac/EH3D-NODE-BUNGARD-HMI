@@ -20,6 +20,7 @@ add_executable(test_locales test_locales.cpp)
 add_executable(test_status test_status.cpp)
 add_executable(test_more test_more.cpp)
 add_executable(test_parity test_parity.cpp)
+add_executable(test_session test_session.cpp)
 
 add_executable(test_sim test_sim.cpp)
 
@@ -33,4 +34,5 @@ add_test(NAME locales COMMAND test_locales)
 add_test(NAME status COMMAND test_status)
 add_test(NAME more COMMAND test_more)
 add_test(NAME parity COMMAND test_parity)
+add_test(NAME session COMMAND test_session)
 add_test(NAME sim COMMAND test_sim)

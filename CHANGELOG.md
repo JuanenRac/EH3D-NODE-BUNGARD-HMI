@@ -4,6 +4,7 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The shared part of the screen is brought up to the one of the generic screen:** the client of the server (login as the application `hmi` with `server_user` and `server_password`, renewal of the login, tries again with `server_timeout_s` and `server_retries`, the machines of the plugins of the server), the table of the refusals of the server in eight languages, the new settings and their keyboards and the tests of the session come from the firmware base, so the two screens say and do the same with the server. The new `test_session` (4132 checks) runs with the other host tests; the screens of this repository do not call the login yet.
 - **This screen is described as the generic screen plus a profile:** `docs/ON_THE_GENERIC_SCREEN.md` says that EH3D-NODE-HMI-GUI is the screen that grows, which settings are the profile of this machine, which files are the same in both repositories and which parts (the panel that moves the machine by hand and the card under the progress bar) are still written only here. Nothing is removed.
 
 ## [0.1.1] - Newest improvements of the screen node of the drill
