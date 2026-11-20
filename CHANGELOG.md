@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **This screen is described as the generic screen plus a profile:** `docs/ON_THE_GENERIC_SCREEN.md` says that EH3D-NODE-HMI-GUI is the screen that grows, which settings are the profile of this machine, which files are the same in both repositories and which parts (the panel that moves the machine by hand and the card under the progress bar) are still written only here. Nothing is removed.
+
 ## [0.1.1] - Newest improvements of the screen node of the drill
 
 - **The stop of the screen no longer waits in the queue of the touches, and it is tried again:** the touch of the stop sets a flag that the task of the stop reads, so it cannot be lost when the queue of eight is full (a touch of anything else that does not fit now says so); when the server cannot be reached the note stays and the stop is tried again every `stop_retry_ms` (1 second) up to `stop_retries` (10) more times, both in `hmi.cfg`. The host tests cover the flag and the plan of the retries.
