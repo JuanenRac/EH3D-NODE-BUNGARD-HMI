@@ -27,6 +27,7 @@
 #include "../core/orientation.hpp"
 #include "../core/quality.hpp"
 #include "../core/sdfiles.hpp"
+#include "../core/settings_page.hpp"
 #include "../core/stage_notice.hpp"
 #include "../core/stop_latch.hpp"
 #include "../core/status.hpp"
@@ -69,6 +70,11 @@ static std::string g_note;
 static hmi::Workflow g_flow;
 static hmi::SpindleView g_spindle;  // the spindle of the machine, as the server says it (asked now and then)
 static bool g_spindle_new = false;
+// the settings of the server: the contract the link last read (or the copy of the screen), the role of the login that read it and whether the screen has not drawn it yet (guarded by g_lock)
+static hmi::ContractPoller g_poller;
+static hmi::Loaded g_contract;
+static std::string g_contract_role;
+static bool g_contract_new = false;
 static hmi::TableSize g_table;  // the table of the machine, as the server says it (asked with the spindle)
 static hmi::JogPanel* g_jog = nullptr;  // the panel that moves the machine by hand (only the application task touches it)
 static std::string g_jog_note;          // why the last press did not move the machine
@@ -568,6 +574,20 @@ static void link_task(void*) {
                         xSemaphoreGive(g_lock);
                     }
                 }
+                // the settings of the server: its contract is read now and then (one answer of some 250 KB, so rarely); a server that refuses it (the login is not an administrator) leaves the copy
+                // of the screen, read only. Nothing is ever written from here.
+                if (g_poller.due(g_settings.settings_contract, board::now_ms())) {
+                    hmi::Response cr;
+                    const bool got = srvlink::call(g_settings, hmi::contract_request(), cr, error, 0, 0);
+                    hmi::Loaded loaded = hmi::load_contract(got, error, cr);
+                    g_poller.done(loaded.live, g_settings.settings_poll_s, board::now_ms());
+                    const std::string role = srvlink::role();
+                    xSemaphoreTake(g_lock, portMAX_DELAY);
+                    g_contract = std::move(loaded);
+                    g_contract_role = role;
+                    g_contract_new = true;
+                    xSemaphoreGive(g_lock);
+                }
             } else {
                 xSemaphoreTake(g_lock, portMAX_DELAY);
                 g_server_ok = false;
@@ -699,6 +719,9 @@ extern "C" void app_main() {
     g_say = xQueueCreate(4, sizeof(hmi::Cue));
     xTaskCreate(say_task, "say", 8192, nullptr, 3, &g_say_task);
     g_lock = xSemaphoreCreateMutex();
+    // the page of the settings of the server starts with the copy the screen carries (read only) until the link has read the live contract
+    g_contract.contract = hmi::embedded_contract();
+    g_contract_new = g_settings.settings_contract;
     // a job that was running when the screen went down: follow it again; the operator can leave it with the cancel button
     {
         hmi::JobMemory m;
@@ -975,6 +998,17 @@ extern "C" void app_main() {
         const bool fleet_new = g_fleet_new;
         const bool spindle_new = g_spindle_new;
         g_spindle_new = false;
+        // the settings of the server, drawn again when the link read the contract or the operator changed the language
+        static hmi::Loaded shown_contract;
+        static std::string shown_role;
+        static int shown_lang = -1;
+        bool contract_changed = false;
+        if (g_contract_new) {
+            shown_contract = g_contract;
+            shown_role = g_contract_role;
+            g_contract_new = false;
+            contract_changed = true;
+        }
         const hmi::FleetView fleet = g_fleet;
         g_fleet_new = false;
         const hmi::QualityView quality = g_quality;
@@ -1035,6 +1069,12 @@ extern "C" void app_main() {
         state.stop_wired = wired;
         state.stop_pressed = pressed;
         state.stop_latched = gate.latched();
+        const bool contract_redraw = g_settings.settings_contract && (contract_changed || static_cast<int>(g_settings.language) != shown_lang);
+        hmi::PageView contract_page;
+        if (contract_redraw) {
+            contract_page = hmi::build_page(shown_contract, g_settings, g_settings.language, shown_role, state.armed);
+            shown_lang = static_cast<int>(g_settings.language);
+        }
         board::lvgl_lock();
         if (!stage_window.empty()) ui::show_stage(stage_window, g_settings);
         ui::show(state, g_settings);
@@ -1042,6 +1082,7 @@ extern "C" void app_main() {
         fleet_stale_shown = state.stale;
         if (spindle_new || stage_changed) refresh_job();
         else if (fleet_new) refresh_hud();  // the progress and the model change with every reading; the tool chips are not rebuilt for them
+        if (contract_redraw) ui::show_server_settings(contract_page, g_settings);
         if (quality_new) ui::show_quality(quality, light, quality_running, g_settings);
         if (gate.pending()) ui::ask_tick(gate.remaining_ms(board::now_ms()), g_settings);  // the countdown to the abort
         else ui::ask(nullptr, g_settings);

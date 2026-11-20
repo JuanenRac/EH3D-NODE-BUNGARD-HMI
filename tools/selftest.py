@@ -356,6 +356,15 @@ RULES = {
     "jog_block_running": _flag, "jog_limits": _flag, "jog_safe_z": _flag,
     "rack_places": _places, "rack_check": _flag, "rack_chain": _flag, "stage_window": _flag, "clock_utc_offset_min": _offset,
 }
+def _keys(v):
+    if v == "":
+        return ""
+    names = [x.strip() for x in v.split(",")]
+    ok = len(names) <= 32 and len(set(names)) == len(names) and all(re.fullmatch(r"[a-z0-9_]{1,48}", n) for n in names)
+    return "" if ok else "up to 32 key names of lower-case letters, digits and underscores, separated by commas"
+
+
+RULES.update({"settings_contract": _flag, "settings_poll_s": _num(30, 86400), "settings_write": _flag, "settings_write_keys": _keys, "settings_block_running": _flag})
 if HAS_MACHINE_KIND:
     RULES["machine_kind"] = lambda v: "" if v in ("cnc", "laser", "pnp") else "not cnc, laser or pnp"
 

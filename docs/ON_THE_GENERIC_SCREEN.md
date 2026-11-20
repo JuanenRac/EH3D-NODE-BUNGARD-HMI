@@ -9,7 +9,8 @@ router, and it is meant to become the generic screen with a settings profile. No
   firmware base of EH3D-COMMON copies them. Make a fix in the generic repository first.
 * Written only here, and to be written in the generic screen before this repository can shrink to its profile: the panel that moves the machine by hand (`core/jog_panel.hpp` and its
   pages), the card under the progress bar (`core/job_card.hpp`) and their tests (`tests/test_parity.cpp`, `docs/PARITY_BUNGARD_GUI.md`).
-* Written first in the generic repository and not copied here yet: the login of the application `hmi`, the table of refusals of the server by code in eight languages, the settings
-  of the connection (`server_user`, `server_password`, `server_timeout_s`, `server_retries`, `server_mdns`) and the machines of the plugins on the fleet page.
+* Copied here from the generic repository: the login of the application `hmi`, the table of refusals of the server by code in eight languages, the machines of the plugins on the fleet
+  page and the page of the settings of the server drawn from its contract (`docs/SETTINGS_CONTRACT.md`). Not copied yet: the lines of the connection settings (`server_user`,
+  `server_password`, `server_timeout_s`, `server_retries`, `server_mdns`) in `hmi.cfg.example`, although the core reads them.
 
 The full list, with what is needed to close each line, is `docs/PROFILES.md` of EH3D-NODE-HMI-GUI, and `tools/check_profile_parity.py` there compares the two repositories.
