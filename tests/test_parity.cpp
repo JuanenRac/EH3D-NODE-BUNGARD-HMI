@@ -542,7 +542,7 @@ static void the_gate_and_a_move_by_hand() {
     g.link(true);
     d = g.request(jog, Origin::Touch, 1000);
     CHECK(d.verdict == Verdict::Refused && d.why == Why::JobRunning && std::string(why_text(Why::JobRunning, Lang::En)) == "A job is running: no moves by hand");
-    CHECK(has(why_text(Why::JobRunning, Lang::Pt), "em curso") && has(why_text(Why::JobRunning, Lang::Ru), "задание"));
+    CHECK(has(why_text(Why::JobRunning, Lang::Pt), "em curso") && has(why_text(Why::JobRunning, Lang::De), "Auftrag läuft"));
     // a confirmation that was waiting when the job started does not go
     g.link(false);
     CHECK(g.request(jog, Origin::Touch, 1000).verdict == Verdict::NeedConfirm);
