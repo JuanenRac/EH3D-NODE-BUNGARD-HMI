@@ -34,7 +34,7 @@ conservative position.
 | Panel of boards (plate, piece, common offset of drilling and routing) | N/A | The screen does not edit the design: the copies and the offset are in the files that the desktop program writes to the card or sends to the server. |
 | Profiles of the axes in the 3D view | N/A | The screen has no 3D view; the viewer tab is still an empty card. |
 | Themes | MISSING | The setting `theme` is read, but only the Forge theme is drawn; the other palettes come from a shared library of the desktop program and are not copied here. |
-| Languages | DONE | The 37 languages, with the new texts in all of them (the translations of the 27 languages outside the eight of the tables, and the two variants, wait for a native review). |
+| Languages | DONE | The eight languages of the project, with the new texts in all of them. |
 
 ## What the screen does not know
 

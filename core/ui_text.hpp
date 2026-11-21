@@ -1,6 +1,6 @@
 // EH3D-NODE-BUNGARD-HMI - core/ui_text.hpp
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D). GPL-3.0-or-later.
-// The texts of the screens in the eight languages of the tables (the order of lang.hpp: en, es, it, de, fr, pt, zh, ja) and, through locales.hpp, in the other twenty-nine. The screens of the touch
+// The texts of the screens in the eight languages of the tables (the order of lang.hpp: en, es, it, de, fr, pt, zh, ja) and no other. The screens of the touch
 // display are the ones of the desktop program: the viewer, the job, the machine, the settings and the machines and stations.
 #pragma once
 

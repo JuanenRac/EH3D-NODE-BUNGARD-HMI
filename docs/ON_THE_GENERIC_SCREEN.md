@@ -5,7 +5,7 @@ router, and it is meant to become the generic screen with a settings profile. No
 
 * The profile is `profiles/bungard.cfg` of EH3D-NODE-HMI-GUI: the settings this screen carries on top of the generic ones (`machine_kind`, `tool_bar`, the `jog_*` panel and
   `clock_utc_offset_min`). `hmi.cfg.example` here is the generic file plus that profile.
-* The core (`core/`), the host tests of the core, the link sockets, the board, the `sdkconfig` files and the texts of the 37 languages are the same files in both repositories; the
+* The core (`core/`), the host tests of the core, the link sockets, the board, the `sdkconfig` files and the texts of the eight languages are the same files in both repositories; the
   firmware base of EH3D-COMMON copies them. Make a fix in the generic repository first.
 * Written only here, and to be written in the generic screen before this repository can shrink to its profile: the panel that moves the machine by hand (`core/jog_panel.hpp` and its
   pages), the card under the progress bar (`core/job_card.hpp`) and their tests (`tests/test_parity.cpp`, `docs/PARITY_BUNGARD_GUI.md`).
