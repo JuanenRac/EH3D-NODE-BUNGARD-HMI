@@ -257,18 +257,28 @@ private:
         return JogPos{jog_clamp(p.x, 0, limits_.x_max), jog_clamp(p.y, 0, limits_.y_max), jog_clamp(p.z, 0, limits_.z_floor)};
     }
 
+    /// What of a move of `d` mm from `at` stays in the travel from 0 to `max`: never the other way and never farther than asked, also when the head is outside the travel
+    /// (the table became smaller).
+    static double within(double at, double d, double max) {
+        if (d > 0) return std::min(d, std::max(0.0, max - at));
+        if (d < 0) return std::max(d, std::min(0.0, -at));
+        return 0;
+    }
+
     /// Moves the head `dist` mm along `dir`, as far as the travel allows; the distance left over is not moved.
     JogRefusal go(JogDir dir, double dist, JogOrder& o) {
         double ux, uy, uz;
         unit(dir, ux, uy, uz);
         if (across(dir) && limits_.enforce && limits_.keep_clear && pos_.z > limits_.safe_z + kEps) return JogRefusal::RaiseZ;
-        const JogPos want{pos_.x + ux * dist, pos_.y + uy * dist, pos_.z + uz * dist};
-        const JogPos to = limits_.enforce ? clamp(want) : want;
-        // a move that the travel does not cut is the distance asked for, not a difference of two sums
-        const bool cut = !(to == want);
-        const double dx = cut ? to.x - pos_.x : ux * dist, dy = cut ? to.y - pos_.y : uy * dist, dz = cut ? to.z - pos_.z : uz * dist;
+        double dx = ux * dist, dy = uy * dist, dz = uz * dist;
+        if (limits_.enforce) {
+            // only the axis of the arrow moves: another axis that is outside the travel is not brought back without being asked
+            dx = within(pos_.x, dx, limits_.x_max);
+            dy = within(pos_.y, dy, limits_.y_max);
+            dz = within(pos_.z, dz, limits_.z_floor);
+        }
         if (std::fabs(dx) + std::fabs(dy) + std::fabs(dz) < kEps) return JogRefusal::Limit;
-        pos_ = to;
+        pos_ = JogPos{pos_.x + dx, pos_.y + dy, pos_.z + dz};
         touched_ = true;
         o = order(dx, dy, dz);
         return JogRefusal::None;
