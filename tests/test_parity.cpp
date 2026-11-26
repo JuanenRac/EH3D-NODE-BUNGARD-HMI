@@ -385,6 +385,21 @@ static void the_jog_panel_moves_one_step() {
     CHECK(jog.press(JogDir::XMinus, free, o) == JogRefusal::None && close_to(o[0].dx, -1) && close_to(jog.pos().x, 0));  // 20 mm asked from x = 1, cut at the edge
 }
 
+static void a_head_outside_a_smaller_table_is_not_thrown_across() {
+    const Settings s = jog_settings("jog_board_z_mm = 20\njog_clearance_mm = 5\n");
+    JogPanel jog(s, make_jog_limits(300, 200, s));
+    std::vector<JogOrder> o;
+    const JogGate free{};
+    jog.set_pos(JogPos{250, 150, 0});
+    jog.set_limits(make_jog_limits(100, 100, s));
+    // farther out: nothing, never a long move back; towards the table: the step asked, and the other axis stays
+    CHECK(jog.press(JogDir::XPlus, free, o) == JogRefusal::Limit && o.empty() && close_to(jog.pos().x, 250));
+    CHECK(jog.press(JogDir::XMinus, free, o) == JogRefusal::None && o.size() == 1 && close_to(o[0].dx, -1) && close_to(o[0].dy, 0) && close_to(jog.pos().y, 150));
+    jog.set_pos(JogPos{-50, 10, 0});
+    CHECK(jog.press(JogDir::XPlus, free, o) == JogRefusal::None && o.size() == 1 && close_to(o[0].dx, 1) && close_to(o[0].dy, 0) && close_to(jog.pos().x, -49));
+    CHECK(jog.press(JogDir::ZUp, free, o) == JogRefusal::Limit && o.empty());
+}
+
 static void the_jog_panel_keeps_the_head_clear_of_the_board() {
     const Settings s = jog_settings("jog_board_z_mm = 20\njog_clearance_mm = 5\n");
     JogPanel jog(s, make_jog_limits(300, 200, s));
@@ -613,6 +628,7 @@ int main() {
     the_end_of_a_stage_is_not_the_end_of_the_job();
     the_card_of_the_work();
     the_jog_panel_moves_one_step();
+    a_head_outside_a_smaller_table_is_not_thrown_across();
     the_jog_panel_keeps_the_head_clear_of_the_board();
     the_jog_panel_is_blocked_by_a_job_or_the_stop();
     a_held_arrow_goes_in_stretches();
