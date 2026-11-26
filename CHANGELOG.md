@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- The shared checks (`tools/ci_validate.py` version 6, `tools/status_lights.py`, `tools/lessons_lint.py`) are the current ones of the documentation hub: the validation now also runs the workflow checker and the lessons of past CI failures against their baselines, and a README that states another maturity than the manifest fails.
+- **Tests of the kind of machine:** only a CNC machine is offered a spindle and the check of the board, whatever the settings file says (`tests/test_more.cpp`).
 - **Fix the panel that moves the machine by hand (safety):** with the head outside the table (the table of the selected machine became smaller), one press of an arrow could move it the other way, much farther than the step, and move another axis too. A press now moves only its own axis, only the way of the arrow and never farther than the step.
 - **Fix the confirmation of a change of a setting of the server:** a touch that arrived when the time of the question was over, before the screen had noticed, still sent the change. It now sends nothing.
 - **The comments and the README speak of eight languages only:** the sentences about the other twenty-nine languages in `core/ui_text.hpp`, `core/settings_text.hpp` and `core/settings_contract.hpp` are gone, and so is the remark that the spoken alerts and orders stay in the first eight (all the languages are the eight now). Still to do: the bitmap fonts (`main/fonts/eh3d_font_16.c`, `eh3d_font_24.c`) and `core/font_ranges.hpp` still hold the characters of the former languages; rebuilding them needs `tools/make_fonts.py` with the fonts that LVGL ships and `lv_font_conv`, which are not at hand.
