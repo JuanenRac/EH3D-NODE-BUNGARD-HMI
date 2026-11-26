@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.1.3] - Safer jog and confirmations - firmware not tested on hardware
+
 - **The test counts of the eight README files are the ones the host tests print today**; the description of the settings test is no longer written twice.
 - The shared checks (`tools/ci_validate.py` version 6, `tools/status_lights.py`, `tools/lessons_lint.py`) are the current ones of the documentation hub: the validation now also runs the workflow checker and the lessons of past CI failures against their baselines, and a README that states another maturity than the manifest fails.
 - **Tests of the kind of machine:** only a CNC machine is offered a spindle and the check of the board, whatever the settings file says (`tests/test_more.cpp`).
