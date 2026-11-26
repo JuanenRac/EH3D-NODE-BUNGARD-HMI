@@ -1,5 +1,5 @@
 // EH3D-NODE-BUNGARD-HMI - more host tests of the small rules of the screen: the languages and their fall-backs, the sound files that an operator puts on the card, the notices, the memory of
-// the job that is running, the turn of the panel and the files of the card.
+// the job that is running, the turn of the panel, the files of the card and the kind of machine.
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D). GPL-3.0-or-later.
 #include <cstdint>
 #include <cstdio>
@@ -12,6 +12,7 @@
 #include "../core/notices.hpp"
 #include "../core/orientation.hpp"
 #include "../core/sdfiles.hpp"
+#include "../core/ui_text.hpp"
 #include "../core/wav.hpp"
 
 static int failures = 0;
@@ -295,6 +296,98 @@ static void a_free_name_is_the_first_one_that_is_not_taken() {
   CHECK(free_name("a", "b", taken({"a.b", "a-2.b", "a-4.b"})) == "a-3.b");
 }
 
+// ---- the kind of machine ------------------------------------------------------------------------------------------------------------------
+
+static void kinds_from_text() {
+  MachineKind k = MachineKind::Laser;
+  CHECK(machine_kind_from_text("cnc", k) && k == MachineKind::Cnc);
+  CHECK(machine_kind_from_text("LASER", k) && k == MachineKind::Laser);
+  CHECK(machine_kind_from_text("pnp", k) && k == MachineKind::PickAndPlace);
+  CHECK(machine_kind_from_text("Pick-And-Place", k) && k == MachineKind::PickAndPlace);
+  k = MachineKind::Laser;
+  CHECK(!machine_kind_from_text("", k) && k == MachineKind::Laser);
+  CHECK(!machine_kind_from_text("lathe", k) && k == MachineKind::Laser);
+  CHECK(!machine_kind_from_text("cnc ", k));
+  for (MachineKind each : {MachineKind::Cnc, MachineKind::Laser, MachineKind::PickAndPlace}) {
+    MachineKind back = MachineKind::Cnc;
+    CHECK(machine_kind_from_text(machine_kind_key(each), back) && back == each);
+  }
+}
+
+static void only_a_cnc_machine_has_a_spindle() {
+  CHECK(controls_for(MachineKind::Cnc).spindle);
+  CHECK(!controls_for(MachineKind::Laser).spindle);
+  CHECK(!controls_for(MachineKind::PickAndPlace).spindle);
+  // the page and the notices of the visual check of the board belong to the CNC machine only
+  CHECK(controls_for(MachineKind::Cnc).quality_check);
+  CHECK(!controls_for(MachineKind::Laser).quality_check);
+  CHECK(!controls_for(MachineKind::PickAndPlace).quality_check);
+}
+
+static void the_settings_file_takes_the_kind() {
+  std::vector<Problem> p;
+  CHECK(parse_settings("", p).machine == MachineKind::Cnc);
+  CHECK(p.empty());
+  CHECK(parse_settings("machine_kind = laser\n", p).machine == MachineKind::Laser);
+  CHECK(parse_settings("machine_kind = PNP  # a comment is not part of the value\n", p).machine == MachineKind::Cnc);
+  CHECK(p.size() == 1 && p[0].key == "machine_kind");
+  p.clear();
+  // a typing mistake keeps the default and says so
+  Settings s = parse_settings("machine_kind = lasr\n", p);
+  CHECK(s.machine == MachineKind::Cnc && p.size() == 1 && p[0].line == 1);
+  p.clear();
+  CHECK(parse_settings("machine_kind = pick-and-place\n", p).machine == MachineKind::PickAndPlace);
+  CHECK(p.empty());
+}
+
+static Settings ready(MachineKind k) {
+  Settings s;
+  s.voice_orders = true;
+  s.machine = k;
+  return s;
+}
+
+static void make_ready(Gate& g) {
+  g.hardware_stop(true, false);
+  CHECK(g.acknowledge_release());
+  g.link(true);
+}
+
+static void the_gate_never_lets_the_screen_start_a_spindle_that_the_machine_does_not_have() {
+  Action spindle{Kind::Spindle, "spindle on"};
+  Action jog{Kind::Motion, "jog X +10"};
+  {
+    Settings s = ready(MachineKind::Cnc);
+    Gate g(s);
+    make_ready(g);
+    CHECK(g.request(spindle, Origin::Touch, 0).verdict == Verdict::NeedConfirm);
+  }
+  for (MachineKind k : {MachineKind::Laser, MachineKind::PickAndPlace}) {
+    Settings s = ready(k);
+    Gate g(s);
+    make_ready(g);
+    Decision d = g.request(spindle, Origin::Touch, 0);
+    CHECK(d.verdict == Verdict::Refused && d.why == Why::NoSpindleHere);
+    CHECK(!g.pending());
+    // a move is still asked for as always
+    CHECK(g.request(jog, Origin::Touch, 10).verdict == Verdict::NeedConfirm);
+    // and no setting turns the refusal off: a spindle speed in the file does not give a laser a spindle
+    s.spindle_max_rpm = 65535;
+    Gate g2(s);
+    make_ready(g2);
+    CHECK(g2.request(spindle, Origin::Touch, 0).why == Why::NoSpindleHere);
+  }
+}
+
+static void the_refusal_has_its_sentence_in_every_language() {
+  for (unsigned l = 0; l < 8; ++l) {
+    const char* t = why_text(Why::NoSpindleHere, static_cast<Lang>(l));
+    CHECK(t != nullptr && t[0] != '\0');
+    CHECK(std::string(t) != why_text(Why::SpindleDisabled, static_cast<Lang>(l)));
+  }
+  CHECK(std::string(why_text(Why::NoSpindleHere, Lang::En)).find("spindle") != std::string::npos);
+}
+
 int main() {
   every_language_has_one_code_that_reads_back();
   a_code_that_is_not_exact_is_not_a_language();
@@ -315,6 +408,11 @@ int main() {
   a_listing_has_the_folders_first_and_leaves_out_what_cannot_be_opened();
   sizes_are_written_with_the_unit_that_fits();
   a_free_name_is_the_first_one_that_is_not_taken();
+  kinds_from_text();
+  only_a_cnc_machine_has_a_spindle();
+  the_settings_file_takes_the_kind();
+  the_gate_never_lets_the_screen_start_a_spindle_that_the_machine_does_not_have();
+  the_refusal_has_its_sentence_in_every_language();
   std::printf("%d checks, %d failures\n", checks, failures);
   return failures == 0 ? 0 : 1;
 }
