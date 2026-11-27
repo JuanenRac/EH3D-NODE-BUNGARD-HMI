@@ -36,7 +36,7 @@ A value in `hmi.cfg` must stand alone on its line: a `#` comment after a value i
 | 17 | With a job running (or the hardware stop pressed), press an arrow of the panel | The screen refuses and says why; nothing moves | |
 | 18 | With an ATC model, give two tools the same place in "Positions in the bar", then touch Start | The start is refused and the screen names the tool and the shared place; with the places right the job starts | |
 | 19 | With an ATC model, run a drilling and a routing job against a server that does not take the bar | The job is sent again without it and a red line says the tool changes were not chained; the tools are in the bar in the order of the job | |
-| 20 | With the login of an administrator (`server_user`) open the settings page | The block "Server settings" says the values are read from the server and lists 89 settings in 15 groups with their values; reading the answer (some 250 KB) does not reset the screen or stall the touch | |
+| 20 | With the login of an administrator (`server_user`) open the settings page | The block "Server settings" says the values are read from the server and lists 105 settings in 17 groups with their values; reading the answer (some 250 KB) does not reset the screen or stall the touch | |
 | 21 | Use the login of an operator (or only the `token`) and restart | The block shows the copy the screen carries, read only, without values, and says that the server gives its settings to an administrator only | |
 | 22 | Set the language to Japanese, then to Chinese | The labels are drawn in that language without boxes | |
 | 23 | Put a proxy page or another service on the address of the server | The block shows the copy, nothing is changed and no token goes to the other service | |
