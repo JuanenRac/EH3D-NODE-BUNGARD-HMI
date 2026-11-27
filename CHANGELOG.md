@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The second question before the spindle or the laser goes on:** when a job that goes on after a stop waits with `pause.power_on`, the screen says that continuing again switches the spindle or the laser on, in the eight languages. It needs a server with that question. Host-tested only.
+
 - **Safety: Continue and "Tool changed" answer the question on the screen.** The screen sends back the identifier of what the job asked when the button was pressed (`pause.question`), so a server that asks something else by then refuses the answer (`409 question_changed`, with its text in the eight languages) instead of taking it as the answer to a question nobody has read; the buttons are drawn again as soon as the question changes. The copy of the settings contract has the new setting `answer_needs_question` of the server (106 settings). A server of an earlier version is answered as before. Checked by the host tests; not tried on a screen.
 
 ## [0.1.4] - The settings of the server and the new resume warning - firmware not tested on hardware
