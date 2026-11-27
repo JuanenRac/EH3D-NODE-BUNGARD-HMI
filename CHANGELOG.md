@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The shared lessons check reads only what is part of the repository:** what git ignores, and folders such as `managed_components` that a firmware build downloads, are no longer analysed, so the local validation no longer fails over downloaded code.
+
 ## [0.1.3] - Safer jog and confirmations - firmware not tested on hardware
 
 - **The test counts of the eight README files are the ones the host tests print today**; the description of the settings test is no longer written twice.
