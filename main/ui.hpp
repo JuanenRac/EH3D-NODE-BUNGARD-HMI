@@ -33,7 +33,7 @@ struct State {
     std::string note;  // the line under the buttons: why something was refused, what the server answered
 };
 
-enum class What { Action, AckRelease, Confirm, Cancel, SetOrientation, SetLanguage, OpenCard, SendJob, RefreshCard, LightSet, InspectRun, InspectPreset, InspectCalibrate, ToggleTool, Resume, SetSpindleOver, JogPress, JogRelease, JogStep, JogMode, JogSpeed, JogPlace, JogHome, RackSet };
+enum class What { Action, AckRelease, Confirm, Cancel, SetOrientation, SetLanguage, OpenCard, SendJob, RefreshCard, LightSet, InspectRun, InspectPreset, InspectCalibrate, ToggleTool, Resume, SetSpindleOver, JogPress, JogRelease, JogStep, JogMode, JogSpeed, JogPlace, JogHome, RackSet, SetDrillFormat };
 
 /// What the operator did on the screen; the application runs it through the gate.
 struct Request {
@@ -46,6 +46,7 @@ struct Request {
     int hole = 0;         // InspectRun: the index in hmi::kHoleWidths
     int preset = 0;       // InspectPreset: 0 standard, 1 fine pitch, 2 prototype
     int tool = 0;         // ToggleTool: the number of the tool (the pen of a routing file) to switch off or on
+    int format = 0;       // SetDrillFormat: the place of the format in hmi::kDrillFormats
     bool refuse = false;  // SetSpindleOver: true = refuse an order beyond the spindle, false = cut it to the top speed
     int index = 0;        // JogPress: the arrow (0 X-, 1 X+, 2 Y-, 3 Y+, 4 Z down, 5 Z up); JogStep: the step; JogSpeed: 0 slow, 1 medium, 2 fast; JogPlace: the place 0..3
     bool save = false;    // JogPlace: keep the place of the head there instead of going to it
