@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.1.4] - The settings of the server and the new resume warning - firmware not tested on hardware
+
 - **Safety: the screen says that the spindle is started when a job goes on.** While a job that goes on after a stop waits before its first move, the job page warns that letting it go moves the machine back to where it stopped and starts the spindle the program had on.
 - **The reason of a resume the server does not do is shown:** a `422 bad_request` of `resume-from` shows the reason of the server on the screen, not only that something was wrong.
 - **The copy of the settings contract follows the server:** 105 settings in 17 groups, with the settings of a stop and of going on, and millimetres and micrometres written as `mm` and `µm`; the fonts hold the characters of the new texts.
