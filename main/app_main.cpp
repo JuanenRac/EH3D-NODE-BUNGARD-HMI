@@ -27,6 +27,7 @@
 #include "../core/orientation.hpp"
 #include "../core/quality.hpp"
 #include "../core/sdfiles.hpp"
+#include "../core/server_errors.hpp"
 #include "../core/settings_page.hpp"
 #include "../core/stage_notice.hpp"
 #include "../core/stop_latch.hpp"
@@ -478,7 +479,7 @@ static void link_task(void*) {
                     xQueueSend(g_to_server, &again, 0);
                     note(hmi::ScreenNote::OldServer);
                 } else {
-                    if (step == hmi::ResumeStep::Made) note(hmi::ScreenNote::GoingOn); else set_note(hmi::reason_text(why, g_settings.language));
+                    if (step == hmi::ResumeStep::Made) note(hmi::ScreenNote::GoingOn); else set_note(hmi::resume_note(why, g_settings.language));
                 }
             } else {
                 std::string why;
@@ -654,6 +655,7 @@ static void refresh_job() {
     flow.message = g_flow.message();
     flow.resumed_from = g_flow.resumed_from();
     flow.held = g_flow.held();
+    flow.resume_wait = g_flow.resume_wait();
     flow.tool_wait = g_flow.tool_wait();
     xSemaphoreGive(g_lock);
     ui::show_job(tools, spindle, advice, g_settings);
