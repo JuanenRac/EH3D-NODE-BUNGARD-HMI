@@ -22,11 +22,13 @@ add_executable(test_more test_more.cpp)
 add_executable(test_parity test_parity.cpp)
 add_executable(test_session test_session.cpp)
 add_executable(test_settings test_settings.cpp)
+add_executable(test_touch test_touch.cpp)
 
 add_executable(test_sim test_sim.cpp)
 
 enable_testing()
 add_test(NAME hmi COMMAND test_hmi)
+add_test(NAME touch COMMAND test_touch)
 add_test(NAME workflow COMMAND test_workflow)
 add_test(NAME keyboard COMMAND test_keyboard)
 add_test(NAME notices COMMAND test_notices)
