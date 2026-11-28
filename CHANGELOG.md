@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.1.7] - GSL3680 touch with a table you provide - firmware not tested on hardware
+
 - **A generated file of the fonts names this project again.** No other change.
 - **The copy of the settings contract is the current one:** it has the settings of the notices on a phone (`push_enabled` and `push_service_account_file`). A warning of the compiler about the pin of the hardware stop is gone.
 
